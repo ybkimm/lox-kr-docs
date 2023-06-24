@@ -3,119 +3,152 @@ package parser
 
 import (
   "github.com/dcaiafa/lox/internal/token"
+  "github.com/dcaiafa/lox/internal/grammar"
 )
 
-/*
-
-syntax = production* .
-
-production = ID '=' expression '.' .
-
-expression = term                  # e1
-           | expression '|' term   # e2
-           .
-
-term = qfactor+ label? .
-
-qfactor = factor qualifier? .
-
-factor = ID | LITERAL .
-
-qualifier = '+' | '*' | '?' .
-
-label = '#' ID .
-
----
-
-func syntax(t0 []any) any {
-  return nil
+func cast[T any](v any) T {
+	cv, _ := v.(T)
+	return cv
 }
-
-func production(id0 Token, t1 Token, expression2 any, t3 token) any {
-  return nil
-}
-
-func expression_e1(t0 any) any {
-}
-
-func expression_e2(expression0 any, t1 Token, term2 any) any {
-}
-
-func term(qfactor []any) any {
-}
-
-func qfactor(factor any, qualifier any) any {
-}
-
-func factor(t0 Token) any {
-}
-
-func qualifier(t0 Token) any {
-}
-
-func label(t0 Token, id Token) any {
-}
-
-*/
 
 %}
 
 %union {
-
-
+  tok token.Token
+  prod interface{}
 }
 
-%token EOF
-%token LEXERR
+%token<tok> EOF LEXERR
 
-%token ID
-%token LITERAL
-%token '=' '.' '|' '*' '+' '?' '#'
+%token<tok> ID LITERAL
+%token<tok> '=' '.' '|' '*' '+' '?' '#'
 
-%start syntax
+%type<prod> syntax
+%type<prod> productions
+%type<prod> productions_opt
+%type<prod> production
+%type<prod> rules
+%type<prod> rule
+%type<prod> qfactors
+%type<prod> qfactor
+%type<prod> factor
+%type<prod> qualifier
+%type<prod> qualifier_opt
+%type<prod> label
+%type<prod> label_opt
+
+%start S
 
 %%
 
-syntax: productions_opt EOF
+S: syntax EOF;
+
+syntax: productions_opt
+        {
+          $$ = &grammar.Syntax{
+            Productions: cast[[]*grammar.Production]($1),
+          }
+        }
       ;
 
-productions_opt: productions
-               | /*empty*/
-               ;
-
 productions: productions production
+             {
+               $$ = append(
+                 cast[[]*grammar.Production]($1),
+                 cast[*grammar.Production]($2),
+               )
+             }
            | production
+             {
+               $$ = []*grammar.Production{
+                 cast[*grammar.Production]($1),
+               }
+             }
            ;
 
-production: ID '=' terms '.'
+productions_opt: productions
+               | { $$ =nil }
+               ;
+
+
+production: ID '=' rules '.'
+            {
+              $$ = &grammar.Production{
+                Name: $1.Str,
+                rules: cast[[]*grammar.Rule]($2),
+              }
+            }
           ;
 
-terms: term '|' term
-     | term
+rules: rules '|' rule
+       {
+         $$ = append(
+           cast[[]*grammar.Rule]($1), 
+           cast[*grammar.Rule]($2),
+         )
+       }
+     | rule
+       {
+         $$ = []*grammar.Rule{
+           cast[*grammar.Rule]($1),
+         }
+       }
      ;
 
-term: qfactors label_opt
+rule: qfactors label_opt
+      {
+        $$ = &grammar.Rule{
+          Factors: cast[[]*grammar.Factor]($1),
+          Label: cast[*grammar.Label]($2),
+        } 
+      }
     ;
 
 qfactors: qfactors qfactor
+          {
+            $$ = append(
+              cast[[]*grammar.Factor]($1),
+              cast[*grammar.Factor]($2),
+            )
+          }
         | qfactor
+          {
+            $$ = []*grammar.Factor{
+              cast[*grammar.Factor]($1),
+            }
+          }
         ;
 
 qfactor: factor qualifier_opt
+         {
+           factor := cast[*grammar.Factor]($1)
+           qualifier := cast[grammar.Qualifier]($2)
+           factor.Qualifier = qualifier
+           $$ = factor
+         }
        ;
 
-factor: ID
-      | LITERAL
+factor: ID       { $$ = &grammar.Factor{ Name: $1.Str } }
+      | LITERAL  { $$ = &grammar.Factor{ Literal: $1.Str} }
       ;
 
-qualifier: '*' | '+' | '?' ;
+qualifier: '*'  { $$ = grammar.ZeroOrMore }
+         | '+'  { $$ = grammar.OneOrMore }
+         | '?'  { $$ = grammar.ZeroOrOne }
+         ;
 
 qualifier_opt: qualifier
-             | /*empty*/
+             | { $$ = grammar.NoQualifier }
              ;
 
-label: '#' ID ;
+label: '#' ID 
+       {
+         $$ = &grammar.Label{
+           Label: $2.Str,
+         }
+       }
+     ;
 
 label_opt: label
-         | /*empty*/
+         | { $$ = nil }
          ;

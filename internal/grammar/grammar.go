@@ -11,6 +11,7 @@ const (
 
 type Syntax struct {
 	Productions []*Production
+	productions map[string]*Production
 }
 
 type Production struct {
