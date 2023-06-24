@@ -1,0 +1,231 @@
+
+state 0
+	$accept: .syntax $end 
+	productions_opt: .    (3)
+
+	ID  shift 5
+	.  reduce 3 (src line 78)
+
+	syntax  goto 1
+	productions_opt  goto 2
+	productions  goto 3
+	production  goto 4
+
+state 1
+	$accept:  syntax.$end 
+
+	$end  accept
+	.  error
+
+
+state 2
+	syntax:  productions_opt.EOF 
+
+	EOF  shift 6
+	.  error
+
+
+state 3
+	productions_opt:  productions.    (2)
+	productions:  productions.production 
+
+	ID  shift 5
+	.  reduce 2 (src line 77)
+
+	production  goto 7
+
+state 4
+	productions:  production.    (5)
+
+	.  reduce 5 (src line 82)
+
+
+state 5
+	production:  ID.'=' terms '.' 
+
+	'='  shift 8
+	.  error
+
+
+state 6
+	syntax:  productions_opt EOF.    (1)
+
+	.  reduce 1 (src line 74)
+
+
+state 7
+	productions:  productions production.    (4)
+
+	.  reduce 4 (src line 81)
+
+
+state 8
+	production:  ID '='.terms '.' 
+
+	ID  shift 14
+	LITERAL  shift 15
+	.  error
+
+	terms  goto 9
+	term  goto 10
+	qfactors  goto 11
+	qfactor  goto 12
+	factor  goto 13
+
+state 9
+	production:  ID '=' terms.'.' 
+
+	'.'  shift 16
+	.  error
+
+
+state 10
+	terms:  term.'|' term 
+	terms:  term.    (8)
+
+	'|'  shift 17
+	.  reduce 8 (src line 89)
+
+
+state 11
+	term:  qfactors.label_opt 
+	qfactors:  qfactors.qfactor 
+	label_opt: .    (22)
+
+	ID  shift 14
+	LITERAL  shift 15
+	'#'  shift 21
+	.  reduce 22 (src line 115)
+
+	label_opt  goto 18
+	qfactor  goto 19
+	factor  goto 13
+	label  goto 20
+
+state 12
+	qfactors:  qfactor.    (11)
+
+	.  reduce 11 (src line 96)
+
+
+state 13
+	qfactor:  factor.qualifier_opt 
+	qualifier_opt: .    (19)
+
+	'*'  shift 24
+	'+'  shift 25
+	'?'  shift 26
+	.  reduce 19 (src line 109)
+
+	qualifier_opt  goto 22
+	qualifier  goto 23
+
+state 14
+	factor:  ID.    (13)
+
+	.  reduce 13 (src line 102)
+
+
+state 15
+	factor:  LITERAL.    (14)
+
+	.  reduce 14 (src line 103)
+
+
+state 16
+	production:  ID '=' terms '.'.    (6)
+
+	.  reduce 6 (src line 85)
+
+
+state 17
+	terms:  term '|'.term 
+
+	ID  shift 14
+	LITERAL  shift 15
+	.  error
+
+	term  goto 27
+	qfactors  goto 11
+	qfactor  goto 12
+	factor  goto 13
+
+state 18
+	term:  qfactors label_opt.    (9)
+
+	.  reduce 9 (src line 92)
+
+
+state 19
+	qfactors:  qfactors qfactor.    (10)
+
+	.  reduce 10 (src line 95)
+
+
+state 20
+	label_opt:  label.    (21)
+
+	.  reduce 21 (src line 114)
+
+
+state 21
+	label:  '#'.ID 
+
+	ID  shift 28
+	.  error
+
+
+state 22
+	qfactor:  factor qualifier_opt.    (12)
+
+	.  reduce 12 (src line 99)
+
+
+state 23
+	qualifier_opt:  qualifier.    (18)
+
+	.  reduce 18 (src line 108)
+
+
+state 24
+	qualifier:  '*'.    (15)
+
+	.  reduce 15 (src line 106)
+
+
+state 25
+	qualifier:  '+'.    (16)
+
+	.  reduce 16 (src line 106)
+
+
+state 26
+	qualifier:  '?'.    (17)
+
+	.  reduce 17 (src line 106)
+
+
+state 27
+	terms:  term '|' term.    (7)
+
+	.  reduce 7 (src line 88)
+
+
+state 28
+	label:  '#' ID.    (20)
+
+	.  reduce 20 (src line 112)
+
+
+20 terminals, 14 nonterminals
+23 grammar rules, 29/16000 states
+0 shift/reduce, 0 reduce/reduce conflicts reported
+63 working sets used
+memory: parser 21/240000
+0 extra closures
+17 shift entries, 1 exceptions
+16 goto entries
+4 entries saved by goto default
+Optimizer space used: output 30/240000
+30 table entries, 0 zero
+maximum spread: 20, maximum offset: 17
