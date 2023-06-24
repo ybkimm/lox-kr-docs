@@ -10,21 +10,20 @@ const (
 )
 
 type Syntax struct {
+	Rules []*Rule
+}
+
+type Rule struct {
+	Name        string
 	Productions []*Production
-	productions map[string]*Production
 }
 
 type Production struct {
-	Name  string
 	Terms []*Term
+	Label *Label
 }
 
 type Term struct {
-	Factors []*Factor
-	Label   *Label
-}
-
-type Factor struct {
 	Name      string
 	Literal   string
 	Qualifier Qualifier

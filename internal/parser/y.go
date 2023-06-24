@@ -17,60 +17,7 @@ func cast[T any](v any) T {
 	return cv
 }
 
-/*
-
-syntax = production* .
-
-production = ID '=' expression '.' .
-
-expression = term                  # e1
-           | expression '|' term   # e2
-           .
-
-term = qfactor+ label? .
-
-qfactor = factor qualifier? .
-
-factor = ID | LITERAL .
-
-qualifier = '+' | '*' | '?' .
-
-label = '#' ID .
-
----
-
-func syntax(t0 []any) any {
-  return nil
-}
-
-func production(id0 Token, t1 Token, expression2 any, t3 token) any {
-  return nil
-}
-
-func expression_e1(t0 any) any {
-}
-
-func expression_e2(expression0 any, t1 Token, term2 any) any {
-}
-
-func term(qfactor []any) any {
-}
-
-func qfactor(factor any, qualifier any) any {
-}
-
-func factor(t0 Token) any {
-}
-
-func qualifier(t0 Token) any {
-}
-
-func label(t0 Token, id Token) any {
-}
-
-*/
-
-//line parser.y:69
+//line parser.y:16
 type yySymType struct {
 	yys  int
 	tok  token.Token
@@ -521,135 +468,135 @@ yydefault:
 
 	case 2:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:100
+//line parser.y:47
 		{
 			yyVAL.prod = &grammar.Syntax{
-				Productions: cast[[]*grammar.Production](yyDollar[1].prod),
+				Rules: cast[[]*grammar.Rule](yyDollar[1].prod),
 			}
 		}
 	case 3:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser.y:108
+//line parser.y:55
 		{
 			yyVAL.prod = append(
-				cast[[]*grammar.Production](yyDollar[1].prod),
-				cast[*grammar.Production](yyDollar[2].prod),
+				cast[[]*grammar.Rule](yyDollar[1].prod),
+				cast[*grammar.Rule](yyDollar[2].prod),
 			)
 		}
 	case 4:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:115
+//line parser.y:62
 		{
-			yyVAL.prod = []*grammar.Production{
-				cast[*grammar.Production](yyDollar[1].prod),
+			yyVAL.prod = []*grammar.Rule{
+				cast[*grammar.Rule](yyDollar[1].prod),
 			}
 		}
 	case 6:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line parser.y:123
+//line parser.y:70
 		{
 			yyVAL.prod = nil
 		}
 	case 7:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line parser.y:128
+//line parser.y:74
 		{
-			yyVAL.prod = &grammar.Production{
-				Name:  yyDollar[1].tok.Str,
-				Terms: cast[[]*grammar.Term](yyDollar[2].tok),
+			yyVAL.prod = &grammar.Rule{
+				Name:        yyDollar[1].tok.Str,
+				Productions: cast[[]*grammar.Production](yyDollar[3].prod),
 			}
 		}
 	case 8:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line parser.y:137
+//line parser.y:83
 		{
 			yyVAL.prod = append(
-				cast[[]*grammar.Term](yyDollar[1].prod),
-				cast[*grammar.Term](yyDollar[2].tok),
+				cast[[]*grammar.Production](yyDollar[1].prod),
+				cast[*grammar.Production](yyDollar[2].tok),
 			)
 		}
 	case 9:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:144
+//line parser.y:90
+		{
+			yyVAL.prod = []*grammar.Production{
+				cast[*grammar.Production](yyDollar[1].prod),
+			}
+		}
+	case 10:
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line parser.y:98
+		{
+			yyVAL.prod = &grammar.Production{
+				Terms: cast[[]*grammar.Term](yyDollar[1].prod),
+				Label: cast[*grammar.Label](yyDollar[2].prod),
+			}
+		}
+	case 11:
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line parser.y:107
+		{
+			yyVAL.prod = append(
+				cast[[]*grammar.Term](yyDollar[1].prod),
+				cast[*grammar.Term](yyDollar[2].prod),
+			)
+		}
+	case 12:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser.y:114
 		{
 			yyVAL.prod = []*grammar.Term{
 				cast[*grammar.Term](yyDollar[1].prod),
 			}
 		}
-	case 10:
-		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser.y:152
-		{
-			yyVAL.prod = &grammar.Term{
-				Factors: cast[[]*grammar.Factor](yyDollar[1].prod),
-				Label:   cast[*grammar.Label](yyDollar[2].prod),
-			}
-		}
-	case 11:
-		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser.y:161
-		{
-			yyVAL.prod = append(
-				cast[[]*grammar.Factor](yyDollar[1].prod),
-				cast[*grammar.Factor](yyDollar[2].prod),
-			)
-		}
-	case 12:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:168
-		{
-			yyVAL.prod = []*grammar.Factor{
-				cast[*grammar.Factor](yyDollar[1].prod),
-			}
-		}
 	case 13:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser.y:176
+//line parser.y:122
 		{
-			factor := cast[*grammar.Factor](yyDollar[1].prod)
+			term := cast[*grammar.Term](yyDollar[1].prod)
 			qualifier := cast[grammar.Qualifier](yyDollar[2].prod)
-			factor.Qualifier = qualifier
-			yyVAL.prod = factor
+			term.Qualifier = qualifier
+			yyVAL.prod = term
 		}
 	case 14:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:184
+//line parser.y:130
 		{
-			yyVAL.prod = &grammar.Factor{Name: yyDollar[1].tok.Str}
+			yyVAL.prod = &grammar.Term{Name: yyDollar[1].tok.Str}
 		}
 	case 15:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:185
+//line parser.y:131
 		{
-			yyVAL.prod = &grammar.Factor{Literal: yyDollar[1].tok.Str}
+			yyVAL.prod = &grammar.Term{Literal: yyDollar[1].tok.Str}
 		}
 	case 16:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:188
+//line parser.y:134
 		{
 			yyVAL.prod = grammar.ZeroOrMore
 		}
 	case 17:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:189
+//line parser.y:135
 		{
 			yyVAL.prod = grammar.OneOrMore
 		}
 	case 18:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:190
+//line parser.y:136
 		{
 			yyVAL.prod = grammar.ZeroOrOne
 		}
 	case 20:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line parser.y:194
+//line parser.y:140
 		{
 			yyVAL.prod = grammar.NoQualifier
 		}
 	case 21:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser.y:198
+//line parser.y:144
 		{
 			yyVAL.prod = &grammar.Label{
 				Label: yyDollar[2].tok.Str,
@@ -657,7 +604,7 @@ yydefault:
 		}
 	case 23:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line parser.y:206
+//line parser.y:152
 		{
 			yyVAL.prod = nil
 		}

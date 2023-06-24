@@ -24,14 +24,14 @@ func cast[T any](v any) T {
 %token<tok> '=' '.' '|' '*' '+' '?' '#'
 
 %type<prod> syntax
-%type<prod> productions
-%type<prod> productions_opt
-%type<prod> production
 %type<prod> rules
+%type<prod> rules_opt
 %type<prod> rule
-%type<prod> qfactors
-%type<prod> qfactor
-%type<prod> factor
+%type<prod> productions
+%type<prod> production
+%type<prod> qterms
+%type<prod> qterm
+%type<prod> term
 %type<prod> qualifier
 %type<prod> qualifier_opt
 %type<prod> label
@@ -43,47 +43,18 @@ func cast[T any](v any) T {
 
 S: syntax EOF;
 
-syntax: productions_opt
+syntax: rules_opt
         {
           $$ = &grammar.Syntax{
-            Productions: cast[[]*grammar.Production]($1),
+            Rules: cast[[]*grammar.Rule]($1),
           }
         }
       ;
 
-productions: productions production
-             {
-               $$ = append(
-                 cast[[]*grammar.Production]($1),
-                 cast[*grammar.Production]($2),
-               )
-             }
-           | production
-             {
-               $$ = []*grammar.Production{
-                 cast[*grammar.Production]($1),
-               }
-             }
-           ;
-
-productions_opt: productions
-               | { $$ =nil }
-               ;
-
-
-production: ID '=' rules '.'
-            {
-              $$ = &grammar.Production{
-                Name: $1.Str,
-                rules: cast[[]*grammar.Rule]($2),
-              }
-            }
-          ;
-
-rules: rules '|' rule
+rules: rules rule
        {
          $$ = append(
-           cast[[]*grammar.Rule]($1), 
+           cast[[]*grammar.Rule]($1),
            cast[*grammar.Rule]($2),
          )
        }
@@ -95,42 +66,70 @@ rules: rules '|' rule
        }
      ;
 
-rule: qfactors label_opt
+rules_opt: rules
+         | { $$ =nil }
+         ;
+
+rule: ID '=' productions '.'
       {
         $$ = &grammar.Rule{
-          Factors: cast[[]*grammar.Factor]($1),
-          Label: cast[*grammar.Label]($2),
-        } 
+          Name: $1.Str,
+          Productions: cast[[]*grammar.Production]($3),
+        }
       }
     ;
 
-qfactors: qfactors qfactor
-          {
-            $$ = append(
-              cast[[]*grammar.Factor]($1),
-              cast[*grammar.Factor]($2),
-            )
-          }
-        | qfactor
-          {
-            $$ = []*grammar.Factor{
-              cast[*grammar.Factor]($1),
+productions: productions '|' production
+             {
+               $$ = append(
+                 cast[[]*grammar.Production]($1), 
+                 cast[*grammar.Production]($2),
+               )
+             }
+           | production
+             {
+               $$ = []*grammar.Production{
+                 cast[*grammar.Production]($1),
+               }
+             }
+           ;
+
+production: qterms label_opt
+            {
+              $$ = &grammar.Production{
+                Terms: cast[[]*grammar.Term]($1),
+                Label: cast[*grammar.Label]($2),
+              } 
             }
+          ;
+
+qterms: qterms qterm
+        {
+          $$ = append(
+            cast[[]*grammar.Term]($1),
+            cast[*grammar.Term]($2),
+          )
+        }
+      | qterm
+        {
+          $$ = []*grammar.Term{
+            cast[*grammar.Term]($1),
           }
-        ;
-
-qfactor: factor qualifier_opt
-         {
-           factor := cast[*grammar.Factor]($1)
-           qualifier := cast[grammar.Qualifier]($2)
-           factor.Qualifier = qualifier
-           $$ = factor
-         }
-       ;
-
-factor: ID       { $$ = &grammar.Factor{ Name: $1.Str } }
-      | LITERAL  { $$ = &grammar.Factor{ Literal: $1.Str} }
+        }
       ;
+
+qterm: term qualifier_opt
+       {
+         term := cast[*grammar.Term]($1)
+         qualifier := cast[grammar.Qualifier]($2)
+         term.Qualifier = qualifier
+         $$ = term
+       }
+     ;
+
+term: ID       { $$ = &grammar.Term{ Name: $1.Str } }
+    | LITERAL  { $$ = &grammar.Term{ Literal: $1.Str} }
+    ;
 
 qualifier: '*'  { $$ = grammar.ZeroOrMore }
          | '+'  { $$ = grammar.OneOrMore }
