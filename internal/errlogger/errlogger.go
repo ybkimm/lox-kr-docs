@@ -12,7 +12,7 @@ type Error struct {
 	Details []*Detail
 }
 
-func (e *Error) Detailf(msg string, args ...any) *Error {
+func (e *Error) Detailf(loc fileloc.FileLoc, msg string, args ...any) *Error {
 	det := &Detail{
 		Desc: fmt.Sprintf(msg, args...),
 	}
@@ -31,8 +31,9 @@ type ErrLogger struct {
 
 func New() *ErrLogger { return &ErrLogger{} }
 
-func (l *ErrLogger) Errorf(msg string, args ...any) *Error {
+func (l *ErrLogger) Errorf(loc fileloc.FileLoc, msg string, args ...any) *Error {
 	err := &Error{
+		Loc:  loc,
 		Desc: fmt.Sprintf(msg, args...),
 	}
 	l.Errors = append(l.Errors, err)
