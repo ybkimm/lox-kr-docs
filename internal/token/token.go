@@ -1,6 +1,6 @@
 package token
 
-import "github.com/dcaiafa/lox/internal/fileloc"
+import "github.com/dcaiafa/lox/internal/loc"
 
 type Type int
 
@@ -12,7 +12,7 @@ const (
 )
 
 type Token struct {
-	Pos  fileloc.FileLoc
+	Pos  loc.Loc
 	Type Type
 	Str  string
 }

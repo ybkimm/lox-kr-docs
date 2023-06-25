@@ -1,6 +1,6 @@
-package fileloc
+package loc
 
-type FileLoc struct {
+type Loc struct {
 	Filename string
 	Line     int
 	Column   int

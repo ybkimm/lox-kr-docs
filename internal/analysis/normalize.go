@@ -1,19 +1,18 @@
 package analysis
 
 import (
-	"fmt"
-
-	"github.com/dcaiafa/lox/internal/errlogger"
+	"github.com/dcaiafa/lox/internal/errs"
 	"github.com/dcaiafa/lox/internal/grammar"
+	"github.com/dcaiafa/lox/internal/loc"
 )
 
 type analyzer struct {
-	syntax *grammar.Syntax
-	errs   *errlogger.ErrLogger
+	syntax *grammar.Spec
+	errs   *errs.Errs
 	decls  map[string]grammar.Decl
 }
 
-func Analyze(s *grammar.Syntax, errs *errlogger.ErrLogger) {
+func Analyze(s *grammar.Spec, errs *errs.Errs) {
 	a := &analyzer{
 		syntax: s,
 		errs:   errs,
@@ -23,27 +22,30 @@ func Analyze(s *grammar.Syntax, errs *errlogger.ErrLogger) {
 	if a.errs.HasErrors() {
 		return
 	}
-	a.checkReferences()
-	if a.errs.HasErrors() {
-		return
-	}
-	for a.normalize() {
-		// Run until completely normalized.
-	}
+	/*
+		a.checkReferences()
+		if a.errs.HasErrors() {
+			return
+		}
+		for a.normalize() {
+			// Run until completely normalized.
+		}
+	*/
 }
 
 func (a *analyzer) prepare() {
-	for _, decl := range a.syntax.Decls {
-		if _, ok := a.decls[decl.DeclName()]; ok {
-			a.errs.Errorf("%q redeclared", decl.DeclName())
+	for _, rule := range a.syntax.Parser.Rules {
+		if _, ok := a.decls[rule.DeclName()]; ok {
+			a.errs.Errorf(loc.Loc{}, "%q redeclared", rule.DeclName())
 		}
-		a.decls[decl.DeclName()] = decl
+		a.decls[rule.DeclName()] = rule
 	}
 	if a.errs.HasErrors() {
 		return
 	}
 }
 
+/*
 func (a *analyzer) checkReferences() {
 	for _, decl := range a.syntax.Decls {
 		rule, ok := decl.(*grammar.Rule)
@@ -54,7 +56,7 @@ func (a *analyzer) checkReferences() {
 			for _, term := range prod.Terms {
 				decl := a.decls[term.Name]
 				if decl == nil {
-					a.errs.Errorf("undefined: %v", term.Name)
+					a.errs.Errorf(loc.Loc{}, "undefined: %v", term.Name)
 				}
 			}
 		}
@@ -124,3 +126,4 @@ func (a *analyzer) synthesizeRule(namePrefix string) *grammar.Rule {
 	a.syntax.Decls = append(a.syntax.Decls, r)
 	return r
 }
+*/

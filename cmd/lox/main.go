@@ -3,10 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 
-	"github.com/dcaiafa/lox/internal/errlogger"
+	"github.com/dcaiafa/lox/internal/analysis"
+	"github.com/dcaiafa/lox/internal/errs"
 	"github.com/dcaiafa/lox/internal/parser"
 )
 
@@ -22,13 +22,19 @@ func main() {
 }
 
 func run(grammarFile string) error {
-	grammarData, err := ioutil.ReadFile(grammarFile)
+	grammarData, err := os.ReadFile(grammarFile)
 	if err != nil {
 		return err
 	}
-	errs := errlogger.New()
-	parser.Parse(grammarFile, grammarData, errs)
+	errs := errs.New()
+	syntax := parser.Parse(grammarFile, grammarData, errs)
 	if errs.HasErrors() {
+		errs.Dump(os.Stderr)
+		return fmt.Errorf("errors ocurred")
+	}
+	analysis.Analyze(syntax, errs)
+	if errs.HasErrors() {
+		errs.Dump(os.Stderr)
 		return fmt.Errorf("errors ocurred")
 	}
 	return nil

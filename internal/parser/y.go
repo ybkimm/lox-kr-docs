@@ -24,16 +24,17 @@ type yySymType struct {
 	prod interface{}
 }
 
-const EOF = 57346
-const LEXERR = 57347
-const ID = 57348
-const LITERAL = 57349
+const LEXERR = 57346
+const ID = 57347
+const LITERAL = 57348
+const kLEXER = 57349
+const kPARSER = 57350
+const kCUSTOM = 57351
 
 var yyToknames = [...]string{
 	"$end",
 	"error",
 	"$unk",
-	"EOF",
 	"LEXERR",
 	"ID",
 	"LITERAL",
@@ -44,6 +45,9 @@ var yyToknames = [...]string{
 	"'+'",
 	"'?'",
 	"'#'",
+	"kLEXER",
+	"kPARSER",
+	"kCUSTOM",
 }
 
 var yyStatenames = [...]string{}
@@ -61,71 +65,71 @@ var yyExca = [...]int8{
 
 const yyPrivate = 57344
 
-const yyLast = 32
+const yyLast = 35
 
 var yyAct = [...]int8{
-	12, 16, 17, 26, 27, 28, 10, 14, 30, 23,
-	18, 19, 16, 17, 7, 8, 1, 5, 20, 22,
-	29, 21, 9, 24, 25, 15, 13, 11, 6, 3,
-	4, 2,
+	15, 17, 19, 20, 6, 29, 30, 31, 21, 22,
+	26, 10, 19, 20, 33, 13, 11, 1, 24, 23,
+	4, 12, 25, 32, 7, 27, 28, 18, 16, 14,
+	8, 9, 5, 3, 2,
 }
 
 var yyPact = [...]int16{
-	8, -1000, 11, -1000, 8, -1000, -1000, -2, -1000, -1000,
-	6, 1, -1000, -5, -1000, -8, -1000, -1000, -1000, 6,
-	-1000, -1000, -1000, 2, -1000, -1000, -1000, -1000, -1000, -1000,
-	-1000,
+	-11, -1000, -1000, -11, -1000, -1000, 11, -1000, -1000, 11,
+	-1000, 8, -1000, 7, 0, -1000, -3, -1000, -5, -1000,
+	-1000, -1000, 7, -1000, -1000, -1000, 9, -1000, -1000, -1000,
+	-1000, -1000, -1000, -1000,
 }
 
 var yyPgo = [...]int8{
-	0, 31, 30, 29, 17, 28, 27, 0, 26, 7,
-	25, 24, 23, 19, 18, 16,
+	0, 34, 33, 20, 32, 31, 30, 11, 29, 0,
+	28, 1, 27, 26, 25, 22, 19, 17,
 }
 
 var yyR1 = [...]int8{
-	0, 15, 1, 2, 2, 3, 3, 4, 5, 6,
-	6, 7, 8, 8, 9, 10, 10, 11, 11, 11,
-	12, 12, 13, 14, 14,
+	0, 17, 1, 2, 2, 3, 4, 5, 5, 6,
+	6, 7, 8, 8, 9, 10, 10, 11, 12, 12,
+	13, 13, 13, 14, 14, 15, 16, 16,
 }
 
 var yyR2 = [...]int8{
-	0, 2, 1, 2, 1, 1, 0, 1, 4, 3,
-	1, 2, 2, 1, 2, 1, 1, 1, 1, 1,
-	1, 0, 2, 1, 0,
+	0, 1, 1, 2, 1, 1, 2, 2, 1, 1,
+	0, 4, 3, 1, 2, 2, 1, 2, 1, 1,
+	1, 1, 1, 1, 0, 2, 1, 0,
 }
 
 var yyChk = [...]int16{
-	-1000, -15, -1, -3, -2, -4, -5, 6, 4, -4,
-	8, -6, -7, -8, -9, -10, 6, 7, 9, 10,
-	-14, -9, -13, 14, -12, -11, 11, 12, 13, -7,
-	6,
+	-1000, -17, -1, -2, -3, -4, 15, -3, -6, -5,
+	-7, 5, -7, 7, -8, -9, -10, -11, -12, 5,
+	6, 8, 9, -16, -11, -15, 13, -14, -13, 10,
+	11, 12, -9, 5,
 }
 
 var yyDef = [...]int8{
-	6, -2, 0, 2, 5, 4, 7, 0, 1, 3,
-	0, 0, 10, 24, 13, 21, 15, 16, 8, 0,
-	11, 12, 23, 0, 14, 20, 17, 18, 19, 9,
-	22,
+	0, -2, 1, 2, 4, 5, 10, 3, 6, 9,
+	8, 0, 7, 0, 0, 13, 27, 16, 24, 18,
+	19, 11, 0, 14, 15, 26, 0, 17, 23, 20,
+	21, 22, 12, 25,
 }
 
 var yyTok1 = [...]int8{
 	1, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 14, 3, 3, 3, 3,
-	3, 3, 11, 12, 3, 3, 9, 3, 3, 3,
+	3, 3, 3, 3, 3, 13, 3, 3, 3, 3,
+	3, 3, 10, 11, 3, 3, 8, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 8, 3, 13, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 7, 3, 12, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 10,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 9,
 }
 
 var yyTok2 = [...]int8{
-	2, 3, 4, 5, 6, 7,
+	2, 3, 4, 5, 6, 14, 15, 16,
 }
 
 var yyTok3 = [...]int8{
@@ -469,145 +473,163 @@ yydefault:
 	// dummy call; replaced with literal code
 	switch yynt {
 
-	case 2:
+	case 1:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser.y:48
 		{
-			yyVAL.prod = &grammar.Syntax{
-				Decls: cast[[]grammar.Decl](yyDollar[1].prod),
-			}
+			yylex.(*lex).Spec = cast[*grammar.Spec](yyDollar[1].prod)
 		}
 	case 3:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser.y:56
+//line parser.y:52
 		{
-			yyVAL.prod = append(
-				cast[[]grammar.Decl](yyDollar[1].prod),
-				cast[grammar.Decl](yyDollar[2].prod),
-			)
+			yyVAL.prod = cast[*grammar.Spec](yyDollar[1].prod).AddSection(yyDollar[2].prod)
 		}
 	case 4:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:63
+//line parser.y:53
 		{
-			yyVAL.prod = []grammar.Decl{
-				cast[grammar.Decl](yyDollar[1].prod),
-			}
+			yyVAL.prod = new(grammar.Spec).AddSection(yyDollar[1].prod)
 		}
 	case 6:
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line parser.y:59
+		{
+			yyVAL.prod = &grammar.Parser{
+				Rules: cast[[]*grammar.Rule](yyDollar[2].prod),
+			}
+		}
+	case 7:
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line parser.y:67
+		{
+			yyVAL.prod = append(
+				cast[[]*grammar.Rule](yyDollar[1].prod),
+				cast[*grammar.Rule](yyDollar[2].prod),
+			)
+		}
+	case 8:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser.y:74
+		{
+			yyVAL.prod = []*grammar.Rule{
+				cast[*grammar.Rule](yyDollar[1].prod),
+			}
+		}
+	case 10:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line parser.y:71
+//line parser.y:82
 		{
 			yyVAL.prod = nil
 		}
-	case 8:
+	case 11:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line parser.y:77
+//line parser.y:86
 		{
 			yyVAL.prod = &grammar.Rule{
 				Name:  yyDollar[1].tok.Str,
 				Prods: cast[[]*grammar.Prod](yyDollar[3].prod),
 			}
 		}
-	case 9:
+	case 12:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line parser.y:86
+//line parser.y:95
 		{
 			yyVAL.prod = append(
 				cast[[]*grammar.Prod](yyDollar[1].prod),
-				cast[*grammar.Prod](yyDollar[2].tok),
+				cast[*grammar.Prod](yyDollar[3].prod),
 			)
 		}
-	case 10:
+	case 13:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:93
+//line parser.y:102
 		{
 			yyVAL.prod = []*grammar.Prod{
 				cast[*grammar.Prod](yyDollar[1].prod),
 			}
 		}
-	case 11:
+	case 14:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser.y:101
+//line parser.y:110
 		{
 			yyVAL.prod = &grammar.Prod{
 				Terms: cast[[]*grammar.Term](yyDollar[1].prod),
 				Label: cast[*grammar.Label](yyDollar[2].prod),
 			}
 		}
-	case 12:
+	case 15:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser.y:110
+//line parser.y:119
 		{
 			yyVAL.prod = append(
 				cast[[]*grammar.Term](yyDollar[1].prod),
 				cast[*grammar.Term](yyDollar[2].prod),
 			)
 		}
-	case 13:
+	case 16:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:117
+//line parser.y:126
 		{
 			yyVAL.prod = []*grammar.Term{
 				cast[*grammar.Term](yyDollar[1].prod),
 			}
 		}
-	case 14:
+	case 17:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser.y:125
+//line parser.y:134
 		{
 			term := cast[*grammar.Term](yyDollar[1].prod)
 			qualifier := cast[grammar.Qualifier](yyDollar[2].prod)
 			term.Qualifier = qualifier
 			yyVAL.prod = term
 		}
-	case 15:
+	case 18:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:133
+//line parser.y:142
 		{
 			yyVAL.prod = &grammar.Term{Name: yyDollar[1].tok.Str}
 		}
-	case 16:
+	case 19:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:134
+//line parser.y:143
 		{
 			yyVAL.prod = &grammar.Term{Literal: yyDollar[1].tok.Str}
 		}
-	case 17:
+	case 20:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:137
+//line parser.y:146
 		{
 			yyVAL.prod = grammar.ZeroOrMore
 		}
-	case 18:
+	case 21:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:138
+//line parser.y:147
 		{
 			yyVAL.prod = grammar.OneOrMore
 		}
-	case 19:
+	case 22:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:139
+//line parser.y:148
 		{
 			yyVAL.prod = grammar.ZeroOrOne
 		}
-	case 21:
+	case 24:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line parser.y:143
+//line parser.y:152
 		{
 			yyVAL.prod = grammar.NoQualifier
 		}
-	case 22:
+	case 25:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser.y:147
+//line parser.y:156
 		{
 			yyVAL.prod = &grammar.Label{
 				Label: yyDollar[2].tok.Str,
 			}
 		}
-	case 24:
+	case 27:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line parser.y:155
+//line parser.y:164
 		{
 			yyVAL.prod = nil
 		}

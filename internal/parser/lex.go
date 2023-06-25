@@ -3,41 +3,48 @@ package parser
 import (
 	"bytes"
 
-	"github.com/dcaiafa/lox/internal/errlogger"
-	"github.com/dcaiafa/lox/internal/fileloc"
+	"github.com/dcaiafa/lox/internal/errs"
 	"github.com/dcaiafa/lox/internal/grammar"
+	"github.com/dcaiafa/lox/internal/loc"
 	"github.com/dcaiafa/lox/internal/token"
 )
 
-var keywords = map[string]int{}
+var keywords = map[string]int{
+	"@lexer":  kLEXER,
+	"@parser": kPARSER,
+	"@custom": kCUSTOM,
+}
 
 type lex struct {
-	Syntax *grammar.Syntax
+	Spec *grammar.Spec
 
+	char    rune
 	input   *bytes.Reader
-	errs    *errlogger.ErrLogger
-	pos     fileloc.FileLoc
-	lastPos fileloc.FileLoc
+	errs    *errs.Errs
+	pos     loc.Loc
+	lastPos loc.Loc
 	buf     bytes.Buffer
 }
 
-func newLex(filename string, input []byte, errs *errlogger.ErrLogger) *lex {
-	return &lex{
+func newLex(filename string, input []byte, errs *errs.Errs) *lex {
+	l := &lex{
 		input: bytes.NewReader(input),
 		errs:  errs,
-		pos: fileloc.FileLoc{
+		pos: loc.Loc{
 			Filename: filename,
 			Line:     1,
 			Column:   1,
 		},
 	}
+	l.advance()
+	return l
 }
 
 func (l *lex) Lex(lval *yySymType) int {
 	return l.scan(lval)
 }
 
-func (l *lex) scan(lval *yySymType) int {
+func (l *lex) scan(lval *yySymType) (tok int) {
 	defer func() {
 		if lval.tok.Pos.Line != 0 {
 			l.lastPos = lval.tok.Pos
@@ -47,14 +54,16 @@ func (l *lex) scan(lval *yySymType) int {
 	lval.tok = token.Token{}
 
 	for {
-		r := l.read()
+		r := l.peek()
 		if r == 0 {
-			return EOF
+			return 0
 		}
 		if isSpace(r) {
+			l.advance()
 			continue
 		}
 		if r == '\n' {
+			l.advance()
 			continue
 		}
 
@@ -62,13 +71,14 @@ func (l *lex) scan(lval *yySymType) int {
 
 		switch r {
 		case '\'':
-			l.unread()
 			return l.scanSingleQuotedString(lval)
+		case '@':
+			return l.scanKeyword(lval)
 		case '=', '.', '|', '*', '+', '?', '#':
+			l.advance()
 			return int(r)
 		default:
 			if isLetter(r) || r == '_' {
-				l.unread()
 				tok := l.scanIdentifier(lval)
 				return tok
 			} else {
@@ -81,42 +91,71 @@ func (l *lex) scan(lval *yySymType) int {
 func (l *lex) scanIdentifier(lval *yySymType) int {
 	l.buf.Reset()
 
-	r := l.read()
+	r := l.peek()
 	if !isLetter(r) && r != '_' {
 		return LEXERR
 	}
+	l.advance()
 	l.buf.WriteRune(r)
 
 	for {
-		r := l.read()
+		r := l.peek()
 		if !isLetter(r) && !isNumber(r) && r != '_' {
-			l.unread()
 			break
 		}
+		l.advance()
 		l.buf.WriteRune(r)
 	}
 
 	lval.tok.Str = l.buf.String()
-
-	keyword, ok := keywords[lval.tok.Str]
-	if ok {
-		lval.tok.Type = token.Keyword
-		return keyword
-	}
-
 	lval.tok.Type = token.ID
 	return ID
+}
+
+func (l *lex) scanKeyword(lval *yySymType) int {
+	l.buf.Reset()
+
+	r := l.peek()
+	if l.peek() != '@' {
+		return LEXERR
+	}
+	l.advance()
+	l.buf.WriteRune(r)
+
+	for {
+		r := l.peek()
+		if !isLetter(r) {
+			break
+		}
+		l.advance()
+		l.buf.WriteRune(r)
+	}
+
+	lval.tok.Type = token.Keyword
+	lval.tok.Str = l.buf.String()
+
+	keyword, ok := keywords[lval.tok.Str]
+	if !ok {
+		return LEXERR
+	}
+
+	return keyword
 }
 
 func (l *lex) scanSingleQuotedString(lval *yySymType) int {
 	l.buf.Reset()
 
-	if l.read() != '\'' {
+	if l.peek() != '\'' {
 		return LEXERR
 	}
+	l.advance()
 
 	for {
-		r := l.read()
+		r := l.peek()
+		if r == 0 {
+			return LEXERR
+		}
+		l.advance()
 		if r == '\'' {
 			break
 		}
@@ -128,23 +167,23 @@ func (l *lex) scanSingleQuotedString(lval *yySymType) int {
 	return LITERAL
 }
 
-func (l *lex) read() rune {
-	r, _, err := l.input.ReadRune()
-	if err != nil {
-		return 0
-	}
-	if r == '\n' {
-		l.pos.Column = 0
-		l.pos.Line++
-	} else {
-		l.pos.Column++
-	}
-	return r
+func (l *lex) peek() rune {
+	return l.char
 }
 
-func (l *lex) unread() {
-	l.input.UnreadRune()
-	l.pos.Column--
+func (l *lex) advance() {
+	if l.char == '\n' {
+		l.pos.Column = 1
+		l.pos.Line++
+	} else if l.char != 0 {
+		l.pos.Column++
+	}
+	r, _, err := l.input.ReadRune()
+	if err != nil {
+		l.char = 0
+		return
+	}
+	l.char = r
 }
 
 func (l *lex) Error(s string) {

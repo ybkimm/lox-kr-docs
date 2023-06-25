@@ -18,15 +18,18 @@ func cast[T any](v any) T {
   prod interface{}
 }
 
-%token<tok> EOF LEXERR
+%token<tok> LEXERR
 
 %token<tok> ID LITERAL
 %token<tok> '=' '.' '|' '*' '+' '?' '#'
+%token<tok> kLEXER kPARSER kCUSTOM
 
-%type<prod> syntax
-%type<prod> decls
-%type<prod> decls_opt
-%type<prod> decl
+%type<prod> spec
+%type<prod> sections
+%type<prod> section
+%type<prod> parser
+%type<prod> rules
+%type<prod> rules_opt
 %type<prod> rule
 %type<prod> productions
 %type<prod> production
@@ -42,36 +45,42 @@ func cast[T any](v any) T {
 
 %%
 
-S: syntax EOF;
+S: spec  { yylex.(*lex).Spec = cast[*grammar.Spec]($1) };
 
-syntax: decls_opt
+spec: sections;
+
+sections: sections section  { $$ = cast[*grammar.Spec]($1).AddSection($2) }
+        | section           { $$ = new(grammar.Spec).AddSection($1) }
+        ;
+
+section: parser;
+
+parser: kPARSER rules_opt
         {
-          $$ = &grammar.Syntax{
-            Decls: cast[[]grammar.Decl]($1),
+          $$ = &grammar.Parser{
+            Rules: cast[[]*grammar.Rule]($2),
           }
         }
       ;
 
-decls: decls decl
+rules: rules rule
        {
          $$ = append(
-           cast[[]grammar.Decl]($1),
-           cast[grammar.Decl]($2),
+           cast[[]*grammar.Rule]($1),
+           cast[*grammar.Rule]($2),
          )
        }
-     | decl
+     | rule
        {
-         $$ = []grammar.Decl{
-           cast[grammar.Decl]($1),
+         $$ = []*grammar.Rule{
+           cast[*grammar.Rule]($1),
          }
        }
      ;
 
-decls_opt: decls
-         | { $$ =nil }
+rules_opt: rules
+         | { $$ = nil }
          ;
-
-decl: rule;
 
 rule: ID '=' productions '.'
       {
@@ -86,7 +95,7 @@ productions: productions '|' production
              {
                $$ = append(
                  cast[[]*grammar.Prod]($1), 
-                 cast[*grammar.Prod]($2),
+                 cast[*grammar.Prod]($3),
                )
              }
            | production

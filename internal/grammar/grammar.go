@@ -16,11 +16,28 @@ const (
 
 type Decl interface {
 	DeclName() string
-	Print(w io.Writer)
 }
 
-type Syntax struct {
-	Decls []Decl
+type Spec struct {
+	Parser *Parser
+}
+
+func (s *Spec) AddSection(section any) *Spec {
+	switch section := section.(type) {
+	case *Parser:
+		if s.Parser == nil {
+			s.Parser = section
+		} else {
+			s.Parser.Rules = append(s.Parser.Rules, section.Rules...)
+		}
+	default:
+		panic("not reached")
+	}
+	return s
+}
+
+type Parser struct {
+	Rules []*Rule
 }
 
 type Rule struct {
