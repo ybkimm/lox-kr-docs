@@ -24,8 +24,9 @@ func cast[T any](v any) T {
 %token<tok> '=' '.' '|' '*' '+' '?' '#'
 
 %type<prod> syntax
-%type<prod> rules
-%type<prod> rules_opt
+%type<prod> decls
+%type<prod> decls_opt
+%type<prod> decl
 %type<prod> rule
 %type<prod> productions
 %type<prod> production
@@ -43,38 +44,40 @@ func cast[T any](v any) T {
 
 S: syntax EOF;
 
-syntax: rules_opt
+syntax: decls_opt
         {
           $$ = &grammar.Syntax{
-            Rules: cast[[]*grammar.Rule]($1),
+            Decls: cast[[]grammar.Decl]($1),
           }
         }
       ;
 
-rules: rules rule
+decls: decls decl
        {
          $$ = append(
-           cast[[]*grammar.Rule]($1),
-           cast[*grammar.Rule]($2),
+           cast[[]grammar.Decl]($1),
+           cast[grammar.Decl]($2),
          )
        }
-     | rule
+     | decl
        {
-         $$ = []*grammar.Rule{
-           cast[*grammar.Rule]($1),
+         $$ = []grammar.Decl{
+           cast[grammar.Decl]($1),
          }
        }
      ;
 
-rules_opt: rules
+decls_opt: decls
          | { $$ =nil }
          ;
+
+decl: rule;
 
 rule: ID '=' productions '.'
       {
         $$ = &grammar.Rule{
           Name: $1.Str,
-          Productions: cast[[]*grammar.Production]($3),
+          Prods: cast[[]*grammar.Prod]($3),
         }
       }
     ;
@@ -82,21 +85,21 @@ rule: ID '=' productions '.'
 productions: productions '|' production
              {
                $$ = append(
-                 cast[[]*grammar.Production]($1), 
-                 cast[*grammar.Production]($2),
+                 cast[[]*grammar.Prod]($1), 
+                 cast[*grammar.Prod]($2),
                )
              }
            | production
              {
-               $$ = []*grammar.Production{
-                 cast[*grammar.Production]($1),
+               $$ = []*grammar.Prod{
+                 cast[*grammar.Prod]($1),
                }
              }
            ;
 
 production: qterms label_opt
             {
-              $$ = &grammar.Production{
+              $$ = &grammar.Prod{
                 Terms: cast[[]*grammar.Term]($1),
                 Label: cast[*grammar.Label]($2),
               } 

@@ -1,49 +1,126 @@
 package analysis
 
 import (
+	"fmt"
+
 	"github.com/dcaiafa/lox/internal/errlogger"
 	"github.com/dcaiafa/lox/internal/grammar"
 )
 
 type analyzer struct {
-	errs   *errlogger.ErrLogger
 	syntax *grammar.Syntax
-	prods  map[string]*grammar.Production
+	errs   *errlogger.ErrLogger
+	decls  map[string]grammar.Decl
 }
 
 func Analyze(s *grammar.Syntax, errs *errlogger.ErrLogger) {
 	a := &analyzer{
-		errs:   errs,
 		syntax: s,
+		errs:   errs,
+		decls:  make(map[string]grammar.Decl),
 	}
 	a.prepare()
 	if a.errs.HasErrors() {
 		return
 	}
-	a.normalize()
+	a.checkReferences()
 	if a.errs.HasErrors() {
 		return
+	}
+	for a.normalize() {
+		// Run until completely normalized.
 	}
 }
 
 func (a *analyzer) prepare() {
-	a.prods = make(map[string]*grammar.Production, len(a.syntax.Productions))
-	for _, prod := range a.syntax.Productions {
-		if a.prods[prod.Name] != nil {
-			a.errs.Errorf("%q redeclared", prod.Name)
+	for _, decl := range a.syntax.Decls {
+		if _, ok := a.decls[decl.DeclName()]; ok {
+			a.errs.Errorf("%q redeclared", decl.DeclName())
 		}
-		a.prods[prod.Name] = prod
+		a.decls[decl.DeclName()] = decl
 	}
 	if a.errs.HasErrors() {
 		return
 	}
 }
 
-func (a *analyzer) normalize() bool {
-	for _, prod := range a.prods {
-		for _, term := range prod.Terms {
-			for _, factor := range term.Factors {
+func (a *analyzer) checkReferences() {
+	for _, decl := range a.syntax.Decls {
+		rule, ok := decl.(*grammar.Rule)
+		if !ok {
+			continue
+		}
+		for _, prod := range rule.Prods {
+			for _, term := range prod.Terms {
+				decl := a.decls[term.Name]
+				if decl == nil {
+					a.errs.Errorf("undefined: %v", term.Name)
+				}
 			}
 		}
 	}
+}
+
+func (a *analyzer) normalize() bool {
+	changed := false
+	for _, decl := range a.syntax.Decls {
+		rule, ok := decl.(*grammar.Rule)
+		if !ok {
+			continue
+		}
+
+		for _, prod := range rule.Prods {
+			for _, term := range prod.Terms {
+				switch term.Qualifier {
+				case grammar.NoQualifier:
+				case grammar.ZeroOrMore:
+					// a = b c*
+					//  =>
+					// a = b a_0
+					// a_0 = c+ | e
+					srule := a.synthesizeRule(rule.Name)
+					srule.Prods = []*grammar.Prod{
+						{Terms: []*grammar.Term{{Name: term.Name, Qualifier: grammar.OneOrMore}}},
+						{Terms: []*grammar.Term{}},
+					}
+					changed = true
+				case grammar.OneOrMore:
+					// a = b c+
+					//  =>
+					// a = b a_0
+					// a_0 = a_0 c
+					//     | c
+					srule := a.synthesizeRule(rule.Name)
+					srule.Prods = []*grammar.Prod{
+						{Terms: []*grammar.Term{{Name: srule.Name}, {Name: term.Name}}},
+						{Terms: []*grammar.Term{{Name: term.Name}}},
+					}
+					changed = true
+				case grammar.ZeroOrOne:
+					// a = b c?
+					//  =>
+					// a = b a_0
+					// a_0 = c | e
+					srule := a.synthesizeRule(rule.Name)
+					srule.Prods = []*grammar.Prod{
+						{Terms: []*grammar.Term{{Name: term.Name}}},
+						{Terms: []*grammar.Term{}},
+					}
+					changed = true
+				default:
+					panic("not reached")
+				}
+			}
+		}
+	}
+	return changed
+}
+
+func (a *analyzer) synthesizeRule(namePrefix string) *grammar.Rule {
+	r := &grammar.Rule{
+		Name: fmt.Sprintf("%s__%d", namePrefix, len(a.decls)),
+	}
+	a.decls[r.Name] = r
+	a.syntax.Decls = append(a.syntax.Decls, r)
+	return r
 }

@@ -9,16 +9,22 @@ const (
 	ZeroOrOne             // ?
 )
 
+type Decl interface {
+	DeclName() string
+}
+
 type Syntax struct {
-	Rules []*Rule
+	Decls []Decl
 }
 
 type Rule struct {
-	Name        string
-	Productions []*Production
+	Name  string
+	Prods []*Prod
 }
 
-type Production struct {
+func (r *Rule) DeclName() string { return r.Name }
+
+type Prod struct {
 	Terms []*Term
 	Label *Label
 }
@@ -31,4 +37,8 @@ type Term struct {
 
 type Label struct {
 	Label string
+}
+
+type Token struct {
+	Name string
 }
