@@ -1,4 +1,4 @@
-package analysis
+package parsergen
 
 import (
 	"github.com/dcaiafa/lox/internal/errs"
@@ -6,7 +6,7 @@ import (
 	"github.com/dcaiafa/lox/internal/loc"
 )
 
-type analyzer struct {
+type parserGen struct {
 	syntax *grammar.Spec
 	errs   *errs.Errs
 	decls  map[string]grammar.Decl

@@ -94,3 +94,7 @@ type Label struct {
 type Token struct {
 	Name string
 }
+
+type Lexer struct {
+	Rules []*TokenRule
+}
