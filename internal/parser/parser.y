@@ -2,13 +2,43 @@
 package parser
 
 import (
+  "reflect"
+
   "github.com/dcaiafa/lox/internal/token"
-  "github.com/dcaiafa/lox/internal/grammar"
+  "github.com/dcaiafa/lox/internal/ast"
 )
 
+func isNil(i interface{}) bool {
+   if i == nil {
+      return true
+   }
+   switch reflect.TypeOf(i).Kind() {
+   case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
+    //use of IsNil method
+    return reflect.ValueOf(i).IsNil()
+   }
+   return false
+}
+
 func cast[T any](v any) T {
-	cv, _ := v.(T)
-	return cv
+  if isNil(v) {
+    var zero T
+    return zero
+  }
+	return v.(T)
+}
+
+func listAppend[T any](xs any, x any) []T {
+  return append(
+    cast[[]T](xs),
+    cast[T](x),
+  )
+}
+
+func listOne[T any](x any) []T {
+  return []T{
+    cast[T](x),
+  }
 }
 
 %}
@@ -28,8 +58,9 @@ func cast[T any](v any) T {
 %type<prod> sections
 %type<prod> section
 %type<prod> parser
-%type<prod> rules
-%type<prod> rules_opt
+%type<prod> parser_decls
+%type<prod> parser_decls_opt
+%type<prod> parser_decl
 %type<prod> rule
 %type<prod> productions
 %type<prod> production
@@ -40,53 +71,75 @@ func cast[T any](v any) T {
 %type<prod> qualifier_opt
 %type<prod> label
 %type<prod> label_opt
+%type<prod> lexer
+%type<prod> lexer_decls
+%type<prod> lexer_decls_opt
+%type<prod> lexer_decl
+%type<prod> custom_token_decl
+%type<prod> custom_tokens
+%type<prod> custom_token
 
 %start S
 
 %%
 
-S: spec  { yylex.(*lex).Spec = cast[*grammar.Spec]($1) };
+S: spec  { yylex.(*lex).Spec = cast[*ast.Spec]($1) };
 
-spec: sections;
+spec: sections
+      {
+        $$ = &ast.Spec{
+          Sections: cast[[]ast.Section]($1),
+        }
+      }
+    ;
 
-sections: sections section  { $$ = cast[*grammar.Spec]($1).AddSection($2) }
-        | section           { $$ = new(grammar.Spec).AddSection($1) }
+sections: sections section  
+          { 
+            $$ = append(
+              cast[[]ast.Section]($1),
+              cast[ast.Section]($2),
+            )
+          }
+        | section
+          {
+            $$ = []ast.Section{
+              cast[ast.Section]($1),
+            }
+          }
         ;
 
-section: parser;
+section: parser | lexer;
 
-parser: kPARSER rules_opt
+parser: kPARSER parser_decls_opt
         {
-          $$ = &grammar.Parser{
-            Rules: cast[[]*grammar.Rule]($2),
+          $$ = &ast.Parser{
+            Decls: cast[[]ast.ParserDecl]($2),
           }
         }
       ;
 
-rules: rules rule
+parser_decls: parser_decls parser_decl
        {
-         $$ = append(
-           cast[[]*grammar.Rule]($1),
-           cast[*grammar.Rule]($2),
-         )
+         $$ = listAppend[ast.ParserDecl]($1, $2)
        }
-     | rule
+     | parser_decl
        {
-         $$ = []*grammar.Rule{
-           cast[*grammar.Rule]($1),
-         }
+         $$ = listOne[ast.ParserDecl]($1)
        }
      ;
 
-rules_opt: rules
+parser_decls_opt: parser_decls
          | { $$ = nil }
          ;
 
+parser_decl: rule
+           ;
+
 rule: ID '=' productions '.'
       {
-        $$ = &grammar.Rule{
+        $$ = &ast.Rule{
           Name: $1.Str,
-          Prods: cast[[]*grammar.Prod]($3),
+          Prods: cast[[]*ast.Prod]($3),
         }
       }
     ;
@@ -94,23 +147,23 @@ rule: ID '=' productions '.'
 productions: productions '|' production
              {
                $$ = append(
-                 cast[[]*grammar.Prod]($1), 
-                 cast[*grammar.Prod]($3),
+                 cast[[]*ast.Prod]($1), 
+                 cast[*ast.Prod]($3),
                )
              }
            | production
              {
-               $$ = []*grammar.Prod{
-                 cast[*grammar.Prod]($1),
+               $$ = []*ast.Prod{
+                 cast[*ast.Prod]($1),
                }
              }
            ;
 
 production: qterms label_opt
             {
-              $$ = &grammar.Prod{
-                Terms: cast[[]*grammar.Term]($1),
-                Label: cast[*grammar.Label]($2),
+              $$ = &ast.Prod{
+                Terms: cast[[]*ast.Term]($1),
+                Label: cast[*ast.Label]($2),
               } 
             }
           ;
@@ -118,43 +171,43 @@ production: qterms label_opt
 qterms: qterms qterm
         {
           $$ = append(
-            cast[[]*grammar.Term]($1),
-            cast[*grammar.Term]($2),
+            cast[[]*ast.Term]($1),
+            cast[*ast.Term]($2),
           )
         }
       | qterm
         {
-          $$ = []*grammar.Term{
-            cast[*grammar.Term]($1),
+          $$ = []*ast.Term{
+            cast[*ast.Term]($1),
           }
         }
       ;
 
 qterm: term qualifier_opt
        {
-         term := cast[*grammar.Term]($1)
-         qualifier := cast[grammar.Qualifier]($2)
+         term := cast[*ast.Term]($1)
+         qualifier := cast[ast.Qualifier]($2)
          term.Qualifier = qualifier
          $$ = term
        }
      ;
 
-term: ID       { $$ = &grammar.Term{ Name: $1.Str } }
-    | LITERAL  { $$ = &grammar.Term{ Literal: $1.Str} }
+term: ID       { $$ = &ast.Term{ Name: $1.Str } }
+    | LITERAL  { $$ = &ast.Term{ Literal: $1.Str} }
     ;
 
-qualifier: '*'  { $$ = grammar.ZeroOrMore }
-         | '+'  { $$ = grammar.OneOrMore }
-         | '?'  { $$ = grammar.ZeroOrOne }
+qualifier: '*'  { $$ = ast.ZeroOrMore }
+         | '+'  { $$ = ast.OneOrMore }
+         | '?'  { $$ = ast.ZeroOrOne }
          ;
 
 qualifier_opt: qualifier
-             | { $$ = grammar.NoQualifier }
+             | { $$ = ast.NoQualifier }
              ;
 
 label: '#' ID 
        {
-         $$ = &grammar.Label{
+         $$ = &ast.Label{
            Label: $2.Str,
          }
        }
@@ -163,3 +216,47 @@ label: '#' ID
 label_opt: label
          | { $$ = nil }
          ;
+
+lexer: kLEXER lexer_decls_opt
+       {
+         $$ = &ast.Lexer{
+           Decls: cast[[]ast.LexerDecl]($2),
+         }
+       }
+       ;
+
+lexer_decls: lexer_decls lexer_decl
+             { $$ = listAppend[ast.LexerDecl]($1, $2) }
+           | lexer_decl
+             { $$ = listOne[ast.LexerDecl]($1) }
+           ;
+
+lexer_decls_opt: lexer_decls
+               | /* empty */
+                 { $$ = nil }
+               ;
+
+lexer_decl: custom_token_decl
+          ;
+
+custom_token_decl: kCUSTOM custom_tokens
+                   {
+                     $$ = &ast.CustomTokenDecl{
+                       CustomTokens: cast[[]*ast.CustomToken]($2),
+                     }
+                   }
+                 ;
+
+custom_tokens: custom_tokens custom_token
+               {
+                 $$ = listAppend[*ast.CustomToken]($1, $2)
+               }
+             | custom_token
+               {
+                 $$ = listOne[*ast.CustomToken]($1)
+               }
+             ;
+
+custom_token: ID      { $$ = &ast.CustomToken{Name: $1.Str} }
+            | LITERAL { $$ = &ast.CustomToken{Literal: $1.Str} }
+              

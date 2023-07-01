@@ -8,16 +8,46 @@ import __yyfmt__ "fmt"
 //line parser.y:2
 
 import (
-	"github.com/dcaiafa/lox/internal/grammar"
+	"reflect"
+
+	"github.com/dcaiafa/lox/internal/ast"
 	"github.com/dcaiafa/lox/internal/token"
 )
 
-func cast[T any](v any) T {
-	cv, _ := v.(T)
-	return cv
+func isNil(i interface{}) bool {
+	if i == nil {
+		return true
+	}
+	switch reflect.TypeOf(i).Kind() {
+	case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
+		//use of IsNil method
+		return reflect.ValueOf(i).IsNil()
+	}
+	return false
 }
 
-//line parser.y:16
+func cast[T any](v any) T {
+	if isNil(v) {
+		var zero T
+		return zero
+	}
+	return v.(T)
+}
+
+func listAppend[T any](xs any, x any) []T {
+	return append(
+		cast[[]T](xs),
+		cast[T](x),
+	)
+}
+
+func listOne[T any](x any) []T {
+	return []T{
+		cast[T](x),
+	}
+}
+
+//line parser.y:46
 type yySymType struct {
 	yys  int
 	tok  token.Token
@@ -65,51 +95,60 @@ var yyExca = [...]int8{
 
 const yyPrivate = 57344
 
-const yyLast = 35
+const yyLast = 49
 
 var yyAct = [...]int8{
-	15, 17, 19, 20, 6, 29, 30, 31, 21, 22,
-	26, 10, 19, 20, 33, 13, 11, 1, 24, 23,
-	4, 12, 25, 32, 7, 27, 28, 18, 16, 14,
-	8, 9, 5, 3, 2,
+	28, 30, 24, 17, 19, 8, 7, 32, 33, 43,
+	44, 45, 12, 35, 36, 40, 32, 33, 25, 26,
+	22, 21, 47, 14, 20, 4, 34, 1, 23, 9,
+	18, 38, 15, 16, 6, 37, 39, 46, 41, 42,
+	31, 29, 27, 13, 10, 11, 5, 3, 2,
 }
 
 var yyPact = [...]int16{
-	-11, -1000, -1000, -11, -1000, -1000, 11, -1000, -1000, 11,
-	-1000, 8, -1000, 7, 0, -1000, -3, -1000, -5, -1000,
-	-1000, -1000, 7, -1000, -1000, -1000, 9, -1000, -1000, -1000,
-	-1000, -1000, -1000, -1000,
+	-9, -1000, -1000, -9, -1000, -1000, -1000, 18, -12, -1000,
+	-1000, 18, -1000, -1000, 14, -1000, -12, -1000, -1000, 13,
+	-1000, 11, -1000, 13, -1000, -1000, -1000, 5, -1000, 2,
+	-1000, -1, -1000, -1000, -1000, -1000, 11, -1000, -1000, -1000,
+	17, -1000, -1000, -1000, -1000, -1000, -1000, -1000,
 }
 
 var yyPgo = [...]int8{
-	0, 34, 33, 20, 32, 31, 30, 11, 29, 0,
-	28, 1, 27, 26, 25, 22, 19, 17,
+	0, 48, 47, 25, 46, 45, 44, 12, 43, 42,
+	0, 41, 1, 40, 39, 38, 36, 35, 34, 33,
+	32, 3, 30, 28, 2, 27,
 }
 
 var yyR1 = [...]int8{
-	0, 17, 1, 2, 2, 3, 4, 5, 5, 6,
-	6, 7, 8, 8, 9, 10, 10, 11, 12, 12,
-	13, 13, 13, 14, 14, 15, 16, 16,
+	0, 25, 1, 2, 2, 3, 3, 4, 5, 5,
+	6, 6, 7, 8, 9, 9, 10, 11, 11, 12,
+	13, 13, 14, 14, 14, 15, 15, 16, 17, 17,
+	18, 19, 19, 20, 20, 21, 22, 23, 23, 24,
+	24,
 }
 
 var yyR2 = [...]int8{
-	0, 1, 1, 2, 1, 1, 2, 2, 1, 1,
-	0, 4, 3, 1, 2, 2, 1, 2, 1, 1,
-	1, 1, 1, 1, 0, 2, 1, 0,
+	0, 1, 1, 2, 1, 1, 1, 2, 2, 1,
+	1, 0, 1, 4, 3, 1, 2, 2, 1, 2,
+	1, 1, 1, 1, 1, 1, 0, 2, 1, 0,
+	2, 2, 1, 1, 0, 1, 2, 2, 1, 1,
+	1,
 }
 
 var yyChk = [...]int16{
-	-1000, -17, -1, -2, -3, -4, 15, -3, -6, -5,
-	-7, 5, -7, 7, -8, -9, -10, -11, -12, 5,
-	6, 8, 9, -16, -11, -15, 13, -14, -13, 10,
-	11, 12, -9, 5,
+	-1000, -25, -1, -2, -3, -4, -18, 15, 14, -3,
+	-6, -5, -7, -8, 5, -20, -19, -21, -22, 16,
+	-7, 7, -21, -23, -24, 5, 6, -9, -10, -11,
+	-12, -13, 5, 6, -24, 8, 9, -17, -12, -16,
+	13, -15, -14, 10, 11, 12, -10, 5,
 }
 
 var yyDef = [...]int8{
-	0, -2, 1, 2, 4, 5, 10, 3, 6, 9,
-	8, 0, 7, 0, 0, 13, 27, 16, 24, 18,
-	19, 11, 0, 14, 15, 26, 0, 17, 23, 20,
-	21, 22, 12, 25,
+	0, -2, 1, 2, 4, 5, 6, 11, 34, 3,
+	7, 10, 9, 12, 0, 30, 33, 32, 35, 0,
+	8, 0, 31, 36, 38, 39, 40, 0, 15, 29,
+	18, 26, 20, 21, 37, 13, 0, 16, 17, 28,
+	0, 19, 25, 22, 23, 24, 14, 27,
 }
 
 var yyTok1 = [...]int8{
@@ -475,163 +514,229 @@ yydefault:
 
 	case 1:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:48
+//line parser.y:86
 		{
-			yylex.(*lex).Spec = cast[*grammar.Spec](yyDollar[1].prod)
+			yylex.(*lex).Spec = cast[*ast.Spec](yyDollar[1].prod)
+		}
+	case 2:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser.y:89
+		{
+			yyVAL.prod = &ast.Spec{
+				Sections: cast[[]ast.Section](yyDollar[1].prod),
+			}
 		}
 	case 3:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser.y:52
+//line parser.y:97
 		{
-			yyVAL.prod = cast[*grammar.Spec](yyDollar[1].prod).AddSection(yyDollar[2].prod)
+			yyVAL.prod = append(
+				cast[[]ast.Section](yyDollar[1].prod),
+				cast[ast.Section](yyDollar[2].prod),
+			)
 		}
 	case 4:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:53
+//line parser.y:104
 		{
-			yyVAL.prod = new(grammar.Spec).AddSection(yyDollar[1].prod)
-		}
-	case 6:
-		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser.y:59
-		{
-			yyVAL.prod = &grammar.Parser{
-				Rules: cast[[]*grammar.Rule](yyDollar[2].prod),
+			yyVAL.prod = []ast.Section{
+				cast[ast.Section](yyDollar[1].prod),
 			}
 		}
 	case 7:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser.y:67
+//line parser.y:114
 		{
-			yyVAL.prod = append(
-				cast[[]*grammar.Rule](yyDollar[1].prod),
-				cast[*grammar.Rule](yyDollar[2].prod),
-			)
+			yyVAL.prod = &ast.Parser{
+				Decls: cast[[]ast.ParserDecl](yyDollar[2].prod),
+			}
 		}
 	case 8:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:74
-		{
-			yyVAL.prod = []*grammar.Rule{
-				cast[*grammar.Rule](yyDollar[1].prod),
-			}
-		}
-	case 10:
-		yyDollar = yyS[yypt-0 : yypt+1]
-//line parser.y:82
-		{
-			yyVAL.prod = nil
-		}
-	case 11:
-		yyDollar = yyS[yypt-4 : yypt+1]
-//line parser.y:86
-		{
-			yyVAL.prod = &grammar.Rule{
-				Name:  yyDollar[1].tok.Str,
-				Prods: cast[[]*grammar.Prod](yyDollar[3].prod),
-			}
-		}
-	case 12:
-		yyDollar = yyS[yypt-3 : yypt+1]
-//line parser.y:95
-		{
-			yyVAL.prod = append(
-				cast[[]*grammar.Prod](yyDollar[1].prod),
-				cast[*grammar.Prod](yyDollar[3].prod),
-			)
-		}
-	case 13:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:102
-		{
-			yyVAL.prod = []*grammar.Prod{
-				cast[*grammar.Prod](yyDollar[1].prod),
-			}
-		}
-	case 14:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser.y:110
+//line parser.y:122
 		{
-			yyVAL.prod = &grammar.Prod{
-				Terms: cast[[]*grammar.Term](yyDollar[1].prod),
-				Label: cast[*grammar.Label](yyDollar[2].prod),
-			}
+			yyVAL.prod = listAppend[ast.ParserDecl](yyDollar[1].prod, yyDollar[2].prod)
 		}
-	case 15:
-		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser.y:119
-		{
-			yyVAL.prod = append(
-				cast[[]*grammar.Term](yyDollar[1].prod),
-				cast[*grammar.Term](yyDollar[2].prod),
-			)
-		}
-	case 16:
+	case 9:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser.y:126
 		{
-			yyVAL.prod = []*grammar.Term{
-				cast[*grammar.Term](yyDollar[1].prod),
+			yyVAL.prod = listOne[ast.ParserDecl](yyDollar[1].prod)
+		}
+	case 11:
+		yyDollar = yyS[yypt-0 : yypt+1]
+//line parser.y:132
+		{
+			yyVAL.prod = nil
+		}
+	case 13:
+		yyDollar = yyS[yypt-4 : yypt+1]
+//line parser.y:139
+		{
+			yyVAL.prod = &ast.Rule{
+				Name:  yyDollar[1].tok.Str,
+				Prods: cast[[]*ast.Prod](yyDollar[3].prod),
+			}
+		}
+	case 14:
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line parser.y:148
+		{
+			yyVAL.prod = append(
+				cast[[]*ast.Prod](yyDollar[1].prod),
+				cast[*ast.Prod](yyDollar[3].prod),
+			)
+		}
+	case 15:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser.y:155
+		{
+			yyVAL.prod = []*ast.Prod{
+				cast[*ast.Prod](yyDollar[1].prod),
+			}
+		}
+	case 16:
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line parser.y:163
+		{
+			yyVAL.prod = &ast.Prod{
+				Terms: cast[[]*ast.Term](yyDollar[1].prod),
+				Label: cast[*ast.Label](yyDollar[2].prod),
 			}
 		}
 	case 17:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser.y:134
+//line parser.y:172
 		{
-			term := cast[*grammar.Term](yyDollar[1].prod)
-			qualifier := cast[grammar.Qualifier](yyDollar[2].prod)
-			term.Qualifier = qualifier
-			yyVAL.prod = term
+			yyVAL.prod = append(
+				cast[[]*ast.Term](yyDollar[1].prod),
+				cast[*ast.Term](yyDollar[2].prod),
+			)
 		}
 	case 18:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:142
+//line parser.y:179
 		{
-			yyVAL.prod = &grammar.Term{Name: yyDollar[1].tok.Str}
+			yyVAL.prod = []*ast.Term{
+				cast[*ast.Term](yyDollar[1].prod),
+			}
 		}
 	case 19:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:143
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line parser.y:187
 		{
-			yyVAL.prod = &grammar.Term{Literal: yyDollar[1].tok.Str}
+			term := cast[*ast.Term](yyDollar[1].prod)
+			qualifier := cast[ast.Qualifier](yyDollar[2].prod)
+			term.Qualifier = qualifier
+			yyVAL.prod = term
 		}
 	case 20:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:146
+//line parser.y:195
 		{
-			yyVAL.prod = grammar.ZeroOrMore
+			yyVAL.prod = &ast.Term{Name: yyDollar[1].tok.Str}
 		}
 	case 21:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:147
+//line parser.y:196
 		{
-			yyVAL.prod = grammar.OneOrMore
+			yyVAL.prod = &ast.Term{Literal: yyDollar[1].tok.Str}
 		}
 	case 22:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:148
+//line parser.y:199
 		{
-			yyVAL.prod = grammar.ZeroOrOne
+			yyVAL.prod = ast.ZeroOrMore
+		}
+	case 23:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser.y:200
+		{
+			yyVAL.prod = ast.OneOrMore
 		}
 	case 24:
-		yyDollar = yyS[yypt-0 : yypt+1]
-//line parser.y:152
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser.y:201
 		{
-			yyVAL.prod = grammar.NoQualifier
+			yyVAL.prod = ast.ZeroOrOne
 		}
-	case 25:
-		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser.y:156
+	case 26:
+		yyDollar = yyS[yypt-0 : yypt+1]
+//line parser.y:205
 		{
-			yyVAL.prod = &grammar.Label{
+			yyVAL.prod = ast.NoQualifier
+		}
+	case 27:
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line parser.y:209
+		{
+			yyVAL.prod = &ast.Label{
 				Label: yyDollar[2].tok.Str,
 			}
 		}
-	case 27:
+	case 29:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line parser.y:164
+//line parser.y:217
 		{
 			yyVAL.prod = nil
+		}
+	case 30:
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line parser.y:221
+		{
+			yyVAL.prod = &ast.Lexer{
+				Decls: cast[[]ast.LexerDecl](yyDollar[2].prod),
+			}
+		}
+	case 31:
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line parser.y:229
+		{
+			yyVAL.prod = listAppend[ast.LexerDecl](yyDollar[1].prod, yyDollar[2].prod)
+		}
+	case 32:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser.y:231
+		{
+			yyVAL.prod = listOne[ast.LexerDecl](yyDollar[1].prod)
+		}
+	case 34:
+		yyDollar = yyS[yypt-0 : yypt+1]
+//line parser.y:236
+		{
+			yyVAL.prod = nil
+		}
+	case 36:
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line parser.y:243
+		{
+			yyVAL.prod = &ast.CustomTokenDecl{
+				CustomTokens: cast[[]*ast.CustomToken](yyDollar[2].prod),
+			}
+		}
+	case 37:
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line parser.y:251
+		{
+			yyVAL.prod = listAppend[*ast.CustomToken](yyDollar[1].prod, yyDollar[2].prod)
+		}
+	case 38:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser.y:255
+		{
+			yyVAL.prod = listOne[*ast.CustomToken](yyDollar[1].prod)
+		}
+	case 39:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser.y:260
+		{
+			yyVAL.prod = &ast.CustomToken{Name: yyDollar[1].tok.Str}
+		}
+	case 40:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser.y:261
+		{
+			yyVAL.prod = &ast.CustomToken{Literal: yyDollar[1].tok.Str}
 		}
 	}
 	goto yystack /* stack new state and value */

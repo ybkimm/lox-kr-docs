@@ -3,8 +3,8 @@ package parser
 import (
 	"bytes"
 
+	"github.com/dcaiafa/lox/internal/ast"
 	"github.com/dcaiafa/lox/internal/errs"
-	"github.com/dcaiafa/lox/internal/grammar"
 	"github.com/dcaiafa/lox/internal/loc"
 	"github.com/dcaiafa/lox/internal/token"
 )
@@ -16,7 +16,7 @@ var keywords = map[string]int{
 }
 
 type lex struct {
-	Spec *grammar.Spec
+	Spec *ast.Spec
 
 	char    rune
 	input   *bytes.Reader

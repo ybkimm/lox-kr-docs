@@ -1,13 +1,13 @@
 package parser
 
 import (
+	"github.com/dcaiafa/lox/internal/ast"
 	"github.com/dcaiafa/lox/internal/errs"
-	"github.com/dcaiafa/lox/internal/grammar"
 )
 
 //go:generate goyacc parser.y
 
-func Parse(filename string, input []byte, errs *errs.Errs) *grammar.Spec {
+func Parse(filename string, input []byte, errs *errs.Errs) *ast.Spec {
 	//yyDebug = 10
 	yyErrorVerbose = true
 	l := newLex(filename, input, errs)

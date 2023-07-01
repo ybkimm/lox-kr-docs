@@ -1,129 +1,142 @@
 package parsergen
 
 import (
-	"github.com/dcaiafa/lox/internal/errs"
-	"github.com/dcaiafa/lox/internal/grammar"
-	"github.com/dcaiafa/lox/internal/loc"
+	"fmt"
 )
 
-type parserGen struct {
-	syntax *grammar.Spec
-	errs   *errs.Errs
-	decls  map[string]grammar.Decl
+func (g *Grammar) Analyze() error {
+	ctx := newContext()
+
+	g.prepare(ctx)
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
+	g.resolveRefs(ctx)
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
+	g.normalize(ctx)
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func Analyze(s *grammar.Spec, errs *errs.Errs) {
-	a := &analyzer{
-		syntax: s,
-		errs:   errs,
-		decls:  make(map[string]grammar.Decl),
-	}
-	a.prepare()
-	if a.errs.HasErrors() {
-		return
-	}
-	/*
-		a.checkReferences()
-		if a.errs.HasErrors() {
-			return
-		}
-		for a.normalize() {
-			// Run until completely normalized.
-		}
-	*/
-}
+func (g *Grammar) prepare(ctx *context) {
+	g.defs = make(map[string]Def)
 
-func (a *analyzer) prepare() {
-	for _, rule := range a.syntax.Parser.Rules {
-		if _, ok := a.decls[rule.DeclName()]; ok {
-			a.errs.Errorf(loc.Loc{}, "%q redeclared", rule.DeclName())
-		}
-		a.decls[rule.DeclName()] = rule
-	}
-	if a.errs.HasErrors() {
-		return
-	}
-}
-
-/*
-func (a *analyzer) checkReferences() {
-	for _, decl := range a.syntax.Decls {
-		rule, ok := decl.(*grammar.Rule)
-		if !ok {
+	for _, terminal := range g.Terminals {
+		if other := g.defs[terminal.DefName()]; other != nil {
+			ctx.Fail(&RedeclaredError{Def: terminal, Other: other})
 			continue
 		}
+		g.defs[terminal.DefName()] = terminal
+	}
+
+	for _, rule := range g.Rules {
+		if other := g.defs[rule.DefName()]; other != nil {
+			ctx.Fail(&RedeclaredError{Def: rule, Other: other})
+			continue
+		}
+		g.defs[rule.DefName()] = rule
+	}
+}
+
+func (g *Grammar) resolveRefs(ctx *context) {
+	for _, rule := range g.Rules {
 		for _, prod := range rule.Prods {
 			for _, term := range prod.Terms {
-				decl := a.decls[term.Name]
-				if decl == nil {
-					a.errs.Errorf(loc.Loc{}, "undefined: %v", term.Name)
+				def := g.defs[term.Name]
+				if def == nil {
+					ctx.Fail(&UndefinedError{Term: term, Prod: prod, Rule: rule})
+					continue
+				}
+				term.def = def
+			}
+		}
+	}
+}
+
+func (g *Grammar) normalize(ctx *context) {
+	changed := true
+	for changed {
+		changed = false
+		for _, rule := range g.Rules {
+			for _, prod := range rule.Prods {
+				for i, term := range prod.Terms {
+					switch term.Qualifier {
+					case NoQualifier:
+					case ZeroOrMore:
+						// a = b c*
+						//  =>
+						// a = b a_0
+						// a_0 = c+ | e
+						srule := g.synthesizeRule(ctx, rule.Name)
+						srule.Prods = []*Prod{
+							makeProd(makeTerm(term.def, OneOrMore)),
+							makeProd(),
+						}
+						prod.Terms[i] = makeTerm(srule)
+						changed = true
+					case OneOrMore:
+						// a = b c+
+						//  =>
+						// a = b a_0
+						// a_0 = a_0 c
+						//     | c
+						srule := g.synthesizeRule(ctx, rule.Name)
+						srule.Prods = []*Prod{
+							makeProd(makeTerm(srule), makeTerm(term.def)),
+							makeProd(makeTerm(term.def)),
+						}
+						prod.Terms[i] = makeTerm(srule)
+						changed = true
+					case ZeroOrOne:
+						// a = b c?
+						//  =>
+						// a = b a_0
+						// a_0 = c | e
+						srule := g.synthesizeRule(ctx, rule.Name)
+						srule.Prods = []*Prod{
+							makeProd(makeTerm(term.def)),
+							makeProd(),
+						}
+						prod.Terms[i] = makeTerm(srule)
+						changed = true
+					default:
+						panic("not reached")
+					}
 				}
 			}
 		}
 	}
 }
 
-func (a *analyzer) normalize() bool {
-	changed := false
-	for _, decl := range a.syntax.Decls {
-		rule, ok := decl.(*grammar.Rule)
-		if !ok {
-			continue
-		}
-
-		for _, prod := range rule.Prods {
-			for _, term := range prod.Terms {
-				switch term.Qualifier {
-				case grammar.NoQualifier:
-				case grammar.ZeroOrMore:
-					// a = b c*
-					//  =>
-					// a = b a_0
-					// a_0 = c+ | e
-					srule := a.synthesizeRule(rule.Name)
-					srule.Prods = []*grammar.Prod{
-						{Terms: []*grammar.Term{{Name: term.Name, Qualifier: grammar.OneOrMore}}},
-						{Terms: []*grammar.Term{}},
-					}
-					changed = true
-				case grammar.OneOrMore:
-					// a = b c+
-					//  =>
-					// a = b a_0
-					// a_0 = a_0 c
-					//     | c
-					srule := a.synthesizeRule(rule.Name)
-					srule.Prods = []*grammar.Prod{
-						{Terms: []*grammar.Term{{Name: srule.Name}, {Name: term.Name}}},
-						{Terms: []*grammar.Term{{Name: term.Name}}},
-					}
-					changed = true
-				case grammar.ZeroOrOne:
-					// a = b c?
-					//  =>
-					// a = b a_0
-					// a_0 = c | e
-					srule := a.synthesizeRule(rule.Name)
-					srule.Prods = []*grammar.Prod{
-						{Terms: []*grammar.Term{{Name: term.Name}}},
-						{Terms: []*grammar.Term{}},
-					}
-					changed = true
-				default:
-					panic("not reached")
-				}
-			}
-		}
+func (g *Grammar) synthesizeRule(ctx *context, namePrefix string) *Rule {
+	r := &Rule{
+		Name: fmt.Sprintf("%s__%d", namePrefix, len(g.defs)),
 	}
-	return changed
-}
-
-func (a *analyzer) synthesizeRule(namePrefix string) *grammar.Rule {
-	r := &grammar.Rule{
-		Name: fmt.Sprintf("%s__%d", namePrefix, len(a.decls)),
-	}
-	a.decls[r.Name] = r
-	a.syntax.Decls = append(a.syntax.Decls, r)
+	g.defs[r.Name] = r
+	g.Rules = append(g.Rules, r)
 	return r
 }
-*/
+
+func makeTerm(def Def, q ...Qualifier) *Term {
+	t := &Term{
+		Name: def.DefName(),
+		def:  def,
+	}
+	if len(q) != 0 {
+		t.Qualifier = q[0]
+	}
+	return t
+}
+
+func makeProd(terms ...*Term) *Prod {
+	return &Prod{
+		Terms: terms,
+	}
+}

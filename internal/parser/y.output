@@ -2,13 +2,15 @@
 state 0
 	$accept: .S $end 
 
-	kPARSER  shift 6
+	kLEXER  shift 8
+	kPARSER  shift 7
 	.  error
 
 	spec  goto 2
 	sections  goto 3
 	section  goto 4
 	parser  goto 5
+	lexer  goto 6
 	S  goto 1
 
 state 1
@@ -21,249 +23,355 @@ state 1
 state 2
 	S:  spec.    (1)
 
-	.  reduce 1 (src line 48)
+	.  reduce 1 (src line 86)
 
 
 state 3
 	spec:  sections.    (2)
 	sections:  sections.section 
 
-	kPARSER  shift 6
-	.  reduce 2 (src line 50)
+	kLEXER  shift 8
+	kPARSER  shift 7
+	.  reduce 2 (src line 88)
 
-	section  goto 7
+	section  goto 9
 	parser  goto 5
+	lexer  goto 6
 
 state 4
 	sections:  section.    (4)
 
-	.  reduce 4 (src line 53)
+	.  reduce 4 (src line 103)
 
 
 state 5
 	section:  parser.    (5)
 
-	.  reduce 5 (src line 56)
+	.  reduce 5 (src line 111)
 
 
 state 6
-	parser:  kPARSER.rules_opt 
-	rules_opt: .    (10)
+	section:  lexer.    (6)
 
-	ID  shift 11
-	.  reduce 10 (src line 82)
+	.  reduce 6 (src line 111)
 
-	rules  goto 9
-	rules_opt  goto 8
-	rule  goto 10
 
 state 7
-	sections:  sections section.    (3)
+	parser:  kPARSER.parser_decls_opt 
+	parser_decls_opt: .    (11)
 
-	.  reduce 3 (src line 52)
+	ID  shift 14
+	.  reduce 11 (src line 132)
 
+	parser_decls  goto 11
+	parser_decls_opt  goto 10
+	parser_decl  goto 12
+	rule  goto 13
 
 state 8
-	parser:  kPARSER rules_opt.    (6)
+	lexer:  kLEXER.lexer_decls_opt 
+	lexer_decls_opt: .    (34)
 
-	.  reduce 6 (src line 58)
+	kCUSTOM  shift 19
+	.  reduce 34 (src line 235)
 
+	lexer_decls  goto 16
+	lexer_decls_opt  goto 15
+	lexer_decl  goto 17
+	custom_token_decl  goto 18
 
 state 9
-	rules:  rules.rule 
-	rules_opt:  rules.    (9)
+	sections:  sections section.    (3)
 
-	ID  shift 11
-	.  reduce 9 (src line 81)
+	.  reduce 3 (src line 96)
 
-	rule  goto 12
 
 state 10
-	rules:  rule.    (8)
+	parser:  kPARSER parser_decls_opt.    (7)
 
-	.  reduce 8 (src line 73)
+	.  reduce 7 (src line 113)
 
 
 state 11
-	rule:  ID.'=' productions '.' 
+	parser_decls:  parser_decls.parser_decl 
+	parser_decls_opt:  parser_decls.    (10)
 
-	'='  shift 13
-	.  error
+	ID  shift 14
+	.  reduce 10 (src line 131)
 
+	parser_decl  goto 20
+	rule  goto 13
 
 state 12
-	rules:  rules rule.    (7)
+	parser_decls:  parser_decl.    (9)
 
-	.  reduce 7 (src line 66)
+	.  reduce 9 (src line 125)
 
 
 state 13
-	rule:  ID '='.productions '.' 
+	parser_decl:  rule.    (12)
 
-	ID  shift 19
-	LITERAL  shift 20
-	.  error
+	.  reduce 12 (src line 135)
 
-	productions  goto 14
-	production  goto 15
-	qterms  goto 16
-	qterm  goto 17
-	term  goto 18
 
 state 14
-	rule:  ID '=' productions.'.' 
-	productions:  productions.'|' production 
+	rule:  ID.'=' productions '.' 
 
-	'.'  shift 21
-	'|'  shift 22
+	'='  shift 21
 	.  error
 
 
 state 15
-	productions:  production.    (13)
+	lexer:  kLEXER lexer_decls_opt.    (30)
 
-	.  reduce 13 (src line 101)
+	.  reduce 30 (src line 220)
 
 
 state 16
-	production:  qterms.label_opt 
-	qterms:  qterms.qterm 
-	label_opt: .    (27)
+	lexer_decls:  lexer_decls.lexer_decl 
+	lexer_decls_opt:  lexer_decls.    (33)
 
-	ID  shift 19
-	LITERAL  shift 20
-	'#'  shift 26
-	.  reduce 27 (src line 164)
+	kCUSTOM  shift 19
+	.  reduce 33 (src line 234)
 
-	qterm  goto 24
-	term  goto 18
-	label  goto 25
-	label_opt  goto 23
+	lexer_decl  goto 22
+	custom_token_decl  goto 18
 
 state 17
-	qterms:  qterm.    (16)
+	lexer_decls:  lexer_decl.    (32)
 
-	.  reduce 16 (src line 125)
+	.  reduce 32 (src line 230)
 
 
 state 18
-	qterm:  term.qualifier_opt 
-	qualifier_opt: .    (24)
+	lexer_decl:  custom_token_decl.    (35)
 
-	'*'  shift 29
-	'+'  shift 30
-	'?'  shift 31
-	.  reduce 24 (src line 152)
+	.  reduce 35 (src line 239)
 
-	qualifier  goto 28
-	qualifier_opt  goto 27
 
 state 19
-	term:  ID.    (18)
+	custom_token_decl:  kCUSTOM.custom_tokens 
 
-	.  reduce 18 (src line 142)
+	ID  shift 25
+	LITERAL  shift 26
+	.  error
 
+	custom_tokens  goto 23
+	custom_token  goto 24
 
 state 20
-	term:  LITERAL.    (19)
+	parser_decls:  parser_decls parser_decl.    (8)
 
-	.  reduce 19 (src line 143)
+	.  reduce 8 (src line 121)
 
 
 state 21
-	rule:  ID '=' productions '.'.    (11)
+	rule:  ID '='.productions '.' 
 
-	.  reduce 11 (src line 85)
-
-
-state 22
-	productions:  productions '|'.production 
-
-	ID  shift 19
-	LITERAL  shift 20
+	ID  shift 32
+	LITERAL  shift 33
 	.  error
 
-	production  goto 32
-	qterms  goto 16
-	qterm  goto 17
-	term  goto 18
+	productions  goto 27
+	production  goto 28
+	qterms  goto 29
+	qterm  goto 30
+	term  goto 31
+
+state 22
+	lexer_decls:  lexer_decls lexer_decl.    (31)
+
+	.  reduce 31 (src line 228)
+
 
 state 23
-	production:  qterms label_opt.    (14)
+	custom_token_decl:  kCUSTOM custom_tokens.    (36)
+	custom_tokens:  custom_tokens.custom_token 
 
-	.  reduce 14 (src line 109)
+	ID  shift 25
+	LITERAL  shift 26
+	.  reduce 36 (src line 242)
 
+	custom_token  goto 34
 
 state 24
-	qterms:  qterms qterm.    (15)
+	custom_tokens:  custom_token.    (38)
 
-	.  reduce 15 (src line 118)
+	.  reduce 38 (src line 254)
 
 
 state 25
-	label_opt:  label.    (26)
+	custom_token:  ID.    (39)
 
-	.  reduce 26 (src line 163)
+	.  reduce 39 (src line 260)
 
 
 state 26
-	label:  '#'.ID 
+	custom_token:  LITERAL.    (40)
 
-	ID  shift 33
-	.  error
+	.  reduce 40 (src line 261)
 
 
 state 27
-	qterm:  term qualifier_opt.    (17)
+	rule:  ID '=' productions.'.' 
+	productions:  productions.'|' production 
 
-	.  reduce 17 (src line 133)
+	'.'  shift 35
+	'|'  shift 36
+	.  error
 
 
 state 28
-	qualifier_opt:  qualifier.    (23)
+	productions:  production.    (15)
 
-	.  reduce 23 (src line 151)
+	.  reduce 15 (src line 154)
 
 
 state 29
-	qualifier:  '*'.    (20)
+	production:  qterms.label_opt 
+	qterms:  qterms.qterm 
+	label_opt: .    (29)
 
-	.  reduce 20 (src line 146)
+	ID  shift 32
+	LITERAL  shift 33
+	'#'  shift 40
+	.  reduce 29 (src line 217)
 
+	qterm  goto 38
+	term  goto 31
+	label  goto 39
+	label_opt  goto 37
 
 state 30
-	qualifier:  '+'.    (21)
+	qterms:  qterm.    (18)
 
-	.  reduce 21 (src line 147)
+	.  reduce 18 (src line 178)
 
 
 state 31
-	qualifier:  '?'.    (22)
+	qterm:  term.qualifier_opt 
+	qualifier_opt: .    (26)
 
-	.  reduce 22 (src line 148)
+	'*'  shift 43
+	'+'  shift 44
+	'?'  shift 45
+	.  reduce 26 (src line 205)
 
+	qualifier  goto 42
+	qualifier_opt  goto 41
 
 state 32
-	productions:  productions '|' production.    (12)
+	term:  ID.    (20)
 
-	.  reduce 12 (src line 94)
+	.  reduce 20 (src line 195)
 
 
 state 33
-	label:  '#' ID.    (25)
+	term:  LITERAL.    (21)
 
-	.  reduce 25 (src line 155)
+	.  reduce 21 (src line 196)
 
 
-16 terminals, 18 nonterminals
-28 grammar rules, 34/16000 states
+state 34
+	custom_tokens:  custom_tokens custom_token.    (37)
+
+	.  reduce 37 (src line 250)
+
+
+state 35
+	rule:  ID '=' productions '.'.    (13)
+
+	.  reduce 13 (src line 138)
+
+
+state 36
+	productions:  productions '|'.production 
+
+	ID  shift 32
+	LITERAL  shift 33
+	.  error
+
+	production  goto 46
+	qterms  goto 29
+	qterm  goto 30
+	term  goto 31
+
+state 37
+	production:  qterms label_opt.    (16)
+
+	.  reduce 16 (src line 162)
+
+
+state 38
+	qterms:  qterms qterm.    (17)
+
+	.  reduce 17 (src line 171)
+
+
+state 39
+	label_opt:  label.    (28)
+
+	.  reduce 28 (src line 216)
+
+
+state 40
+	label:  '#'.ID 
+
+	ID  shift 47
+	.  error
+
+
+state 41
+	qterm:  term qualifier_opt.    (19)
+
+	.  reduce 19 (src line 186)
+
+
+state 42
+	qualifier_opt:  qualifier.    (25)
+
+	.  reduce 25 (src line 204)
+
+
+state 43
+	qualifier:  '*'.    (22)
+
+	.  reduce 22 (src line 199)
+
+
+state 44
+	qualifier:  '+'.    (23)
+
+	.  reduce 23 (src line 200)
+
+
+state 45
+	qualifier:  '?'.    (24)
+
+	.  reduce 24 (src line 201)
+
+
+state 46
+	productions:  productions '|' production.    (14)
+
+	.  reduce 14 (src line 147)
+
+
+state 47
+	label:  '#' ID.    (27)
+
+	.  reduce 27 (src line 208)
+
+
+16 terminals, 26 nonterminals
+41 grammar rules, 48/16000 states
 0 shift/reduce, 0 reduce/reduce conflicts reported
-67 working sets used
-memory: parser 26/240000
+75 working sets used
+memory: parser 39/240000
 0 extra closures
-18 shift entries, 1 exceptions
-21 goto entries
-5 entries saved by goto default
-Optimizer space used: output 35/240000
-35 table entries, 0 zero
-maximum spread: 15, maximum offset: 22
+26 shift entries, 1 exceptions
+31 goto entries
+8 entries saved by goto default
+Optimizer space used: output 49/240000
+49 table entries, 0 zero
+maximum spread: 16, maximum offset: 36
