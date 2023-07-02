@@ -9,17 +9,15 @@ import (
 )
 
 func (g *Grammar) Analyze() error {
-	ctx := newContext()
-
-	g.preAnalysis(ctx)
-	if err := ctx.Err(); err != nil {
+	g.preAnalysis()
+	if err := g.Err(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (g *Grammar) preAnalysis(ctx *context) {
+func (g *Grammar) preAnalysis() {
 	g.syms = make(map[string]Symbol)
 	g.Terminals = append(g.Terminals, epsilon)
 
@@ -34,12 +32,12 @@ func (g *Grammar) preAnalysis(ctx *context) {
 	}
 	g.Rules = append(g.Rules, g.sp)
 
-	g.createNames(ctx)
-	if ctx.Err() != nil {
+	g.createNames()
+	if err := g.Err(); err != nil {
 		return
 	}
-	g.resolveRefs(ctx)
-	if ctx.Err() != nil {
+	g.resolveRefs()
+	if err := g.Err(); err != nil {
 		return
 	}
 
@@ -47,10 +45,21 @@ func (g *Grammar) preAnalysis(ctx *context) {
 	g.assignIndexes()
 }
 
-func (g *Grammar) createNames(ctx *context) {
+func (g *Grammar) Fail(err error) {
+	g.errs = append(g.errs, err)
+}
+
+func (g *Grammar) Err() error {
+	if len(g.errs) == 0 {
+		return nil
+	}
+	return g.errs
+}
+
+func (g *Grammar) createNames() {
 	for _, terminal := range g.Terminals {
 		if other := g.syms[terminal.SymName()]; other != nil {
-			ctx.Fail(&RedeclaredError{Sym: terminal, Other: other})
+			g.Fail(&RedeclaredError{Sym: terminal, Other: other})
 			continue
 		}
 		g.syms[terminal.SymName()] = terminal
@@ -58,20 +67,20 @@ func (g *Grammar) createNames(ctx *context) {
 
 	for _, rule := range g.Rules {
 		if other := g.syms[rule.SymName()]; other != nil {
-			ctx.Fail(&RedeclaredError{Sym: rule, Other: other})
+			g.Fail(&RedeclaredError{Sym: rule, Other: other})
 			continue
 		}
 		g.syms[rule.SymName()] = rule
 	}
 }
 
-func (g *Grammar) resolveRefs(ctx *context) {
+func (g *Grammar) resolveRefs() {
 	for _, rule := range g.Rules {
 		for _, prod := range rule.Prods {
 			for _, term := range prod.Terms {
 				sym := g.syms[term.Name]
 				if sym == nil {
-					ctx.Fail(&UndefinedError{Term: term, Prod: prod, Rule: rule})
+					g.Fail(&UndefinedError{Term: term, Prod: prod, Rule: rule})
 					continue
 				}
 				term.sym = sym
@@ -205,7 +214,7 @@ func (g *Grammar) first(syms []Symbol) *set.Set[*Terminal] {
 }
 
 func (g *Grammar) construct() {
-	initialState := newItemSetBuilder()
+	initialState := newStateBuilder()
 	initialState.Add(newItem(g.sp.Prods[0].index, 0, g.eof.index))
 	g.closure(initialState)
 
@@ -216,7 +225,7 @@ func (g *Grammar) construct() {
 	for g.states.Changed() {
 		g.states.ResetChanged()
 
-		g.states.ForEach(func(fromState *itemSet) {
+		g.states.ForEach(func(fromState *state) {
 			for _, sym := range g.transitionSymbols(fromState) {
 				toState := g.gotoState(fromState, sym)
 				g.transitions.Add(fromState, toState, sym)
@@ -225,7 +234,7 @@ func (g *Grammar) construct() {
 	}
 }
 
-func (g *Grammar) closure(i *itemSetBuilder) {
+func (g *Grammar) closure(i *stateBuilder) {
 	changed := true
 	for changed {
 		changed = false
@@ -251,8 +260,8 @@ func (g *Grammar) closure(i *itemSetBuilder) {
 	}
 }
 
-func (g *Grammar) gotoState(i *itemSet, x Symbol) *itemSet {
-	j := newItemSetBuilder()
+func (g *Grammar) gotoState(i *state, x Symbol) *state {
+	j := newStateBuilder()
 	for _, item := range i.Items {
 		prod := g.prods[item.Prod]
 		if item.Dot == len(prod.Terms) {
@@ -268,7 +277,7 @@ func (g *Grammar) gotoState(i *itemSet, x Symbol) *itemSet {
 	return g.states.Add(j.Build())
 }
 
-func (g *Grammar) transitionSymbols(s *itemSet) []Symbol {
+func (g *Grammar) transitionSymbols(s *state) []Symbol {
 	symSet := new(set.Set[Symbol])
 	for _, item := range s.Items {
 		prod := g.prods[item.Prod]
@@ -290,13 +299,13 @@ func (g *Grammar) transitionSymbols(s *itemSet) []Symbol {
 
 func (g *Grammar) printStateGraph(w io.Writer) {
 	fmt.Fprintf(w, "digraph G {\n")
-	g.states.ForEach(func(state *itemSet) {
+	g.states.ForEach(func(s *state) {
 		fmt.Fprintf(w, "  I%d [label=%q];\n",
-			state.Index,
-			fmt.Sprintf("I%d\n%v", state.Index, state.ToString(g)),
+			s.Index,
+			fmt.Sprintf("I%d\n%v", s.Index, s.ToString(g)),
 		)
 	})
-	g.transitions.ForEach(func(from, to *itemSet, sym Symbol) {
+	g.transitions.ForEach(func(from, to *state, sym Symbol) {
 		fmt.Fprintf(w, "  I%d -> I%d [label=%q];\n",
 			from.Index,
 			to.Index,

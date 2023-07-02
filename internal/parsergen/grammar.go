@@ -31,6 +31,7 @@ type Grammar struct {
 	sp          *Rule
 	states      *stateSet
 	transitions *transitions
+	errs        Errors
 }
 
 func (g *Grammar) Print(w io.Writer) {
