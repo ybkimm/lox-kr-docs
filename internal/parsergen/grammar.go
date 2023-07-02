@@ -3,7 +3,11 @@ package parsergen
 import (
 	"fmt"
 	"io"
+
+	"github.com/dcaiafa/lox/internal/util/set"
 )
+
+var epsilon = &Terminal{Name: "ε", index: -1}
 
 type Qualifier int
 
@@ -14,14 +18,19 @@ const (
 	ZeroOrOne             // ?
 )
 
-type Def interface {
-	DefName() string
+type Symbol interface {
+	SymName() string
 }
 
 type Grammar struct {
-	Rules     []*Rule
-	Terminals []*Terminal
-	defs      map[string]Def
+	Terminals   []*Terminal
+	Rules       []*Rule
+	eof         *Terminal
+	syms        map[string]Symbol
+	prods       []*Prod
+	sp          *Rule
+	states      *stateSet
+	transitions *transitions
 }
 
 func (g *Grammar) Print(w io.Writer) {
@@ -38,6 +47,8 @@ func (g *Grammar) Print(w io.Writer) {
 type Rule struct {
 	Name  string
 	Prods []*Prod
+
+	firstSet *set.Set[*Terminal]
 }
 
 func (r *Rule) Print(w io.Writer) {
@@ -69,25 +80,30 @@ func (r *Rule) Print(w io.Writer) {
 	fmt.Fprintf(w, " .\n")
 }
 
-func (r *Rule) DefName() string {
+func (r *Rule) SymName() string {
 	return r.Name
 }
 
 type Prod struct {
 	Terms []*Term
+
+	rule  *Rule
+	index int
 }
 
 type Term struct {
 	Name      string
 	Qualifier Qualifier
 
-	def Def
+	sym Symbol
 }
 
 type Terminal struct {
 	Name string
+
+	index int
 }
 
-func (t *Terminal) DefName() string {
+func (t *Terminal) SymName() string {
 	return t.Name
 }

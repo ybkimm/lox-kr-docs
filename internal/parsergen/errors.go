@@ -17,12 +17,12 @@ func (e Errors) Error() string {
 }
 
 type RedeclaredError struct {
-	Def   Def
-	Other Def
+	Sym   Symbol
+	Other Symbol
 }
 
 func (e *RedeclaredError) Error() string {
-	return fmt.Sprintf("%q redeclared", e.Def.DefName())
+	return fmt.Sprintf("%q redeclared", e.Sym.SymName())
 }
 
 type UndefinedError struct {

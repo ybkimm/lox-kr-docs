@@ -5,7 +5,7 @@ type context struct {
 }
 
 func newContext() *context {
-	return new(context)
+	return &context{}
 }
 
 func (c *context) Fail(err error) {
