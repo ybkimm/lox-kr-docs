@@ -91,6 +91,14 @@ func newTerm(sym Symbol, q ...Cardinality) *Term {
 	return t
 }
 
+func termSymbols(terms []*Term) []Symbol {
+	syms := make([]Symbol, len(terms))
+	for i, term := range terms {
+		syms[i] = term.sym
+	}
+	return syms
+}
+
 var epsilon = &Terminal{Name: "ε", index: -1}
 
 type Terminal struct {

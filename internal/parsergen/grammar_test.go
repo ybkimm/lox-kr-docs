@@ -12,9 +12,9 @@ func TestFirst(t *testing.T) {
 		t.Fatalf("preAnalysis failed: %v", g.errs)
 	}
 
-	assertTerminalSetEq(t, g.firstOne(g.syms["E"]), "(", "id")
-	assertTerminalSetEq(t, g.firstOne(g.syms["E'"]), "+", "ε")
-	assertTerminalSetEq(t, g.firstOne(g.syms["T'"]), "*", "ε")
+	assertTerminalSetEq(t, g.first1(g.syms["E"]), "(", "id")
+	assertTerminalSetEq(t, g.first1(g.syms["E'"]), "+", "ε")
+	assertTerminalSetEq(t, g.first1(g.syms["T'"]), "*", "ε")
 	assertTerminalSetEq(t, g.first([]Symbol{g.syms["E'"], g.syms["E"]}), "+", "(", "id")
 	assertTerminalSetEq(t, g.first([]Symbol{g.syms["E'"], g.syms["T'"]}), "+", "*", "ε")
 	assertTerminalSetEq(t, g.first([]Symbol{g.syms["E'"], g.syms["id"]}), "+", "id")

@@ -175,7 +175,7 @@ func (g *Grammar) synthesizeRule(namePrefix string) *Rule {
 	return r
 }
 
-func (g *Grammar) firstOne(s Symbol) *set.Set[*Terminal] {
+func (g *Grammar) first1(s Symbol) *set.Set[*Terminal] {
 	switch s := s.(type) {
 	case *Terminal:
 		terminalSet := new(set.Set[*Terminal])
@@ -190,7 +190,7 @@ func (g *Grammar) firstOne(s Symbol) *set.Set[*Terminal] {
 			if len(prod.Terms) == 0 {
 				s.firstSet.Add(epsilon)
 			} else {
-				s.firstSet.AddSet(g.firstOne(prod.Terms[0].sym))
+				s.firstSet.AddSet(g.first1(prod.Terms[0].sym))
 			}
 		}
 		return s.firstSet
@@ -202,7 +202,7 @@ func (g *Grammar) firstOne(s Symbol) *set.Set[*Terminal] {
 func (g *Grammar) first(syms []Symbol) *set.Set[*Terminal] {
 	var fullSet *set.Set[*Terminal]
 	for i, sym := range syms {
-		symSet := g.firstOne(sym)
+		symSet := g.first1(sym)
 		if i == 0 {
 			fullSet = symSet
 		} else {
@@ -257,7 +257,7 @@ func (g *Grammar) closure(i *stateBuilder) {
 			if !ok {
 				continue
 			}
-			beta := syms(prod.Terms[item.Dot+1:])
+			beta := termSymbols(prod.Terms[item.Dot+1:])
 			a := g.Terminals[item.Terminal]
 			firstSet := g.first(append(beta, a))
 			for _, prodB := range B.Prods {
@@ -297,8 +297,8 @@ func (g *Grammar) transitionSymbols(s *state) []Symbol {
 	}
 	syms := symSet.Elements()
 
-	// The order of the symbols determine the order states are created.
-	// Make the analysis deterministic by sorting the symbols.
+	// Symbol order determines state creation order.
+	// Make the analysis deterministic by sorting.
 	sort.Slice(syms, func(i, j int) bool {
 		return syms[i].SymName() < syms[j].SymName()
 	})
@@ -321,14 +321,6 @@ func (g *Grammar) printStateGraph(w io.Writer) {
 			sym.SymName())
 	})
 	fmt.Fprintf(w, "}\n")
-}
-
-func syms(terms []*Term) []Symbol {
-	syms := make([]Symbol, len(terms))
-	for i, term := range terms {
-		syms[i] = term.sym
-	}
-	return syms
 }
 
 func (g *Grammar) Print(w io.Writer) {

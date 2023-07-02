@@ -198,3 +198,42 @@ func (m *transitions) ForEach(fn func(from *state, to *state, sym Symbol)) {
 		fn(key.From, m.transitions[key], key.Sym)
 	}
 }
+
+type action int
+
+const (
+	actionShift action = iota
+	actionReduce
+	actionAccept
+)
+
+type actionKey struct {
+	state *state
+	sym   Symbol
+}
+
+type actionMap struct {
+	actions map[actionKey]action
+}
+
+func newActionMap() *actionMap {
+	return &actionMap{
+		actions: make(map[actionKey]action),
+	}
+}
+
+func (m *actionMap) Add(
+	state *state,
+	sym Symbol,
+	action action,
+) (conflict bool, conflictAction action) {
+	key := actionKey{state, sym}
+	if existing, ok := m.actions[key]; ok {
+		conflict = true
+		conflictAction = existing
+		return
+	}
+	m.actions[key] = action
+	conflict = false
+	return
+}
