@@ -86,13 +86,13 @@ func toParserGrammar(spec *ast.Spec) *parsergen.Grammar {
 							}
 							switch astTerm.Qualifier {
 							case ast.NoQualifier:
-								term.Qualifier = parsergen.NoQualifier
+								term.Cardinality = parsergen.One
 							case ast.ZeroOrMore:
-								term.Qualifier = parsergen.ZeroOrMore
+								term.Cardinality = parsergen.ZeroOrMore
 							case ast.OneOrMore:
-								term.Qualifier = parsergen.OneOrMore
+								term.Cardinality = parsergen.OneOrMore
 							case ast.ZeroOrOne:
-								term.Qualifier = parsergen.ZeroOrOne
+								term.Cardinality = parsergen.ZeroOrOne
 							default:
 								panic("not-reached")
 							}

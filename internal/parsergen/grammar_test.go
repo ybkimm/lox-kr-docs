@@ -8,8 +8,8 @@ import (
 func TestFirst(t *testing.T) {
 	g := grammar4_11()
 	g.preAnalysis()
-	if g.Err() != nil {
-		t.Fatalf("preAnalysis failed: %v", g.Err())
+	if g.failed() {
+		t.Fatalf("preAnalysis failed: %v", g.errs)
 	}
 
 	assertTerminalSetEq(t, g.firstOne(g.syms["E"]), "(", "id")
@@ -44,8 +44,8 @@ func TestConstruct(t *testing.T) {
 	}
 
 	g.preAnalysis()
-	if g.Err() != nil {
-		t.Fatalf("preAnalysis failed: %v", g.Err())
+	if g.failed() {
+		t.Fatalf("preAnalysis failed: %v", g.errs)
 	}
 
 	g.construct()
