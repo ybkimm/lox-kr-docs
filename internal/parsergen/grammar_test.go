@@ -13,10 +13,10 @@ func TestFirst(t *testing.T) {
 
 	syms, _ := g.symbolMap()
 
-	assertTerminalSetEq(t, g.first1(syms["E"]), "(", "id")
-	assertTerminalSetEq(t, g.first1(syms["E'"]), "+", "ε")
-	assertTerminalSetEq(t, g.first1(syms["T'"]), "*", "ε")
-	assertTerminalSetEq(t, g.first([]Symbol{syms["E'"], syms["E"]}), "+", "(", "id")
-	assertTerminalSetEq(t, g.first([]Symbol{syms["E'"], syms["T'"]}), "+", "*", "ε")
-	assertTerminalSetEq(t, g.first([]Symbol{syms["E'"], syms["id"]}), "+", "id")
+	assertTerminalSetEq(t, g.first(syms["E"]), "(", "id")
+	assertTerminalSetEq(t, g.first(syms["E'"]), "+", "ε")
+	assertTerminalSetEq(t, g.first(syms["T'"]), "*", "ε")
+	assertTerminalSetEq(t, g.First([]Symbol{syms["E'"], syms["E"]}), "+", "(", "id")
+	assertTerminalSetEq(t, g.First([]Symbol{syms["E'"], syms["T'"]}), "+", "*", "ε")
+	assertTerminalSetEq(t, g.First([]Symbol{syms["E'"], syms["id"]}), "+", "id")
 }

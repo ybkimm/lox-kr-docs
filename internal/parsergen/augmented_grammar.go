@@ -3,10 +3,11 @@ package parsergen
 import (
 	"fmt"
 	"io"
-	"sort"
 
 	"github.com/dcaiafa/lox/internal/util/set"
 )
+
+var epsilon = &Terminal{Name: "ε", index: -1}
 
 type AugmentedGrammar struct {
 	Grammar
@@ -28,8 +29,56 @@ func (g *Grammar) ToAugmentedGrammar() (*AugmentedGrammar, error) {
 	if err != nil {
 		return nil, err
 	}
+	ag.normalize()
 	ag.assignIndex()
 	return ag, nil
+}
+
+func (g *AugmentedGrammar) First(syms []Symbol) *set.Set[*Terminal] {
+	var fullSet *set.Set[*Terminal]
+	for i, sym := range syms {
+		symSet := g.first(sym)
+		if i == 0 {
+			fullSet = symSet
+		} else {
+			if i == 1 {
+				fullSet = fullSet.Clone()
+			}
+			fullSet.AddSet(symSet)
+		}
+		if !symSet.Has(epsilon) {
+			fullSet.Remove(epsilon)
+			break
+		}
+	}
+	if fullSet == nil {
+		fullSet = new(set.Set[*Terminal])
+	}
+	return fullSet
+}
+
+func (g *AugmentedGrammar) first(s Symbol) *set.Set[*Terminal] {
+	switch s := s.(type) {
+	case *Terminal:
+		terminalSet := new(set.Set[*Terminal])
+		terminalSet.Add(s)
+		return terminalSet
+	case *Rule:
+		if s.firstSet != nil {
+			return s.firstSet
+		}
+		s.firstSet = new(set.Set[*Terminal])
+		for _, prod := range s.Prods {
+			if len(prod.Terms) == 0 {
+				s.firstSet.Add(epsilon)
+			} else {
+				s.firstSet.AddSet(g.first(prod.Terms[0].sym))
+			}
+		}
+		return s.firstSet
+	default:
+		panic("not-reached")
+	}
 }
 
 func (g *AugmentedGrammar) symbolMap() (map[string]Symbol, error) {
@@ -151,53 +200,6 @@ func (g *AugmentedGrammar) assignIndex() {
 	}
 }
 
-func (g *AugmentedGrammar) first1(s Symbol) *set.Set[*Terminal] {
-	switch s := s.(type) {
-	case *Terminal:
-		terminalSet := new(set.Set[*Terminal])
-		terminalSet.Add(s)
-		return terminalSet
-	case *Rule:
-		if s.firstSet != nil {
-			return s.firstSet
-		}
-		s.firstSet = new(set.Set[*Terminal])
-		for _, prod := range s.Prods {
-			if len(prod.Terms) == 0 {
-				s.firstSet.Add(epsilon)
-			} else {
-				s.firstSet.AddSet(g.first1(prod.Terms[0].sym))
-			}
-		}
-		return s.firstSet
-	default:
-		panic("not-reached")
-	}
-}
-
-func (g *AugmentedGrammar) first(syms []Symbol) *set.Set[*Terminal] {
-	var fullSet *set.Set[*Terminal]
-	for i, sym := range syms {
-		symSet := g.first1(sym)
-		if i == 0 {
-			fullSet = symSet
-		} else {
-			if i == 1 {
-				fullSet = fullSet.Clone()
-			}
-			fullSet.AddSet(symSet)
-		}
-		if !symSet.Has(epsilon) {
-			fullSet.Remove(epsilon)
-			break
-		}
-	}
-	if fullSet == nil {
-		fullSet = new(set.Set[*Terminal])
-	}
-	return fullSet
-}
-
 func (g *AugmentedGrammar) constructLALR() {
 	//g.constructLR0Kernels()
 }
@@ -226,52 +228,6 @@ func (g *Grammar) constructLR0Kernels() {
 	}
 }
 */
-
-func (g *AugmentedGrammar) closure(i *stateBuilder) {
-	changed := true
-	for changed {
-		changed = false
-		// For each item [A -> α.Bβ, a]:
-		for _, item := range i.items {
-			prod := g.Prods[item.Prod]
-			if item.Dot == len(prod.Terms) {
-				continue
-			}
-			B, ok := prod.Terms[item.Dot].sym.(*Rule)
-			if !ok {
-				continue
-			}
-			beta := termSymbols(prod.Terms[item.Dot+1:])
-			a := g.Terminals[item.Terminal]
-			firstSet := g.first(append(beta, a))
-			for _, prodB := range B.Prods {
-				firstSet.ForEach(func(t *Terminal) {
-					changed = i.Add(newItem(prodB.index, 0, t.index)) || changed
-				})
-			}
-		}
-	}
-}
-
-func (g *AugmentedGrammar) transitionSymbols(s *state) []Symbol {
-	symSet := new(set.Set[Symbol])
-	for _, item := range s.Items {
-		prod := g.Prods[item.Prod]
-		if item.Dot >= len(prod.Terms) {
-			continue
-		}
-		symSet.Add(prod.Terms[item.Dot].sym)
-	}
-	syms := symSet.Elements()
-
-	// Symbol order determines state creation order.
-	// Make the analysis deterministic by sorting.
-	sort.Slice(syms, func(i, j int) bool {
-		return syms[i].SymName() < syms[j].SymName()
-	})
-
-	return syms
-}
 
 func (g *AugmentedGrammar) Print(w io.Writer) {
 	fmt.Fprintf(w, "Terminals:\n")

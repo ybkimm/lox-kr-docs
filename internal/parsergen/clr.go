@@ -3,29 +3,29 @@ package parsergen
 import "github.com/dcaiafa/lox/internal/util/logger"
 
 type clr struct {
-	*parserTable
+	*ParserTable
 	logger *logger.Logger
 }
 
-func constructCLR(g *AugmentedGrammar, logger *logger.Logger) *parserTable {
+func constructCLR(g *AugmentedGrammar, logger *logger.Logger) *ParserTable {
 	clr := &clr{
-		parserTable: newParserTable(g),
+		ParserTable: NewParserTable(g),
 		logger:      logger,
 	}
 
-	initialState := newStateBuilder()
-	initialState.Add(newItem(g.Sprime.Prods[0].index, 0, g.EOF.index))
-	g.closure(initialState)
+	initialState := NewStateBuilder()
+	initialState.Add(NewItem(g.Sprime.Prods[0].index, 0, g.EOF.index))
+	initialState.Closure(g)
 
-	clr.states.Add(initialState.Build())
+	clr.States.Add(initialState.Build())
 
-	for clr.states.Changed() {
-		clr.states.ResetChanged()
+	for clr.States.Changed() {
+		clr.States.ResetChanged()
 
-		clr.states.ForEach(func(fromState *state) {
-			for _, sym := range g.transitionSymbols(fromState) {
+		clr.States.ForEach(func(fromState *State) {
+			for _, sym := range fromState.DotSymbols(g) {
 				toState := clr.gotoState(fromState, sym)
-				clr.transitions.Add(fromState, toState, sym)
+				clr.Transitions.Add(fromState, toState, sym)
 			}
 		})
 	}
@@ -34,7 +34,7 @@ func constructCLR(g *AugmentedGrammar, logger *logger.Logger) *parserTable {
 	clr.logger.Logf("======")
 	clr.logger.Logf("")
 
-	clr.states.ForEach(func(s *state) {
+	clr.States.ForEach(func(s *State) {
 		logger := clr.logger
 		if s.Index > 0 {
 			logger.Logf("")
@@ -47,13 +47,13 @@ func constructCLR(g *AugmentedGrammar, logger *logger.Logger) *parserTable {
 		for _, item := range s.Items {
 			prod := g.Prods[item.Prod]
 			if item.Dot == len(prod.Terms) {
-				act := action{Type: actionReduce, Reduce: prod.rule}
+				act := Action{Type: ActionReduce, Reduce: prod.rule}
 				if prod.rule == g.Sprime {
-					act = action{Type: actionAccept}
+					act = Action{Type: ActionAccept}
 				}
 				terminal := g.Terminals[item.Terminal]
-				if !clr.actions.Add(s, terminal, act, logger) {
-					clr.hasConflict = true
+				if !clr.Actions.Add(s, terminal, act, logger) {
+					clr.Ambiguous = true
 				}
 				continue
 			}
@@ -61,21 +61,21 @@ func constructCLR(g *AugmentedGrammar, logger *logger.Logger) *parserTable {
 			if !ok {
 				continue
 			}
-			shiftState := clr.transitions.Get(s, terminal)
-			shiftAction := action{Type: actionShift, Shift: shiftState}
-			if !clr.actions.Add(s, terminal, shiftAction, logger) {
-				clr.hasConflict = true
+			shiftState := clr.Transitions.Get(s, terminal)
+			shiftAction := Action{Type: ActionShift, Shift: shiftState}
+			if !clr.Actions.Add(s, terminal, shiftAction, logger) {
+				clr.Ambiguous = true
 			}
 		}
 	})
 
-	return clr.parserTable
+	return clr.ParserTable
 }
 
-func (clr *clr) gotoState(i *state, x Symbol) *state {
-	j := newStateBuilder()
+func (clr *clr) gotoState(i *State, x Symbol) *State {
+	j := NewStateBuilder()
 	for _, item := range i.Items {
-		prod := clr.g.Prods[item.Prod]
+		prod := clr.Grammar.Prods[item.Prod]
 		if item.Dot == len(prod.Terms) {
 			continue
 		}
@@ -83,8 +83,8 @@ func (clr *clr) gotoState(i *state, x Symbol) *state {
 		if term != x {
 			continue
 		}
-		j.Add(newItem(item.Prod, item.Dot+1, item.Terminal))
+		j.Add(NewItem(item.Prod, item.Dot+1, item.Terminal))
 	}
-	clr.g.closure(j)
-	return clr.states.Add(j.Build())
+	j.Closure(clr.Grammar)
+	return clr.States.Add(j.Build())
 }

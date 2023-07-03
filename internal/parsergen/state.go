@@ -8,23 +8,24 @@ import (
 	"strings"
 
 	"github.com/dcaiafa/lox/internal/util/logger"
+	"github.com/dcaiafa/lox/internal/util/set"
 )
 
-type item struct {
+type Item struct {
 	Prod     int
 	Dot      int
 	Terminal int
 }
 
-func newItem(prod, dot, terminal int) item {
-	return item{
+func NewItem(prod, dot, terminal int) Item {
+	return Item{
 		Prod:     prod,
 		Dot:      dot,
 		Terminal: terminal,
 	}
 }
 
-func (i *item) Key() []byte {
+func (i *Item) Key() []byte {
 	key := make([]byte, 0, binary.MaxVarintLen32*3)
 	key = binary.AppendUvarint(key, uint64(i.Prod))
 	key = binary.AppendUvarint(key, uint64(i.Dot))
@@ -32,7 +33,7 @@ func (i *item) Key() []byte {
 	return key
 }
 
-func (i *item) ToString(g *AugmentedGrammar) string {
+func (i *Item) ToString(g *AugmentedGrammar) string {
 	var str strings.Builder
 	prod := g.Prods[i.Prod]
 	rule := prod.rule
@@ -57,34 +58,33 @@ func (i *item) ToString(g *AugmentedGrammar) string {
 	return str.String()
 }
 
-type conflictType int
-
-const (
-	conflictNone conflictType = iota
-	conflictShiftReduce
-	conflictReduceReduce
-)
-
-func (c conflictType) String() string {
-	switch c {
-	case conflictNone:
-		return "none"
-	case conflictShiftReduce:
-		return "shift/reduce"
-	case conflictReduceReduce:
-		return "reduce/reduce"
-	default:
-		return "???"
-	}
-}
-
-type state struct {
-	Items []item
+type State struct {
+	Items []Item
 	Key   string
 	Index int
 }
 
-func (s *state) ToString(g *AugmentedGrammar) string {
+func (s *State) DotSymbols(g *AugmentedGrammar) []Symbol {
+	symSet := new(set.Set[Symbol])
+	for _, item := range s.Items {
+		prod := g.Prods[item.Prod]
+		if item.Dot >= len(prod.Terms) {
+			continue
+		}
+		symSet.Add(prod.Terms[item.Dot].sym)
+	}
+	syms := symSet.Elements()
+
+	// Symbol order determines state creation order.
+	// Make the analysis deterministic by sorting.
+	sort.Slice(syms, func(i, j int) bool {
+		return syms[i].SymName() < syms[j].SymName()
+	})
+
+	return syms
+}
+
+func (s *State) ToString(g *AugmentedGrammar) string {
 	var str strings.Builder
 	for i := range s.Items {
 		if i != 0 {
@@ -95,17 +95,17 @@ func (s *state) ToString(g *AugmentedGrammar) string {
 	return str.String()
 }
 
-type stateBuilder struct {
-	items map[string]item
+type StateBuilder struct {
+	items map[string]Item
 }
 
-func newStateBuilder() *stateBuilder {
-	return &stateBuilder{
-		items: make(map[string]item),
+func NewStateBuilder() *StateBuilder {
+	return &StateBuilder{
+		items: make(map[string]Item),
 	}
 }
 
-func (b *stateBuilder) Add(item item) bool {
+func (b *StateBuilder) Add(item Item) bool {
 	itemKey := string(item.Key())
 	if _, ok := b.items[itemKey]; ok {
 		return false
@@ -114,8 +114,34 @@ func (b *stateBuilder) Add(item item) bool {
 	return true
 }
 
-func (b *stateBuilder) Build() *state {
-	items := make([]item, 0, len(b.items))
+func (b *StateBuilder) Closure(g *AugmentedGrammar) {
+	changed := true
+	for changed {
+		changed = false
+		// For each item [A -> α.Bβ, a]:
+		for _, item := range b.items {
+			prod := g.Prods[item.Prod]
+			if item.Dot == len(prod.Terms) {
+				continue
+			}
+			B, ok := prod.Terms[item.Dot].sym.(*Rule)
+			if !ok {
+				continue
+			}
+			beta := termSymbols(prod.Terms[item.Dot+1:])
+			a := g.Terminals[item.Terminal]
+			firstSet := g.First(append(beta, a))
+			for _, prodB := range B.Prods {
+				firstSet.ForEach(func(t *Terminal) {
+					changed = b.Add(NewItem(prodB.index, 0, t.index)) || changed
+				})
+			}
+		}
+	}
+}
+
+func (b *StateBuilder) Build() *State {
+	items := make([]Item, 0, len(b.items))
 	for _, item := range b.items {
 		items = append(items, item)
 	}
@@ -146,33 +172,33 @@ func (b *stateBuilder) Build() *state {
 		key = append(key, itemKey...)
 	}
 
-	return &state{
+	return &State{
 		Items: items,
 		Key:   string(key),
 	}
 }
 
-type stateSet struct {
-	stateMap map[string]*state
-	states   []*state
+type StateSet struct {
+	stateMap map[string]*State
+	states   []*State
 	changed  bool
 }
 
-func newStateSet() *stateSet {
-	return &stateSet{
-		stateMap: make(map[string]*state),
+func NewStateSet() *StateSet {
+	return &StateSet{
+		stateMap: make(map[string]*State),
 	}
 }
 
-func (c *stateSet) Changed() bool {
+func (c *StateSet) Changed() bool {
 	return c.changed
 }
 
-func (c *stateSet) ResetChanged() {
+func (c *StateSet) ResetChanged() {
 	c.changed = false
 }
 
-func (c *stateSet) Add(s *state) *state {
+func (c *StateSet) Add(s *State) *State {
 	if existing, ok := c.stateMap[s.Key]; ok {
 		return existing
 	}
@@ -183,28 +209,28 @@ func (c *stateSet) Add(s *state) *state {
 	return s
 }
 
-func (c *stateSet) ForEach(fn func(s *state)) {
+func (c *StateSet) ForEach(fn func(s *State)) {
 	for _, state := range c.states {
 		fn(state)
 	}
 }
 
 type transitionKey struct {
-	From *state
+	From *State
 	Sym  Symbol
 }
 
-type transitions struct {
-	transitions map[transitionKey]*state
+type TransitionMap struct {
+	transitions map[transitionKey]*State
 }
 
-func newTransitions() *transitions {
-	return &transitions{
-		transitions: make(map[transitionKey]*state),
+func NewTransitionMap() *TransitionMap {
+	return &TransitionMap{
+		transitions: make(map[transitionKey]*State),
 	}
 }
 
-func (m *transitions) Add(from *state, to *state, sym Symbol) {
+func (m *TransitionMap) Add(from *State, to *State, sym Symbol) {
 	key := transitionKey{from, sym}
 	if existing, ok := m.transitions[key]; ok {
 		if existing != to {
@@ -215,7 +241,7 @@ func (m *transitions) Add(from *state, to *state, sym Symbol) {
 	m.transitions[key] = to
 }
 
-func (m *transitions) Get(from *state, sym Symbol) *state {
+func (m *TransitionMap) Get(from *State, sym Symbol) *State {
 	key := transitionKey{from, sym}
 	toState := m.transitions[key]
 	if toState == nil {
@@ -224,7 +250,7 @@ func (m *transitions) Get(from *state, sym Symbol) *state {
 	return toState
 }
 
-func (m *transitions) ForEach(fn func(from *state, to *state, sym Symbol)) {
+func (m *TransitionMap) ForEach(fn func(from *State, to *State, sym Symbol)) {
 	keys := make([]transitionKey, 0, len(m.transitions))
 	for key := range m.transitions {
 		keys = append(keys, key)
@@ -244,27 +270,27 @@ func (m *transitions) ForEach(fn func(from *state, to *state, sym Symbol)) {
 	}
 }
 
-type actionType int
+type ActionType int
 
 const (
-	actionShift actionType = iota
-	actionReduce
-	actionAccept
+	ActionShift ActionType = iota
+	ActionReduce
+	ActionAccept
 )
 
-type action struct {
-	Type   actionType
+type Action struct {
+	Type   ActionType
 	Reduce *Rule
-	Shift  *state
+	Shift  *State
 }
 
-func (a action) String() string {
+func (a Action) String() string {
 	switch a.Type {
-	case actionShift:
+	case ActionShift:
 		return fmt.Sprintf("shift I%v", a.Shift.Index)
-	case actionReduce:
+	case ActionReduce:
 		return fmt.Sprintf("reduce %v", a.Reduce.SymName())
-	case actionAccept:
+	case ActionAccept:
 		return "accept"
 	default:
 		panic("not-reached")
@@ -272,24 +298,24 @@ func (a action) String() string {
 }
 
 type actionKey struct {
-	state *state
+	state *State
 	sym   Symbol
 }
 
-type actionMap struct {
-	actions map[actionKey]action
+type ActionMap struct {
+	actions map[actionKey]Action
 }
 
-func newActionMap() *actionMap {
-	return &actionMap{
-		actions: make(map[actionKey]action),
+func NewActionMap() *ActionMap {
+	return &ActionMap{
+		actions: make(map[actionKey]Action),
 	}
 }
 
-func (m *actionMap) Add(
-	state *state,
+func (m *ActionMap) Add(
+	state *State,
 	sym Symbol,
-	action action,
+	action Action,
 	logger *logger.Logger,
 ) bool {
 	key := actionKey{state, sym}
@@ -309,9 +335,9 @@ func (m *actionMap) Add(
 			action, action2 = action2, action
 		}
 		switch {
-		case action.Type == actionShift && action2.Type == actionReduce:
+		case action.Type == ActionShift && action2.Type == ActionReduce:
 			logger.Logf("CONFLICT: shift/reduce")
-		case action.Type == actionReduce && action2.Type == actionReduce:
+		case action.Type == ActionReduce && action2.Type == ActionReduce:
 			logger.Logf("CONFLICT: reduce/reduce")
 		default:
 			panic("invalid conflict")
@@ -323,32 +349,32 @@ func (m *actionMap) Add(
 	return true
 }
 
-type parserTable struct {
-	g           *AugmentedGrammar
-	states      *stateSet
-	transitions *transitions
-	actions     *actionMap
-	hasConflict bool
+type ParserTable struct {
+	Grammar     *AugmentedGrammar
+	States      *StateSet
+	Transitions *TransitionMap
+	Actions     *ActionMap
+	Ambiguous   bool
 }
 
-func newParserTable(g *AugmentedGrammar) *parserTable {
-	return &parserTable{
-		g:           g,
-		states:      newStateSet(),
-		transitions: newTransitions(),
-		actions:     newActionMap(),
+func NewParserTable(g *AugmentedGrammar) *ParserTable {
+	return &ParserTable{
+		Grammar:     g,
+		States:      NewStateSet(),
+		Transitions: NewTransitionMap(),
+		Actions:     NewActionMap(),
 	}
 }
 
-func (t *parserTable) PrintStateGraph(w io.Writer) {
+func (t *ParserTable) PrintStateGraph(w io.Writer) {
 	fmt.Fprintf(w, "digraph G {\n")
-	t.states.ForEach(func(s *state) {
+	t.States.ForEach(func(s *State) {
 		fmt.Fprintf(w, "  I%d [label=%q];\n",
 			s.Index,
-			fmt.Sprintf("I%d\n%v", s.Index, s.ToString(t.g)),
+			fmt.Sprintf("I%d\n%v", s.Index, s.ToString(t.Grammar)),
 		)
 	})
-	t.transitions.ForEach(func(from, to *state, sym Symbol) {
+	t.Transitions.ForEach(func(from, to *State, sym Symbol) {
 		fmt.Fprintf(w, "  I%d -> I%d [label=%q];\n",
 			from.Index,
 			to.Index,

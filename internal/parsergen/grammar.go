@@ -104,8 +104,6 @@ func termSymbols(terms []*Term) []Symbol {
 	return syms
 }
 
-var epsilon = &Terminal{Name: "ε", index: -1}
-
 type Terminal struct {
 	Name  string
 	index int
