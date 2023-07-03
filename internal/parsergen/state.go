@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+
+	"github.com/dcaiafa/lox/internal/util/logger"
 )
 
 type item struct {
@@ -233,6 +235,19 @@ type action struct {
 	Symbol Symbol
 }
 
+func (a action) String() string {
+	switch a.Type {
+	case actionShift:
+		return fmt.Sprintf("shift %v", a.Symbol.SymName())
+	case actionReduce:
+		return fmt.Sprintf("reduce %v", a.Symbol.SymName())
+	case actionAccept:
+		return "accept"
+	default:
+		panic("not-reached")
+	}
+}
+
 type actionKey struct {
 	state *state
 	sym   Symbol
@@ -248,24 +263,39 @@ func newActionMap() *actionMap {
 	}
 }
 
-func (m *actionMap) Add(state *state, sym Symbol, action action) conflictType {
+func (m *actionMap) Add(
+	state *state,
+	sym Symbol,
+	action action,
+	logger *logger.Logger,
+) bool {
 	key := actionKey{state, sym}
-	if action2, ok := m.actions[key]; ok {
-		if action == action2 {
-			return conflictNone
-		}
+	action2, exists := m.actions[key]
+	if exists && action == action2 {
+		return true
+	}
+
+	logger.Logf(
+		"state %v with %v: %v",
+		state.Index,
+		sym.SymName(),
+		action.String())
+
+	if exists {
 		if action2.Type > action.Type {
 			action, action2 = action2, action
 		}
 		switch {
 		case action.Type == actionShift && action2.Type == actionReduce:
-			return conflictShiftReduce
+			logger.Logf("CONFLICT: shift/reduce")
 		case action.Type == actionReduce && action2.Type == actionReduce:
-			return conflictReduceReduce
+			logger.Logf("CONFLICT: reduce/reduce")
 		default:
 			panic("invalid conflict")
 		}
+		return false
 	}
+
 	m.actions[key] = action
-	return conflictNone
+	return true
 }

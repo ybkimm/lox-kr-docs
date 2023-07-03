@@ -1,6 +1,7 @@
 package parsergen
 
 import (
+	"os"
 	"strings"
 	"testing"
 )
@@ -42,6 +43,7 @@ func TestConstruct(t *testing.T) {
 			},
 		},
 	}
+	g.SetLogWriter(os.Stdout)
 
 	g.preAnalysis()
 	if g.failed() {

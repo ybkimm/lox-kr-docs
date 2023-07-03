@@ -5,6 +5,7 @@ import (
 	"io"
 	"sort"
 
+	"github.com/dcaiafa/lox/internal/util/logger"
 	"github.com/dcaiafa/lox/internal/util/set"
 )
 
@@ -12,8 +13,7 @@ type Grammar struct {
 	Terminals []*Terminal
 	Rules     []*Rule
 
-	Logger io.Writer
-
+	logger      *logger.Logger
 	eof         *Terminal
 	syms        map[string]Symbol
 	prods       []*Prod
@@ -22,6 +22,10 @@ type Grammar struct {
 	transitions *transitions
 	actions     *actionMap
 	errs        Errors
+}
+
+func (g *Grammar) SetLogWriter(w io.Writer) {
+	g.logger = logger.New(w)
 }
 
 func (g *Grammar) Analyze() error {
@@ -37,8 +41,8 @@ func (g *Grammar) Analyze() error {
 }
 
 func (g *Grammar) preAnalysis() {
-	if g.Logger == nil {
-		g.Logger = io.Discard
+	if g.logger == nil {
+		g.logger = logger.New(io.Discard)
 	}
 
 	g.syms = make(map[string]Symbol)
@@ -254,18 +258,20 @@ func (g *Grammar) constructParsingTable() {
 		})
 	}
 
-	fmt.Fprintln(g.Logger, "STATES")
-	fmt.Fprintln(g.Logger, "======")
-	fmt.Fprintln(g.Logger, "")
+	g.logger.Logf("STATES")
+	g.logger.Logf("======")
+	g.logger.Logf("")
 
-	hasConflict := false
+	conflict := false
 	g.states.ForEach(func(s *state) {
+		logger := g.logger
 		if s.Index > 0 {
-			fmt.Fprint(g.Logger, "\n\n")
+			logger.Logf("")
 		}
-		fmt.Fprintf(g.Logger, "State %d:\n", s.Index)
-		fmt.Fprint(g.Logger, "\n")
-		fmt.Fprintln(g.Logger, s.ToString(g))
+		logger.Logf("State %d:", s.Index)
+		logger = logger.WithIndent()
+		logger.Logf("%v", s.ToString(g))
+		logger.Logf("")
 
 		for _, item := range s.Items {
 			prod := g.prods[item.Prod]
@@ -275,11 +281,8 @@ func (g *Grammar) constructParsingTable() {
 					act = action{actionAccept, nil}
 				}
 				terminal := g.Terminals[item.Terminal]
-				conflict := g.actions.Add(s, terminal, act)
-				if conflict != conflictNone {
-					fmt.Fprintf(g.Logger, "CONFLICT: %v when terminal is %v\n",
-						conflict, terminal.Name)
-					hasConflict = true
+				if !g.actions.Add(s, terminal, act, logger) {
+					conflict = true
 				}
 				continue
 			}
@@ -287,16 +290,12 @@ func (g *Grammar) constructParsingTable() {
 			if !ok {
 				continue
 			}
-			conflict := g.actions.Add(s, terminal, action{actionShift, terminal})
-			if conflict != conflictNone {
-				fmt.Fprintf(g.Logger, "CONFLICT: %v when terminal is %v\n",
-					conflict, terminal.Name)
-				hasConflict = true
+			if !g.actions.Add(s, terminal, action{actionShift, terminal}, logger) {
+				conflict = true
 			}
 		}
 	})
-
-	if hasConflict {
+	if conflict {
 		g.fail(ErrConflict)
 	}
 }
