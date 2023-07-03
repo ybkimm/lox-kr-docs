@@ -32,9 +32,9 @@ func (i *item) Key() []byte {
 	return key
 }
 
-func (i *item) ToString(g *Grammar) string {
+func (i *item) ToString(g *AugmentedGrammar) string {
 	var str strings.Builder
-	prod := g.prods[i.Prod]
+	prod := g.Prods[i.Prod]
 	rule := prod.rule
 
 	fmt.Fprintf(&str, "%v -> ", rule.Name)
@@ -84,7 +84,7 @@ type state struct {
 	Index int
 }
 
-func (s *state) ToString(g *Grammar) string {
+func (s *state) ToString(g *AugmentedGrammar) string {
 	var str strings.Builder
 	for i := range s.Items {
 		if i != 0 {
@@ -324,14 +324,14 @@ func (m *actionMap) Add(
 }
 
 type parserTable struct {
-	g           *Grammar
+	g           *AugmentedGrammar
 	states      *stateSet
 	transitions *transitions
 	actions     *actionMap
 	hasConflict bool
 }
 
-func newParserTable(g *Grammar) *parserTable {
+func newParserTable(g *AugmentedGrammar) *parserTable {
 	return &parserTable{
 		g:           g,
 		states:      newStateSet(),

@@ -7,14 +7,14 @@ type clr struct {
 	logger *logger.Logger
 }
 
-func constructCLR(g *Grammar, logger *logger.Logger) *parserTable {
+func constructCLR(g *AugmentedGrammar, logger *logger.Logger) *parserTable {
 	clr := &clr{
 		parserTable: newParserTable(g),
 		logger:      logger,
 	}
 
 	initialState := newStateBuilder()
-	initialState.Add(newItem(g.sp.Prods[0].index, 0, g.eof.index))
+	initialState.Add(newItem(g.Sprime.Prods[0].index, 0, g.EOF.index))
 	g.closure(initialState)
 
 	clr.states.Add(initialState.Build())
@@ -45,10 +45,10 @@ func constructCLR(g *Grammar, logger *logger.Logger) *parserTable {
 		logger.Logf("")
 
 		for _, item := range s.Items {
-			prod := g.prods[item.Prod]
+			prod := g.Prods[item.Prod]
 			if item.Dot == len(prod.Terms) {
 				act := action{Type: actionReduce, Reduce: prod.rule}
-				if prod.rule == g.sp {
+				if prod.rule == g.Sprime {
 					act = action{Type: actionAccept}
 				}
 				terminal := g.Terminals[item.Terminal]
@@ -75,7 +75,7 @@ func constructCLR(g *Grammar, logger *logger.Logger) *parserTable {
 func (clr *clr) gotoState(i *state, x Symbol) *state {
 	j := newStateBuilder()
 	for _, item := range i.Items {
-		prod := clr.g.prods[item.Prod]
+		prod := clr.g.Prods[item.Prod]
 		if item.Dot == len(prod.Terms) {
 			continue
 		}

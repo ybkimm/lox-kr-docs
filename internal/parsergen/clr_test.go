@@ -9,7 +9,7 @@ import (
 )
 
 func TestCLR(t *testing.T) {
-	g := &Grammar{
+	sg := &Grammar{
 		Terminals: []*Terminal{
 			{Name: "c"},
 			{Name: "d"},
@@ -30,11 +30,10 @@ func TestCLR(t *testing.T) {
 			},
 		},
 	}
-	g.SetLogWriter(os.Stdout)
 
-	g.preAnalysis()
-	if g.failed() {
-		t.Fatalf("preAnalysis failed: %v", g.errs)
+	g, err := sg.ToAugmentedGrammar()
+	if err != nil {
+		t.Fatalf("ToAugmentedGrammar failed: %v", err)
 	}
 
 	parserTable := constructCLR(g, logger.New(os.Stdout))
@@ -44,7 +43,7 @@ func TestCLR(t *testing.T) {
 
 	expected := `
 digraph G {
-  I0 [label="I0\nS -> .C C, $\nC -> .c C, c\nC -> .c C, d\nC -> .d, c\nC -> .d, d\nS' -> .S, $"];
+  I0 [label="I0\nS' -> .S, $\nS -> .C C, $\nC -> .c C, c\nC -> .c C, d\nC -> .d, c\nC -> .d, d"];
   I1 [label="I1\nS -> C .C, $\nC -> .c C, $\nC -> .d, $"];
   I2 [label="I2\nS' -> S., $"];
   I3 [label="I3\nC -> .c C, c\nC -> .c C, d\nC -> c .C, c\nC -> c .C, d\nC -> .d, c\nC -> .d, d"];

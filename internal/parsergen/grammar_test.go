@@ -5,16 +5,18 @@ import (
 )
 
 func TestFirst(t *testing.T) {
-	g := grammar4_11()
-	g.preAnalysis()
-	if g.failed() {
-		t.Fatalf("preAnalysis failed: %v", g.errs)
+	sg := grammar4_11()
+	g, err := sg.ToAugmentedGrammar()
+	if err != nil {
+		t.Fatalf("ToAugmentedGrammar failed: %v", err)
 	}
 
-	assertTerminalSetEq(t, g.first1(g.syms["E"]), "(", "id")
-	assertTerminalSetEq(t, g.first1(g.syms["E'"]), "+", "ε")
-	assertTerminalSetEq(t, g.first1(g.syms["T'"]), "*", "ε")
-	assertTerminalSetEq(t, g.first([]Symbol{g.syms["E'"], g.syms["E"]}), "+", "(", "id")
-	assertTerminalSetEq(t, g.first([]Symbol{g.syms["E'"], g.syms["T'"]}), "+", "*", "ε")
-	assertTerminalSetEq(t, g.first([]Symbol{g.syms["E'"], g.syms["id"]}), "+", "id")
+	syms, _ := g.symbolMap()
+
+	assertTerminalSetEq(t, g.first1(syms["E"]), "(", "id")
+	assertTerminalSetEq(t, g.first1(syms["E'"]), "+", "ε")
+	assertTerminalSetEq(t, g.first1(syms["T'"]), "*", "ε")
+	assertTerminalSetEq(t, g.first([]Symbol{syms["E'"], syms["E"]}), "+", "(", "id")
+	assertTerminalSetEq(t, g.first([]Symbol{syms["E'"], syms["T'"]}), "+", "*", "ε")
+	assertTerminalSetEq(t, g.first([]Symbol{syms["E'"], syms["id"]}), "+", "id")
 }

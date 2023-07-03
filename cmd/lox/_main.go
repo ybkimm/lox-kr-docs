@@ -52,8 +52,8 @@ func run(grammarFile string) error {
 	return nil
 }
 
-func toParserGrammar(spec *ast.Spec) *parsergen.Grammar {
-	grammar := new(parsergen.Grammar)
+func toParserGrammar(spec *ast.Spec) *parsergen.AugmentedGrammar {
+	grammar := new(parsergen.AugmentedGrammar)
 
 	for _, section := range spec.Sections {
 		switch section := section.(type) {
