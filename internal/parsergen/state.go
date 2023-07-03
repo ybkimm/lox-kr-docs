@@ -1,7 +1,9 @@
 package parsergen
 
 import (
+	"encoding/binary"
 	"fmt"
+	"io"
 	"sort"
 	"strings"
 
@@ -12,17 +14,22 @@ type item struct {
 	Prod     int
 	Dot      int
 	Terminal int
-	Key      string
 }
 
 func newItem(prod, dot, terminal int) item {
-	key := fmt.Sprintf("%06x%04x%06x", prod, dot, terminal)
 	return item{
 		Prod:     prod,
 		Dot:      dot,
 		Terminal: terminal,
-		Key:      key,
 	}
+}
+
+func (i *item) Key() []byte {
+	key := make([]byte, 0, binary.MaxVarintLen32*3)
+	key = binary.AppendUvarint(key, uint64(i.Prod))
+	key = binary.AppendUvarint(key, uint64(i.Dot))
+	key = binary.AppendUvarint(key, uint64(i.Terminal))
+	return key
 }
 
 func (i *item) ToString(g *Grammar) string {
@@ -99,10 +106,11 @@ func newStateBuilder() *stateBuilder {
 }
 
 func (b *stateBuilder) Add(item item) bool {
-	if _, ok := b.items[item.Key]; ok {
+	itemKey := string(item.Key())
+	if _, ok := b.items[itemKey]; ok {
 		return false
 	}
-	b.items[item.Key] = item
+	b.items[itemKey] = item
 	return true
 }
 
@@ -126,16 +134,21 @@ func (b *stateBuilder) Build() *state {
 		}
 	})
 
-	key := strings.Builder{}
-	const itemKeySize = 16
-	key.Grow(16 * len(items))
-	for _, item := range items {
-		key.WriteString(item.Key)
+	keyLen := 0
+	itemKeys := make([][]byte, len(items))
+	for i, item := range items {
+		itemKeys[i] = item.Key()
+		keyLen += len(itemKeys[i])
+	}
+
+	key := make([]byte, 0, keyLen)
+	for _, itemKey := range itemKeys {
+		key = append(key, itemKey...)
 	}
 
 	return &state{
 		Items: items,
-		Key:   key.String(),
+		Key:   string(key),
 	}
 }
 
@@ -308,4 +321,38 @@ func (m *actionMap) Add(
 
 	m.actions[key] = action
 	return true
+}
+
+type parserTable struct {
+	g           *Grammar
+	states      *stateSet
+	transitions *transitions
+	actions     *actionMap
+	hasConflict bool
+}
+
+func newParserTable(g *Grammar) *parserTable {
+	return &parserTable{
+		g:           g,
+		states:      newStateSet(),
+		transitions: newTransitions(),
+		actions:     newActionMap(),
+	}
+}
+
+func (t *parserTable) PrintStateGraph(w io.Writer) {
+	fmt.Fprintf(w, "digraph G {\n")
+	t.states.ForEach(func(s *state) {
+		fmt.Fprintf(w, "  I%d [label=%q];\n",
+			s.Index,
+			fmt.Sprintf("I%d\n%v", s.Index, s.ToString(t.g)),
+		)
+	})
+	t.transitions.ForEach(func(from, to *state, sym Symbol) {
+		fmt.Fprintf(w, "  I%d -> I%d [label=%q];\n",
+			from.Index,
+			to.Index,
+			sym.SymName())
+	})
+	fmt.Fprintf(w, "}\n")
 }

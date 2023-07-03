@@ -13,15 +13,12 @@ type Grammar struct {
 	Terminals []*Terminal
 	Rules     []*Rule
 
-	logger      *logger.Logger
-	eof         *Terminal
-	syms        map[string]Symbol
-	prods       []*Prod
-	sp          *Rule
-	states      *stateSet
-	transitions *transitions
-	actions     *actionMap
-	errs        Errors
+	logger *logger.Logger
+	eof    *Terminal
+	syms   map[string]Symbol
+	prods  []*Prod
+	sp     *Rule
+	errs   Errors
 }
 
 func (g *Grammar) SetLogWriter(w io.Writer) {
@@ -30,10 +27,6 @@ func (g *Grammar) SetLogWriter(w io.Writer) {
 
 func (g *Grammar) Analyze() error {
 	g.preAnalysis()
-	if g.failed() {
-		return &g.errs
-	}
-	g.constructParsingTable()
 	if g.failed() {
 		return &g.errs
 	}
@@ -237,70 +230,34 @@ func (g *Grammar) first(syms []Symbol) *set.Set[*Terminal] {
 	return fullSet
 }
 
-func (g *Grammar) constructParsingTable() {
-	initialState := newStateBuilder()
-	initialState.Add(newItem(g.sp.Prods[0].index, 0, g.eof.index))
-	g.closure(initialState)
+func (g *Grammar) constructLALR() {
+	//g.constructLR0Kernels()
+}
 
+/*
+func (g *Grammar) constructLR0Kernels() {
+	initialState := newStateBuilder()
+	initialState.Add(newItem(g.sp.Prods[0].index, 0, 0))
 	g.states = newStateSet()
-	g.transitions = newTransitions()
-	g.actions = newActionMap()
 	g.states.Add(initialState.Build())
 
 	for g.states.Changed() {
 		g.states.ResetChanged()
 
-		g.states.ForEach(func(fromState *state) {
-			for _, sym := range g.transitionSymbols(fromState) {
-				toState := g.gotoState(fromState, sym)
-				g.transitions.Add(fromState, toState, sym)
+		g.states.ForEach(func(s *state) {
+			for _, item := range s.Items {
+				prod := g.prods[item.Prod]
+				if item.Dot == len(prod.Terms) {
+					continue
+				}
+				term := prod.Terms[item.Dot]
+
+
 			}
 		})
 	}
-
-	g.logger.Logf("STATES")
-	g.logger.Logf("======")
-	g.logger.Logf("")
-
-	conflict := false
-	g.states.ForEach(func(s *state) {
-		logger := g.logger
-		if s.Index > 0 {
-			logger.Logf("")
-		}
-		logger.Logf("I%d:", s.Index)
-		logger = logger.WithIndent()
-		logger.Logf("%v", s.ToString(g))
-		logger.Logf("")
-
-		for _, item := range s.Items {
-			prod := g.prods[item.Prod]
-			if item.Dot == len(prod.Terms) {
-				act := action{Type: actionReduce, Reduce: prod.rule}
-				if prod.rule == g.sp {
-					act = action{Type: actionAccept}
-				}
-				terminal := g.Terminals[item.Terminal]
-				if !g.actions.Add(s, terminal, act, logger) {
-					conflict = true
-				}
-				continue
-			}
-			terminal, ok := prod.Terms[item.Dot].sym.(*Terminal)
-			if !ok {
-				continue
-			}
-			shiftState := g.transitions.Get(s, terminal)
-			shiftAction := action{Type: actionShift, Shift: shiftState}
-			if !g.actions.Add(s, terminal, shiftAction, logger) {
-				conflict = true
-			}
-		}
-	})
-	if conflict {
-		g.fail(ErrConflict)
-	}
 }
+*/
 
 func (g *Grammar) closure(i *stateBuilder) {
 	changed := true
@@ -328,23 +285,6 @@ func (g *Grammar) closure(i *stateBuilder) {
 	}
 }
 
-func (g *Grammar) gotoState(i *state, x Symbol) *state {
-	j := newStateBuilder()
-	for _, item := range i.Items {
-		prod := g.prods[item.Prod]
-		if item.Dot == len(prod.Terms) {
-			continue
-		}
-		term := prod.Terms[item.Dot].sym
-		if term != x {
-			continue
-		}
-		j.Add(newItem(item.Prod, item.Dot+1, item.Terminal))
-	}
-	g.closure(j)
-	return g.states.Add(j.Build())
-}
-
 func (g *Grammar) transitionSymbols(s *state) []Symbol {
 	symSet := new(set.Set[Symbol])
 	for _, item := range s.Items {
@@ -363,23 +303,6 @@ func (g *Grammar) transitionSymbols(s *state) []Symbol {
 	})
 
 	return syms
-}
-
-func (g *Grammar) PrintStateGraph(w io.Writer) {
-	fmt.Fprintf(w, "digraph G {\n")
-	g.states.ForEach(func(s *state) {
-		fmt.Fprintf(w, "  I%d [label=%q];\n",
-			s.Index,
-			fmt.Sprintf("I%d\n%v", s.Index, s.ToString(g)),
-		)
-	})
-	g.transitions.ForEach(func(from, to *state, sym Symbol) {
-		fmt.Fprintf(w, "  I%d -> I%d [label=%q];\n",
-			from.Index,
-			to.Index,
-			sym.SymName())
-	})
-	fmt.Fprintf(w, "}\n")
 }
 
 func (g *Grammar) Print(w io.Writer) {
