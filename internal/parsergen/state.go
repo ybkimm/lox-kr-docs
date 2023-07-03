@@ -202,6 +202,15 @@ func (m *transitions) Add(from *state, to *state, sym Symbol) {
 	m.transitions[key] = to
 }
 
+func (m *transitions) Get(from *state, sym Symbol) *state {
+	key := transitionKey{from, sym}
+	toState := m.transitions[key]
+	if toState == nil {
+		panic("no transition")
+	}
+	return toState
+}
+
 func (m *transitions) ForEach(fn func(from *state, to *state, sym Symbol)) {
 	keys := make([]transitionKey, 0, len(m.transitions))
 	for key := range m.transitions {
@@ -232,15 +241,16 @@ const (
 
 type action struct {
 	Type   actionType
-	Symbol Symbol
+	Reduce *Rule
+	Shift  *state
 }
 
 func (a action) String() string {
 	switch a.Type {
 	case actionShift:
-		return fmt.Sprintf("shift %v", a.Symbol.SymName())
+		return fmt.Sprintf("shift I%v", a.Shift.Index)
 	case actionReduce:
-		return fmt.Sprintf("reduce %v", a.Symbol.SymName())
+		return fmt.Sprintf("reduce %v", a.Reduce.SymName())
 	case actionAccept:
 		return "accept"
 	default:

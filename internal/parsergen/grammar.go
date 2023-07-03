@@ -268,7 +268,7 @@ func (g *Grammar) constructParsingTable() {
 		if s.Index > 0 {
 			logger.Logf("")
 		}
-		logger.Logf("State %d:", s.Index)
+		logger.Logf("I%d:", s.Index)
 		logger = logger.WithIndent()
 		logger.Logf("%v", s.ToString(g))
 		logger.Logf("")
@@ -276,9 +276,9 @@ func (g *Grammar) constructParsingTable() {
 		for _, item := range s.Items {
 			prod := g.prods[item.Prod]
 			if item.Dot == len(prod.Terms) {
-				act := action{actionReduce, prod.rule}
+				act := action{Type: actionReduce, Reduce: prod.rule}
 				if prod.rule == g.sp {
-					act = action{actionAccept, nil}
+					act = action{Type: actionAccept}
 				}
 				terminal := g.Terminals[item.Terminal]
 				if !g.actions.Add(s, terminal, act, logger) {
@@ -290,7 +290,9 @@ func (g *Grammar) constructParsingTable() {
 			if !ok {
 				continue
 			}
-			if !g.actions.Add(s, terminal, action{actionShift, terminal}, logger) {
+			shiftState := g.transitions.Get(s, terminal)
+			shiftAction := action{Type: actionShift, Shift: shiftState}
+			if !g.actions.Add(s, terminal, shiftAction, logger) {
 				conflict = true
 			}
 		}
