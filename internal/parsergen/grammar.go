@@ -12,12 +12,15 @@ type Grammar struct {
 	Terminals []*Terminal
 	Rules     []*Rule
 
+	Logger io.Writer
+
 	eof         *Terminal
 	syms        map[string]Symbol
 	prods       []*Prod
 	sp          *Rule
 	states      *stateSet
 	transitions *transitions
+	actions     *actionMap
 	errs        Errors
 }
 
@@ -26,10 +29,18 @@ func (g *Grammar) Analyze() error {
 	if g.failed() {
 		return &g.errs
 	}
+	g.constructParsingTable()
+	if g.failed() {
+		return &g.errs
+	}
 	return nil
 }
 
 func (g *Grammar) preAnalysis() {
+	if g.Logger == nil {
+		g.Logger = io.Discard
+	}
+
 	g.syms = make(map[string]Symbol)
 	g.Terminals = append(g.Terminals, epsilon)
 
@@ -222,13 +233,14 @@ func (g *Grammar) first(syms []Symbol) *set.Set[*Terminal] {
 	return fullSet
 }
 
-func (g *Grammar) construct() {
+func (g *Grammar) constructParsingTable() {
 	initialState := newStateBuilder()
 	initialState.Add(newItem(g.sp.Prods[0].index, 0, g.eof.index))
 	g.closure(initialState)
 
 	g.states = newStateSet()
 	g.transitions = newTransitions()
+	g.actions = newActionMap()
 	g.states.Add(initialState.Build())
 
 	for g.states.Changed() {
@@ -240,6 +252,52 @@ func (g *Grammar) construct() {
 				g.transitions.Add(fromState, toState, sym)
 			}
 		})
+	}
+
+	fmt.Fprintln(g.Logger, "STATES")
+	fmt.Fprintln(g.Logger, "======")
+	fmt.Fprintln(g.Logger, "")
+
+	hasConflict := false
+	g.states.ForEach(func(s *state) {
+		if s.Index > 0 {
+			fmt.Fprint(g.Logger, "\n\n")
+		}
+		fmt.Fprintf(g.Logger, "State %d:\n", s.Index)
+		fmt.Fprint(g.Logger, "\n")
+		fmt.Fprintln(g.Logger, s.ToString(g))
+
+		for _, item := range s.Items {
+			prod := g.prods[item.Prod]
+			if item.Dot == len(prod.Terms) {
+				act := action{actionReduce, prod.rule}
+				if prod.rule == g.sp {
+					act = action{actionAccept, nil}
+				}
+				terminal := g.Terminals[item.Terminal]
+				conflict := g.actions.Add(s, terminal, act)
+				if conflict != conflictNone {
+					fmt.Fprintf(g.Logger, "CONFLICT: %v when terminal is %v\n",
+						conflict, terminal.Name)
+					hasConflict = true
+				}
+				continue
+			}
+			terminal, ok := prod.Terms[item.Dot].sym.(*Terminal)
+			if !ok {
+				continue
+			}
+			conflict := g.actions.Add(s, terminal, action{actionShift, terminal})
+			if conflict != conflictNone {
+				fmt.Fprintf(g.Logger, "CONFLICT: %v when terminal is %v\n",
+					conflict, terminal.Name)
+				hasConflict = true
+			}
+		}
+	})
+
+	if hasConflict {
+		g.fail(ErrConflict)
 	}
 }
 
@@ -306,7 +364,7 @@ func (g *Grammar) transitionSymbols(s *state) []Symbol {
 	return syms
 }
 
-func (g *Grammar) printStateGraph(w io.Writer) {
+func (g *Grammar) PrintStateGraph(w io.Writer) {
 	fmt.Fprintf(w, "digraph G {\n")
 	g.states.ForEach(func(s *state) {
 		fmt.Fprintf(w, "  I%d [label=%q];\n",

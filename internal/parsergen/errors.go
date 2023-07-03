@@ -1,6 +1,7 @@
 package parsergen
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -34,3 +35,5 @@ type UndefinedError struct {
 func (e *UndefinedError) Error() string {
 	return fmt.Sprintf("undefined: %s/%s", e.Rule.Name, e.Term.Name)
 }
+
+var ErrConflict = errors.New("grammar has conflict(s). Checkout spec for details")

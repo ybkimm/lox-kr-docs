@@ -48,6 +48,27 @@ func (i *item) ToString(g *Grammar) string {
 	return str.String()
 }
 
+type conflictType int
+
+const (
+	conflictNone conflictType = iota
+	conflictShiftReduce
+	conflictReduceReduce
+)
+
+func (c conflictType) String() string {
+	switch c {
+	case conflictNone:
+		return "none"
+	case conflictShiftReduce:
+		return "shift/reduce"
+	case conflictReduceReduce:
+		return "reduce/reduce"
+	default:
+		return "???"
+	}
+}
+
 type state struct {
 	Items []item
 	Key   string
@@ -199,13 +220,18 @@ func (m *transitions) ForEach(fn func(from *state, to *state, sym Symbol)) {
 	}
 }
 
-type action int
+type actionType int
 
 const (
-	actionShift action = iota
+	actionShift actionType = iota
 	actionReduce
 	actionAccept
 )
+
+type action struct {
+	Type   actionType
+	Symbol Symbol
+}
 
 type actionKey struct {
 	state *state
@@ -222,18 +248,24 @@ func newActionMap() *actionMap {
 	}
 }
 
-func (m *actionMap) Add(
-	state *state,
-	sym Symbol,
-	action action,
-) (conflict bool, conflictAction action) {
+func (m *actionMap) Add(state *state, sym Symbol, action action) conflictType {
 	key := actionKey{state, sym}
-	if existing, ok := m.actions[key]; ok {
-		conflict = true
-		conflictAction = existing
-		return
+	if action2, ok := m.actions[key]; ok {
+		if action == action2 {
+			return conflictNone
+		}
+		if action2.Type > action.Type {
+			action, action2 = action2, action
+		}
+		switch {
+		case action.Type == actionShift && action2.Type == actionReduce:
+			return conflictShiftReduce
+		case action.Type == actionReduce && action2.Type == actionReduce:
+			return conflictReduceReduce
+		default:
+			panic("invalid conflict")
+		}
 	}
 	m.actions[key] = action
-	conflict = false
-	return
+	return conflictNone
 }

@@ -48,10 +48,10 @@ func TestConstruct(t *testing.T) {
 		t.Fatalf("preAnalysis failed: %v", g.errs)
 	}
 
-	g.construct()
+	g.constructParsingTable()
 
 	var graph strings.Builder
-	g.printStateGraph(&graph)
+	g.PrintStateGraph(&graph)
 
 	expected := `
 digraph G {
