@@ -1,10 +1,8 @@
-package parsergen
+package grammar
 
 import (
 	"fmt"
 	"io"
-
-	"github.com/dcaiafa/lox/internal/util/set"
 )
 
 type Grammar struct {
@@ -19,8 +17,6 @@ type Symbol interface {
 type Rule struct {
 	Name  string
 	Prods []*Prod
-
-	firstSet *set.Set[*Terminal]
 }
 
 func (r *Rule) SymName() string {
@@ -58,12 +54,9 @@ func (r *Rule) Print(w io.Writer) {
 
 type Prod struct {
 	Terms []*Term
-
-	rule  *Rule
-	index int
 }
 
-func newProd(terms ...*Term) *Prod {
+func NewProd(terms ...*Term) *Prod {
 	return &Prod{
 		Terms: terms,
 	}
@@ -81,14 +74,11 @@ const (
 type Term struct {
 	Name        string
 	Cardinality Cardinality
-
-	sym Symbol
 }
 
-func newTerm(sym Symbol, q ...Cardinality) *Term {
+func NewTerm(sym Symbol, q ...Cardinality) *Term {
 	t := &Term{
 		Name: sym.SymName(),
-		sym:  sym,
 	}
 	if len(q) != 0 {
 		t.Cardinality = q[0]
@@ -96,17 +86,8 @@ func newTerm(sym Symbol, q ...Cardinality) *Term {
 	return t
 }
 
-func termSymbols(terms []*Term) []Symbol {
-	syms := make([]Symbol, len(terms))
-	for i, term := range terms {
-		syms[i] = term.sym
-	}
-	return syms
-}
-
 type Terminal struct {
-	Name  string
-	index int
+	Name string
 }
 
 func (t *Terminal) SymName() string {

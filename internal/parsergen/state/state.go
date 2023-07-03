@@ -1,4 +1,4 @@
-package parsergen
+package state
 
 import (
 	"encoding/binary"
@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/dcaiafa/lox/internal/parsergen/grammar"
 	"github.com/dcaiafa/lox/internal/util/logger"
 	"github.com/dcaiafa/lox/internal/util/set"
 )
@@ -17,11 +18,11 @@ type Item struct {
 	Terminal int
 }
 
-func NewItem(prod, dot, terminal int) Item {
+func NewItem(g *grammar.AugmentedGrammar, prod *grammar.Prod, dot int, terminal *grammar.Terminal) Item {
 	return Item{
-		Prod:     prod,
+		Prod:     g.ProdIndex(prod),
 		Dot:      dot,
-		Terminal: terminal,
+		Terminal: g.TerminalIndex(terminal),
 	}
 }
 
@@ -33,10 +34,10 @@ func (i *Item) Key() []byte {
 	return key
 }
 
-func (i *Item) ToString(g *AugmentedGrammar) string {
+func (i *Item) ToString(g *grammar.AugmentedGrammar) string {
 	var str strings.Builder
 	prod := g.Prods[i.Prod]
-	rule := prod.rule
+	rule := g.ProdRule(prod)
 
 	fmt.Fprintf(&str, "%v -> ", rule.Name)
 	for j, term := range prod.Terms {
@@ -46,7 +47,7 @@ func (i *Item) ToString(g *AugmentedGrammar) string {
 		if j == i.Dot {
 			str.WriteString(".")
 		}
-		str.WriteString(term.sym.SymName())
+		str.WriteString(g.TermSymbol(term).SymName())
 	}
 	if i.Dot == len(prod.Terms) {
 		str.WriteString(".")
@@ -64,14 +65,14 @@ type State struct {
 	Index int
 }
 
-func (s *State) DotSymbols(g *AugmentedGrammar) []Symbol {
-	symSet := new(set.Set[Symbol])
+func (s *State) DotSymbols(g *grammar.AugmentedGrammar) []grammar.Symbol {
+	symSet := new(set.Set[grammar.Symbol])
 	for _, item := range s.Items {
 		prod := g.Prods[item.Prod]
 		if item.Dot >= len(prod.Terms) {
 			continue
 		}
-		symSet.Add(prod.Terms[item.Dot].sym)
+		symSet.Add(g.TermSymbol(prod.Terms[item.Dot]))
 	}
 	syms := symSet.Elements()
 
@@ -84,7 +85,7 @@ func (s *State) DotSymbols(g *AugmentedGrammar) []Symbol {
 	return syms
 }
 
-func (s *State) ToString(g *AugmentedGrammar) string {
+func (s *State) ToString(g *grammar.AugmentedGrammar) string {
 	var str strings.Builder
 	for i := range s.Items {
 		if i != 0 {
@@ -114,7 +115,7 @@ func (b *StateBuilder) Add(item Item) bool {
 	return true
 }
 
-func (b *StateBuilder) Closure(g *AugmentedGrammar) {
+func (b *StateBuilder) Closure(g *grammar.AugmentedGrammar) {
 	changed := true
 	for changed {
 		changed = false
@@ -124,16 +125,16 @@ func (b *StateBuilder) Closure(g *AugmentedGrammar) {
 			if item.Dot == len(prod.Terms) {
 				continue
 			}
-			B, ok := prod.Terms[item.Dot].sym.(*Rule)
+			B, ok := g.TermSymbol(prod.Terms[item.Dot]).(*grammar.Rule)
 			if !ok {
 				continue
 			}
-			beta := termSymbols(prod.Terms[item.Dot+1:])
+			beta := g.TermSymbols(prod.Terms[item.Dot+1:])
 			a := g.Terminals[item.Terminal]
 			firstSet := g.First(append(beta, a))
 			for _, prodB := range B.Prods {
-				firstSet.ForEach(func(t *Terminal) {
-					changed = b.Add(NewItem(prodB.index, 0, t.index)) || changed
+				firstSet.ForEach(func(terminal *grammar.Terminal) {
+					changed = b.Add(NewItem(g, prodB, 0, terminal)) || changed
 				})
 			}
 		}
@@ -217,7 +218,7 @@ func (c *StateSet) ForEach(fn func(s *State)) {
 
 type transitionKey struct {
 	From *State
-	Sym  Symbol
+	Sym  grammar.Symbol
 }
 
 type TransitionMap struct {
@@ -230,7 +231,7 @@ func NewTransitionMap() *TransitionMap {
 	}
 }
 
-func (m *TransitionMap) Add(from *State, to *State, sym Symbol) {
+func (m *TransitionMap) Add(from *State, to *State, sym grammar.Symbol) {
 	key := transitionKey{from, sym}
 	if existing, ok := m.transitions[key]; ok {
 		if existing != to {
@@ -241,7 +242,7 @@ func (m *TransitionMap) Add(from *State, to *State, sym Symbol) {
 	m.transitions[key] = to
 }
 
-func (m *TransitionMap) Get(from *State, sym Symbol) *State {
+func (m *TransitionMap) Get(from *State, sym grammar.Symbol) *State {
 	key := transitionKey{from, sym}
 	toState := m.transitions[key]
 	if toState == nil {
@@ -250,7 +251,7 @@ func (m *TransitionMap) Get(from *State, sym Symbol) *State {
 	return toState
 }
 
-func (m *TransitionMap) ForEach(fn func(from *State, to *State, sym Symbol)) {
+func (m *TransitionMap) ForEach(fn func(from *State, to *State, sym grammar.Symbol)) {
 	keys := make([]transitionKey, 0, len(m.transitions))
 	for key := range m.transitions {
 		keys = append(keys, key)
@@ -280,7 +281,7 @@ const (
 
 type Action struct {
 	Type   ActionType
-	Reduce *Rule
+	Reduce *grammar.Rule
 	Shift  *State
 }
 
@@ -299,7 +300,7 @@ func (a Action) String() string {
 
 type actionKey struct {
 	state *State
-	sym   Symbol
+	sym   grammar.Symbol
 }
 
 type ActionMap struct {
@@ -314,7 +315,7 @@ func NewActionMap() *ActionMap {
 
 func (m *ActionMap) Add(
 	state *State,
-	sym Symbol,
+	sym grammar.Symbol,
 	action Action,
 	logger *logger.Logger,
 ) bool {
@@ -350,14 +351,14 @@ func (m *ActionMap) Add(
 }
 
 type ParserTable struct {
-	Grammar     *AugmentedGrammar
+	Grammar     *grammar.AugmentedGrammar
 	States      *StateSet
 	Transitions *TransitionMap
 	Actions     *ActionMap
 	Ambiguous   bool
 }
 
-func NewParserTable(g *AugmentedGrammar) *ParserTable {
+func NewParserTable(g *grammar.AugmentedGrammar) *ParserTable {
 	return &ParserTable{
 		Grammar:     g,
 		States:      NewStateSet(),
@@ -374,7 +375,7 @@ func (t *ParserTable) PrintStateGraph(w io.Writer) {
 			fmt.Sprintf("I%d\n%v", s.Index, s.ToString(t.Grammar)),
 		)
 	})
-	t.Transitions.ForEach(func(from, to *State, sym Symbol) {
+	t.Transitions.ForEach(func(from, to *State, sym grammar.Symbol) {
 		fmt.Fprintf(w, "  I%d -> I%d [label=%q];\n",
 			from.Index,
 			to.Index,

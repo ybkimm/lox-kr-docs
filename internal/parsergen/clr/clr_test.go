@@ -1,31 +1,32 @@
-package parsergen
+package clr
 
 import (
 	"os"
 	"strings"
 	"testing"
 
+	"github.com/dcaiafa/lox/internal/parsergen/grammar"
 	"github.com/dcaiafa/lox/internal/util/logger"
 )
 
 func TestCLR(t *testing.T) {
-	sg := &Grammar{
-		Terminals: []*Terminal{
+	sg := &grammar.Grammar{
+		Terminals: []*grammar.Terminal{
 			{Name: "c"},
 			{Name: "d"},
 		},
-		Rules: []*Rule{
+		Rules: []*grammar.Rule{
 			{
 				Name: "S",
-				Prods: []*Prod{
-					{Terms: []*Term{{Name: "C"}, {Name: "C"}}},
+				Prods: []*grammar.Prod{
+					{Terms: []*grammar.Term{{Name: "C"}, {Name: "C"}}},
 				},
 			},
 			{
 				Name: "C",
-				Prods: []*Prod{
-					{Terms: []*Term{{Name: "c"}, {Name: "C"}}},
-					{Terms: []*Term{{Name: "d"}}},
+				Prods: []*grammar.Prod{
+					{Terms: []*grammar.Term{{Name: "c"}, {Name: "C"}}},
+					{Terms: []*grammar.Term{{Name: "d"}}},
 				},
 			},
 		},
