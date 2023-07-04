@@ -11,14 +11,14 @@ import (
 
 var updateBaseline = flag.Bool("update-baseline", false, "update _baseline/*.txt files")
 
-// Compare compares output against the contents of file
+// Assert compares output against the contents of file
 // _baseline/<TestName>.txt. If the contents don't match,
 // the diff is displayed and the test fails.
 //
 // To regenerated the baseline, run:
 //
 //	go test -run <your-test> -args -update-baseline
-func Compare(t *testing.T, output string) {
+func Assert(t *testing.T, output string) {
 	baselineFilename := filepath.Join("_baseline", t.Name()+".txt")
 
 	if *updateBaseline {

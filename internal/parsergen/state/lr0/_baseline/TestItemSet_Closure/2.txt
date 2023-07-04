@@ -1,0 +1,9 @@
+ItemSet:
+E -> E + .T
+
+Closure:
+E -> E + .T
+T -> .T + F
+T -> .F
+F -> .( E )
+F -> .id
