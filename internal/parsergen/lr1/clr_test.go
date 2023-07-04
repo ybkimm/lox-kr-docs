@@ -1,4 +1,4 @@
-package clr
+package lr1
 
 import (
 	"regexp"
