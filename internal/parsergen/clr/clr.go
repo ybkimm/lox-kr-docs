@@ -6,40 +6,28 @@ import (
 	"github.com/dcaiafa/lox/internal/util/logger"
 )
 
-type clr struct {
-	*state.ParserTable
-	logger *logger.Logger
-}
+func ConstructParserTable(g *grammar.AugmentedGrammar, logger *logger.Logger) *state.ParserTable {
+	pt := state.NewParserTable(g)
 
-func constructCLR(g *grammar.AugmentedGrammar, logger *logger.Logger) *state.ParserTable {
-	clr := &clr{
-		ParserTable: state.NewParserTable(g),
-		logger:      logger,
-	}
-
-	initialState := state.NewStateBuilder()
+	initialState := state.NewItemSet(g)
 	initialState.Add(state.NewItem(g, g.Sprime.Prods[0], 0, g.EOF))
-	initialState.Closure(g)
+	initialState.Closure()
 
-	clr.States.Add(initialState.Build())
+	pt.States.Add(initialState.State())
 
-	for clr.States.Changed() {
-		clr.States.ResetChanged()
-
-		clr.States.ForEach(func(fromState *state.State) {
-			for _, sym := range fromState.DotSymbols(g) {
-				toState := clr.gotoState(g, fromState, sym)
-				clr.Transitions.Add(fromState, toState, sym)
+	for pt.States.Changed() {
+		pt.States.ResetChanged()
+		pt.States.ForEach(func(fromState *state.State) {
+			fromItemSet := fromState.ItemSet(g)
+			for _, sym := range fromItemSet.FollowingSymbols() {
+				toState := gotoState(pt, fromItemSet, sym)
+				pt.Transitions.Add(fromState, toState, sym)
 			}
 		})
 	}
 
-	clr.logger.Logf("STATES")
-	clr.logger.Logf("======")
-	clr.logger.Logf("")
-
-	clr.States.ForEach(func(s *state.State) {
-		logger := clr.logger
+	pt.States.ForEach(func(s *state.State) {
+		logger := logger
 		if s.Index > 0 {
 			logger.Logf("")
 		}
@@ -48,7 +36,7 @@ func constructCLR(g *grammar.AugmentedGrammar, logger *logger.Logger) *state.Par
 		logger.Logf("%v", s.ToString(g))
 		logger.Logf("")
 
-		for _, item := range s.Items {
+		s.ItemSet(g).ForEach(func(item state.Item) {
 			prod := g.Prods[item.Prod]
 			if item.Dot == uint32(len(prod.Terms)) {
 				rule := g.ProdRule(prod)
@@ -60,45 +48,48 @@ func constructCLR(g *grammar.AugmentedGrammar, logger *logger.Logger) *state.Par
 					act = state.Action{Type: state.ActionAccept}
 				}
 				terminal := g.Terminals[item.Terminal]
-				if !clr.Actions.Add(s, terminal, act, logger) {
-					clr.Ambiguous = true
+				if !pt.Actions.Add(s, terminal, act, logger) {
+					pt.Ambiguous = true
 				}
-				continue
+				return
 			}
 			terminal, ok := g.TermSymbol(prod.Terms[item.Dot]).(*grammar.Terminal)
 			if !ok {
-				continue
+				return
 			}
-			shiftState := clr.Transitions.Get(s, terminal)
+			shiftState := pt.Transitions.Get(s, terminal)
 			shiftAction := state.Action{
 				Type:  state.ActionShift,
 				Shift: shiftState,
 			}
-			if !clr.Actions.Add(s, terminal, shiftAction, logger) {
-				clr.Ambiguous = true
+			if !pt.Actions.Add(s, terminal, shiftAction, logger) {
+				pt.Ambiguous = true
 			}
-		}
+		})
 	})
 
-	return clr.ParserTable
+	return pt
 }
 
-func (clr *clr) gotoState(g *grammar.AugmentedGrammar, i *state.State, x grammar.Symbol) *state.State {
-	j := state.NewStateBuilder()
-	for _, item := range i.Items {
-		prod := clr.Grammar.Prods[item.Prod]
+func gotoState(
+	pt *state.ParserTable,
+	from *state.ItemSet,
+	sym grammar.Symbol,
+) *state.State {
+	toState := state.NewItemSet(pt.Grammar)
+	from.ForEach(func(item state.Item) {
+		prod := pt.Grammar.Prods[item.Prod]
 		if item.Dot == uint32(len(prod.Terms)) {
-			continue
+			return
 		}
-		term := g.TermSymbol(prod.Terms[item.Dot])
-		if term != x {
-			continue
+		term := pt.Grammar.TermSymbol(prod.Terms[item.Dot])
+		if term != sym {
+			return
 		}
-
 		toItem := item
 		toItem.Dot++
-		j.Add(toItem)
-	}
-	j.Closure(clr.Grammar)
-	return clr.States.Add(j.Build())
+		toState.Add(toItem)
+	})
+	toState.Closure()
+	return pt.States.Add(toState.State())
 }
