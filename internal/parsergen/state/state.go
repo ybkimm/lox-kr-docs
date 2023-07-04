@@ -13,16 +13,16 @@ import (
 )
 
 type Item struct {
-	Prod     int
-	Dot      int
-	Terminal int
+	Prod     uint32
+	Dot      uint32
+	Terminal uint32
 }
 
 func NewItem(g *grammar.AugmentedGrammar, prod *grammar.Prod, dot int, terminal *grammar.Terminal) Item {
 	return Item{
-		Prod:     g.ProdIndex(prod),
-		Dot:      dot,
-		Terminal: g.TerminalIndex(terminal),
+		Prod:     uint32(g.ProdIndex(prod)),
+		Dot:      uint32(dot),
+		Terminal: uint32(g.TerminalIndex(terminal)),
 	}
 }
 
@@ -44,12 +44,12 @@ func (i *Item) ToString(g *grammar.AugmentedGrammar) string {
 		if j != 0 {
 			str.WriteString(" ")
 		}
-		if j == i.Dot {
+		if uint32(j) == i.Dot {
 			str.WriteString(".")
 		}
 		str.WriteString(g.TermSymbol(term).SymName())
 	}
-	if i.Dot == len(prod.Terms) {
+	if i.Dot == uint32(len(prod.Terms)) {
 		str.WriteString(".")
 	}
 	str.WriteString(", ")
@@ -69,7 +69,7 @@ func (s *State) DotSymbols(g *grammar.AugmentedGrammar) []grammar.Symbol {
 	symSet := new(set.Set[grammar.Symbol])
 	for _, item := range s.Items {
 		prod := g.Prods[item.Prod]
-		if item.Dot >= len(prod.Terms) {
+		if item.Dot >= uint32(len(prod.Terms)) {
 			continue
 		}
 		symSet.Add(g.TermSymbol(prod.Terms[item.Dot]))
@@ -122,7 +122,7 @@ func (b *StateBuilder) Closure(g *grammar.AugmentedGrammar) {
 		// For each item [A -> α.Bβ, a]:
 		for _, item := range b.items {
 			prod := g.Prods[item.Prod]
-			if item.Dot == len(prod.Terms) {
+			if item.Dot == uint32(len(prod.Terms)) {
 				continue
 			}
 			B, ok := g.TermSymbol(prod.Terms[item.Dot]).(*grammar.Rule)

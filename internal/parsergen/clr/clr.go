@@ -50,7 +50,7 @@ func constructCLR(g *grammar.AugmentedGrammar, logger *logger.Logger) *state.Par
 
 		for _, item := range s.Items {
 			prod := g.Prods[item.Prod]
-			if item.Dot == len(prod.Terms) {
+			if item.Dot == uint32(len(prod.Terms)) {
 				rule := g.ProdRule(prod)
 				act := state.Action{
 					Type:   state.ActionReduce,
@@ -87,7 +87,7 @@ func (clr *clr) gotoState(g *grammar.AugmentedGrammar, i *state.State, x grammar
 	j := state.NewStateBuilder()
 	for _, item := range i.Items {
 		prod := clr.Grammar.Prods[item.Prod]
-		if item.Dot == len(prod.Terms) {
+		if item.Dot == uint32(len(prod.Terms)) {
 			continue
 		}
 		term := g.TermSymbol(prod.Terms[item.Dot])
