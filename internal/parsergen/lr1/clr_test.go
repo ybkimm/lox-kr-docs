@@ -45,6 +45,6 @@ func TestCLR(t *testing.T) {
 	}
 
 	report := strings.Builder{}
-	_ = ConstructParserTable(g, logger.New(&report))
+	_ = ConstructCLR(g, logger.New(&report))
 	baseline.Assert(t, report.String())
 }

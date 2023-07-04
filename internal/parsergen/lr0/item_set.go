@@ -1,4 +1,4 @@
-package lr1
+package lr0
 
 import (
 	"encoding/binary"
