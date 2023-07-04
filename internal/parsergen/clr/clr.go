@@ -6,7 +6,10 @@ import (
 	"github.com/dcaiafa/lox/internal/util/logger"
 )
 
-func ConstructParserTable(g *grammar.AugmentedGrammar, logger *logger.Logger) *state.ParserTable {
+func ConstructParserTable(
+	g *grammar.AugmentedGrammar,
+	logger *logger.Logger,
+) *state.ParserTable {
 	pt := state.NewParserTable(g)
 
 	initialState := state.NewItemSet(g)
@@ -20,7 +23,8 @@ func ConstructParserTable(g *grammar.AugmentedGrammar, logger *logger.Logger) *s
 		pt.States.ForEach(func(fromState *state.State) {
 			fromItemSet := fromState.ItemSet(g)
 			for _, sym := range fromItemSet.FollowingSymbols() {
-				toState := gotoState(pt, fromItemSet, sym)
+				toItemSet := state.Goto(g, fromItemSet, sym)
+				toState := pt.States.Add(toItemSet.State())
 				pt.Transitions.Add(fromState, toState, sym)
 			}
 		})
@@ -69,27 +73,4 @@ func ConstructParserTable(g *grammar.AugmentedGrammar, logger *logger.Logger) *s
 	})
 
 	return pt
-}
-
-func gotoState(
-	pt *state.ParserTable,
-	from *state.ItemSet,
-	sym grammar.Symbol,
-) *state.State {
-	toState := state.NewItemSet(pt.Grammar)
-	from.ForEach(func(item state.Item) {
-		prod := pt.Grammar.Prods[item.Prod]
-		if item.Dot == uint32(len(prod.Terms)) {
-			return
-		}
-		term := pt.Grammar.TermSymbol(prod.Terms[item.Dot])
-		if term != sym {
-			return
-		}
-		toItem := item
-		toItem.Dot++
-		toState.Add(toItem)
-	})
-	toState.Closure()
-	return pt.States.Add(toState.State())
 }

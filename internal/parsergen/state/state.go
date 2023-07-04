@@ -416,3 +416,26 @@ func (t *ParserTable) PrintStateGraph(w io.Writer) {
 	})
 	fmt.Fprintln(w, `}`)
 }
+
+func Goto(
+	g *grammar.AugmentedGrammar,
+	from *ItemSet,
+	sym grammar.Symbol,
+) *ItemSet {
+	toState := NewItemSet(g)
+	from.ForEach(func(item Item) {
+		prod := g.Prods[item.Prod]
+		if item.Dot == uint32(len(prod.Terms)) {
+			return
+		}
+		term := g.TermSymbol(prod.Terms[item.Dot])
+		if term != sym {
+			return
+		}
+		toItem := item
+		toItem.Dot++
+		toState.Add(toItem)
+	})
+	toState.Closure()
+	return toState
+}

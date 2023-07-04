@@ -1,11 +1,25 @@
 package lalr
 
-import (
-	"github.com/dcaiafa/lox/internal/parsergen/grammar"
-	"github.com/dcaiafa/lox/internal/parsergen/state"
-	"github.com/dcaiafa/lox/internal/util/logger"
-)
-
-func ConstructParserTable(g *grammar.Grammar, logger *logger.Logger) *state.ParserTable {
-	panic("not-impl")
+/*
+func ConstructParserTable(
+	g *grammar.AugmentedGrammar,
+	logger *logger.Logger,
+) *state.ParserTable {
 }
+
+func lr0Items(g *grammar.AugmentedGrammar) *state.StateSet {
+	stateSet := state.NewStateSet()
+
+	first := state.NewItemSet(g)
+	first.Add(state.NewItem(g, g.Sprime.Prods[0], 0, g.EOF))
+	first.Closure()
+	stateSet.Add(first.State())
+
+	for stateSet.Changed() {
+		stateSet.ResetChanged()
+		stateSet.ForEach(func (state *state.State) {
+			itemSet := state.ItemSet(g)
+		})
+	}
+}
+*/
