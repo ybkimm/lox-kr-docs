@@ -5,7 +5,6 @@ import (
 	"sort"
 
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
-	"github.com/dcaiafa/lox/internal/util/logger"
 	"github.com/dcaiafa/lox/internal/util/set"
 )
 
@@ -25,7 +24,6 @@ func (m *ActionMap) Add(
 	state *ItemSet,
 	sym grammar.Symbol,
 	action Action,
-	logger *logger.Logger,
 ) {
 	stateActs := m.states[state]
 	if stateActs == nil {
@@ -40,17 +38,7 @@ func (m *ActionMap) Add(
 	if actionSet.Has(action) {
 		return
 	}
-
-	logger.Logf(
-		"state %v with %v: %v",
-		state.Index,
-		sym.SymName(),
-		action.String())
-
 	actionSet.Add(action)
-	if actionSet.Len() > 1 {
-		panic("ambiguous")
-	}
 }
 
 func (m *ActionMap) ForEachActionSet(

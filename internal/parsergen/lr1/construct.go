@@ -2,13 +2,9 @@ package lr1
 
 import (
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
-	"github.com/dcaiafa/lox/internal/util/logger"
 )
 
-func ConstructLR(
-	g *grammar.AugmentedGrammar,
-	logger *logger.Logger,
-) *ParserTable {
+func ConstructLR(g *grammar.AugmentedGrammar) *ParserTable {
 	pt := NewParserTable(g)
 
 	start := NewItemSet()
@@ -35,15 +31,12 @@ func ConstructLR(
 		})
 	}
 
-	createActions(pt, logger)
+	createActions(pt)
 
 	return pt
 }
 
-func ConstructLALR(
-	g *grammar.AugmentedGrammar,
-	log *logger.Logger,
-) *ParserTable {
+func ConstructLALR(g *grammar.AugmentedGrammar) *ParserTable {
 	pt := NewParserTable(g)
 
 	start := NewItemSet()
@@ -73,23 +66,14 @@ func ConstructLALR(
 		})
 	}
 
-	createActions(pt, log)
+	createActions(pt)
 
 	return pt
 }
 
-func createActions(pt *ParserTable, logger *logger.Logger) {
+func createActions(pt *ParserTable) {
 	g := pt.Grammar
 	pt.States.ForEach(func(s *ItemSet) {
-		logger := logger
-		if s.Index > 0 {
-			logger.Logf("")
-		}
-		logger.Logf("I%d:", s.Index)
-		logger = logger.WithIndent()
-		logger.Logf("%v", s.ToString(g))
-		logger.Logf("")
-
 		for _, item := range s.GetItems() {
 			prod := g.Prods[item.Prod]
 			if item.Dot == uint32(len(prod.Terms)) {
@@ -102,7 +86,7 @@ func createActions(pt *ParserTable, logger *logger.Logger) {
 					act = Action{Type: ActionAccept}
 				}
 				terminal := g.Terminals[item.Lookahead]
-				pt.Actions.Add(s, terminal, act, logger)
+				pt.Actions.Add(s, terminal, act)
 				continue
 			}
 			terminal, ok := g.TermSymbol(prod.Terms[item.Dot]).(*grammar.Terminal)
@@ -114,7 +98,7 @@ func createActions(pt *ParserTable, logger *logger.Logger) {
 				Type:  ActionShift,
 				Shift: shiftState,
 			}
-			pt.Actions.Add(s, terminal, shiftAction, logger)
+			pt.Actions.Add(s, terminal, shiftAction)
 		}
 	})
 }

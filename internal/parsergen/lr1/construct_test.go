@@ -2,13 +2,11 @@ package lr1
 
 import (
 	"fmt"
-	"io"
 	"strings"
 	"testing"
 
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
 	"github.com/dcaiafa/lox/internal/util/baseline"
-	"github.com/dcaiafa/lox/internal/util/logger"
 )
 
 func runAllConstructTest(t *testing.T, name string, g *grammar.Grammar) {
@@ -21,7 +19,7 @@ func runAllConstructTest(t *testing.T, name string, g *grammar.Grammar) {
 func runConstructTest(
 	t *testing.T,
 	name string,
-	constructFunc func(*grammar.AugmentedGrammar, *logger.Logger) *ParserTable,
+	constructFunc func(*grammar.AugmentedGrammar) *ParserTable,
 	g *grammar.Grammar,
 ) {
 	t.Run(name, func(t *testing.T) {
@@ -30,7 +28,7 @@ func runConstructTest(
 			t.Fatalf("ToAugmentedGrammar failed: %v", err)
 		}
 
-		pt := constructFunc(ag, logger.New(io.Discard))
+		pt := constructFunc(ag)
 
 		report := strings.Builder{}
 		pt.Print(&report)
