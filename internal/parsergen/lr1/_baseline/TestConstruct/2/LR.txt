@@ -7,10 +7,8 @@ I0:
   L -> .id, $
   L -> .id, =
   R -> .L, $
-  
-  state 0 with *: shift I1
-  state 0 with id: shift I5
-
+    on *: shift I1
+    on id: shift I5
 I1:
   L -> .* R, $
   L -> .* R, =
@@ -20,85 +18,60 @@ I1:
   L -> .id, =
   R -> .L, $
   R -> .L, =
-  
-  state 1 with *: shift I1
-  state 1 with id: shift I5
-
+    on *: shift I1
+    on id: shift I5
 I2:
   S -> L .= R, $
   R -> L., $
-  
-  state 2 with =: shift I8
-  state 2 with $: reduce R
-
+    on $: reduce R
+    on =: shift I8
 I3:
   S -> R., $
-  
-  state 3 with $: reduce S
-
+    on $: reduce S
 I4:
   S' -> S., $
-  
-  state 4 with $: accept
-
+    on $: accept
 I5:
   L -> id., $
   L -> id., =
-  
-  state 5 with $: reduce L
-  state 5 with =: reduce L
-
+    on $: reduce L
+    on =: reduce L
 I6:
   R -> L., $
   R -> L., =
-  
-  state 6 with $: reduce R
-  state 6 with =: reduce R
-
+    on $: reduce R
+    on =: reduce R
 I7:
   L -> * R., $
   L -> * R., =
-  
-  state 7 with $: reduce L
-  state 7 with =: reduce L
-
+    on $: reduce L
+    on =: reduce L
 I8:
   S -> L = .R, $
   L -> .* R, $
   L -> .id, $
   R -> .L, $
-  
-  state 8 with *: shift I9
-  state 8 with id: shift I12
-
+    on *: shift I9
+    on id: shift I12
 I9:
   L -> .* R, $
   L -> * .R, $
   L -> .id, $
   R -> .L, $
-  
-  state 9 with *: shift I9
-  state 9 with id: shift I12
-
+    on *: shift I9
+    on id: shift I12
 I10:
   R -> L., $
-  
-  state 10 with $: reduce R
-
+    on $: reduce R
 I11:
   S -> L = R., $
-  
-  state 11 with $: reduce S
-
+    on $: reduce S
 I12:
   L -> id., $
-  
-  state 12 with $: reduce L
-
+    on $: reduce L
 I13:
   L -> * R., $
-  
-  state 13 with $: reduce L
+    on $: reduce L
 
 digraph G {
   rankdir="LR";

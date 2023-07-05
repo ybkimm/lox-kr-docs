@@ -2,6 +2,7 @@ package lr1
 
 import (
 	"fmt"
+	"io"
 	"strings"
 	"testing"
 
@@ -29,9 +30,10 @@ func runConstructTest(
 			t.Fatalf("ToAugmentedGrammar failed: %v", err)
 		}
 
-		report := strings.Builder{}
-		pt := constructFunc(ag, logger.New(&report))
+		pt := constructFunc(ag, logger.New(io.Discard))
 
+		report := strings.Builder{}
+		pt.Print(&report)
 		fmt.Fprintln(&report, "")
 		pt.PrintStateGraph(&report)
 

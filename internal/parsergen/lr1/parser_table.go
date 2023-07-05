@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
+	"github.com/dcaiafa/lox/internal/util/logger"
 )
 
 type ParserTable struct {
@@ -21,6 +22,28 @@ func NewParserTable(g *grammar.AugmentedGrammar) *ParserTable {
 		Transitions: NewTransitionMap(),
 		Actions:     NewActionMap(),
 	}
+}
+
+func (t *ParserTable) Print(w io.Writer) {
+	l := logger.New(w)
+
+	t.States.ForEach(func(s *ItemSet) {
+		l := l
+		l.Logf("I%d:", s.Index)
+		l = l.WithIndent()
+		l.Logf("%v", s.ToString(t.Grammar))
+		t.Actions.ForEachActionSet(
+			s, func(sym grammar.Symbol, actions []Action) {
+				l := l.WithIndent()
+				conflict := ""
+				if len(actions) > 1 {
+					conflict = " <== CONFLICT"
+				}
+				for _, action := range actions {
+					l.Logf("on %v: %v%v", sym.SymName(), action, conflict)
+				}
+			})
+	})
 }
 
 func (t *ParserTable) PrintStateGraph(w io.Writer) {

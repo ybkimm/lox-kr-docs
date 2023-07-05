@@ -5,23 +5,17 @@ I0:
   C -> .c C, d
   C -> .d, c
   C -> .d, d
-  
-  state 0 with c: shift I3
-  state 0 with d: shift I4
-
+    on c: shift I3
+    on d: shift I4
 I1:
   S -> C .C, $
   C -> .c C, $
   C -> .d, $
-  
-  state 1 with c: shift I6
-  state 1 with d: shift I7
-
+    on c: shift I6
+    on d: shift I7
 I2:
   S' -> S., $
-  
-  state 2 with $: accept
-
+    on $: accept
 I3:
   C -> .c C, c
   C -> .c C, d
@@ -29,46 +23,33 @@ I3:
   C -> c .C, d
   C -> .d, c
   C -> .d, d
-  
-  state 3 with c: shift I3
-  state 3 with d: shift I4
-
+    on c: shift I3
+    on d: shift I4
 I4:
   C -> d., c
   C -> d., d
-  
-  state 4 with c: reduce C
-  state 4 with d: reduce C
-
+    on c: reduce C
+    on d: reduce C
 I5:
   S -> C C., $
-  
-  state 5 with $: reduce S
-
+    on $: reduce S
 I6:
   C -> .c C, $
   C -> c .C, $
   C -> .d, $
-  
-  state 6 with c: shift I6
-  state 6 with d: shift I7
-
+    on c: shift I6
+    on d: shift I7
 I7:
   C -> d., $
-  
-  state 7 with $: reduce C
-
+    on $: reduce C
 I8:
   C -> c C., c
   C -> c C., d
-  
-  state 8 with c: reduce C
-  state 8 with d: reduce C
-
+    on c: reduce C
+    on d: reduce C
 I9:
   C -> c C., $
-  
-  state 9 with $: reduce C
+    on $: reduce C
 
 digraph G {
   rankdir="LR";
