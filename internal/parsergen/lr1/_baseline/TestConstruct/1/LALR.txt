@@ -1,0 +1,81 @@
+I0:
+  S' -> .S, $
+  S -> .C C, $
+  C -> .c C, c
+  C -> .c C, d
+  C -> .d, c
+  C -> .d, d
+  
+  state 0 with c: shift I3
+  state 0 with d: shift I4
+
+I1:
+  S -> C .C, $
+  C -> .c C, $
+  C -> .d, $
+  
+  state 1 with c: shift I3
+  state 1 with d: shift I4
+
+I2:
+  S' -> S., $
+  
+  state 2 with $: accept
+
+I3:
+  C -> .c C, $
+  C -> .c C, c
+  C -> .c C, d
+  C -> c .C, $
+  C -> c .C, c
+  C -> c .C, d
+  C -> .d, $
+  C -> .d, c
+  C -> .d, d
+  
+  state 3 with c: shift I3
+  state 3 with d: shift I4
+
+I4:
+  C -> d., $
+  C -> d., c
+  C -> d., d
+  
+  state 4 with $: reduce C
+  state 4 with c: reduce C
+  state 4 with d: reduce C
+
+I5:
+  S -> C C., $
+  
+  state 5 with $: reduce S
+
+I6:
+  C -> c C., $
+  C -> c C., c
+  C -> c C., d
+  
+  state 6 with $: reduce C
+  state 6 with c: reduce C
+  state 6 with d: reduce C
+
+digraph G {
+  rankdir="LR";
+  I0 [label="I0\nS' -> .S, $\nS -> .C C, $\nC -> .c C, c\nC -> .c C, d\nC -> .d, c\nC -> .d, d"];
+  I1 [label="I1\nS -> C .C, $\nC -> .c C, $\nC -> .d, $"];
+  I2 [label="I2\nS' -> S., $"];
+  I3 [label="I3\nC -> .c C, $\nC -> .c C, c\nC -> .c C, d\nC -> c .C, $\nC -> c .C, c\nC -> c .C, d\nC -> .d, $\nC -> .d, c\nC -> .d, d"];
+  I4 [label="I4\nC -> d., $\nC -> d., c\nC -> d., d"];
+  I5 [label="I5\nS -> C C., $"];
+  I6 [label="I6\nC -> c C., $\nC -> c C., c\nC -> c C., d"];
+  I0 -> I1 [label="C"];
+  I0 -> I2 [label="S"];
+  I0 -> I3 [label="c"];
+  I0 -> I4 [label="d"];
+  I1 -> I5 [label="C"];
+  I1 -> I3 [label="c"];
+  I1 -> I4 [label="d"];
+  I3 -> I6 [label="C"];
+  I3 -> I3 [label="c"];
+  I3 -> I4 [label="d"];
+}

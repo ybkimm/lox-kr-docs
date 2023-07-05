@@ -5,7 +5,7 @@ import (
 	"github.com/dcaiafa/lox/internal/util/logger"
 )
 
-func ConstructCLR(
+func ConstructLR(
 	g *grammar.AugmentedGrammar,
 	logger *logger.Logger,
 ) *ParserTable {
