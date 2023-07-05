@@ -130,38 +130,54 @@ func (s *ItemSet) ToString(g *grammar.AugmentedGrammar) string {
 }
 
 func (b *ItemSet) KeyWithLookahead() string {
-	return b.key(func(i Item) []byte {
+	itemKey := func(i Item) []byte {
 		var keyArr [3 * binary.MaxVarintLen32]byte
 		itemKey := keyArr[:0]
 		itemKey = binary.AppendUvarint(itemKey, uint64(i.Prod))
 		itemKey = binary.AppendUvarint(itemKey, uint64(i.Dot))
 		itemKey = binary.AppendUvarint(itemKey, uint64(i.Lookahead))
 		return itemKey
-	})
+	}
+	itemKeys := make([][]byte, b.Len())
+	keyLen := 0
+	for i, item := range b.GetItems() {
+		itemKeys[i] = itemKey(item)
+		keyLen += len(itemKeys[i])
+	}
+	key := make([]byte, 0, keyLen)
+	for _, itemKey := range itemKeys {
+		key = append(key, itemKey...)
+	}
+	return string(key)
 }
 
 func (b *ItemSet) KeyWithoutLookahead() string {
-	return b.key(func(i Item) []byte {
+	type lr0Item struct {
+		Prod uint32
+		Dot  uint32
+	}
+	seen := make(map[lr0Item]bool, len(b.itemMap))
+	itemKey := func(i Item) []byte {
 		var keyArr [3 * binary.MaxVarintLen32]byte
 		itemKey := keyArr[:0]
 		itemKey = binary.AppendUvarint(itemKey, uint64(i.Prod))
 		itemKey = binary.AppendUvarint(itemKey, uint64(i.Dot))
 		return itemKey
-	})
-}
-
-func (b *ItemSet) key(itemKeyFunc func(i Item) []byte) string {
+	}
 	itemKeys := make([][]byte, b.Len())
 	keyLen := 0
 	for i, item := range b.GetItems() {
-		itemKeys[i] = itemKeyFunc(item)
+		lr0Key := lr0Item{Prod: item.Prod, Dot: item.Dot}
+		if seen[lr0Key] {
+			continue
+		}
+		seen[lr0Key] = true
+		itemKeys[i] = itemKey(item)
 		keyLen += len(itemKeys[i])
 	}
-
 	key := make([]byte, 0, keyLen)
 	for _, itemKey := range itemKeys {
 		key = append(key, itemKey...)
 	}
-
 	return string(key)
 }

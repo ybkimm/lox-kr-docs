@@ -11,10 +11,10 @@ func ConstructCLR(
 ) *ParserTable {
 	pt := NewParserTable(g)
 
-	initSet := NewItemSet()
-	initSet.Add(NewItem(g, g.Sprime.Prods[0], 0, g.EOF))
-	initSet.Closure(g)
-	pt.States.Add(initSet.KeyWithLookahead(), initSet)
+	start := NewItemSet()
+	start.Add(NewItem(g, g.Sprime.Prods[0], 0, g.EOF))
+	start.Closure(g)
+	pt.States.Add(start.KeyWithLookahead(), start)
 
 	changed := true
 	for changed {
@@ -35,6 +35,51 @@ func ConstructCLR(
 		})
 	}
 
+	createActions(pt, logger)
+
+	return pt
+}
+
+func ConstructLALR(
+	g *grammar.AugmentedGrammar,
+	log *logger.Logger,
+) *ParserTable {
+	pt := NewParserTable(g)
+
+	start := NewItemSet()
+	start.Add(NewItem(g, g.Sprime.Prods[0], 0, g.EOF))
+	start.Closure(g)
+	pt.States.Add(start.KeyWithoutLookahead(), start)
+
+	changed := true
+	for changed {
+		changed = false
+		pt.States.ForEach(func(from *ItemSet) {
+			for _, sym := range from.Follow(g) {
+				to := from.Goto(g, sym)
+				toKey := to.KeyWithoutLookahead()
+				existing := pt.States.Get(toKey)
+				if existing != nil {
+					for _, item := range to.GetItems() {
+						changed = existing.Add(item) || changed
+					}
+					to = existing
+				} else {
+					pt.States.Add(toKey, to)
+					changed = true
+				}
+				pt.Transitions.Add(from, to, sym)
+			}
+		})
+	}
+
+	createActions(pt, log)
+
+	return pt
+}
+
+func createActions(pt *ParserTable, logger *logger.Logger) {
+	g := pt.Grammar
 	pt.States.ForEach(func(s *ItemSet) {
 		logger := logger
 		if s.Index > 0 {
@@ -76,6 +121,4 @@ func ConstructCLR(
 			}
 		}
 	})
-
-	return pt
 }

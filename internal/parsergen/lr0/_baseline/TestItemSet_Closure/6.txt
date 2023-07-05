@@ -1,5 +1,0 @@
-ItemSet:
-E -> T.
-
-Closure:
-E -> T.
