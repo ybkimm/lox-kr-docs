@@ -129,55 +129,38 @@ func (s *ItemSet) ToString(g *grammar.AugmentedGrammar) string {
 	return str.String()
 }
 
-func (b *ItemSet) KeyWithLookahead() string {
-	itemKey := func(i Item) []byte {
-		var keyArr [3 * binary.MaxVarintLen32]byte
-		itemKey := keyArr[:0]
-		itemKey = binary.AppendUvarint(itemKey, uint64(i.Prod))
-		itemKey = binary.AppendUvarint(itemKey, uint64(i.Dot))
-		itemKey = binary.AppendUvarint(itemKey, uint64(i.Lookahead))
-		return itemKey
-	}
-	itemKeys := make([][]byte, b.Len())
-	keyLen := 0
-	for i, item := range b.GetItems() {
-		itemKeys[i] = itemKey(item)
-		keyLen += len(itemKeys[i])
-	}
-	key := make([]byte, 0, keyLen)
-	for _, itemKey := range itemKeys {
-		key = append(key, itemKey...)
-	}
-	return string(key)
-}
-
-func (b *ItemSet) KeyWithoutLookahead() string {
+func (b *ItemSet) LR0Key() string {
 	type lr0Item struct {
 		Prod uint32
 		Dot  uint32
 	}
+
 	seen := make(map[lr0Item]bool, len(b.itemMap))
-	itemKey := func(i Item) []byte {
-		var keyArr [3 * binary.MaxVarintLen32]byte
-		itemKey := keyArr[:0]
-		itemKey = binary.AppendUvarint(itemKey, uint64(i.Prod))
-		itemKey = binary.AppendUvarint(itemKey, uint64(i.Dot))
-		return itemKey
-	}
-	itemKeys := make([][]byte, b.Len())
-	keyLen := 0
-	for i, item := range b.GetItems() {
+	key := make([]byte, 0, binary.MaxVarintLen32*2*b.Len())
+	for _, item := range b.GetItems() {
+		if !item.IsKernel() {
+			continue
+		}
 		lr0Key := lr0Item{Prod: item.Prod, Dot: item.Dot}
 		if seen[lr0Key] {
 			continue
 		}
 		seen[lr0Key] = true
-		itemKeys[i] = itemKey(item)
-		keyLen += len(itemKeys[i])
+		key = binary.AppendUvarint(key, uint64(item.Prod))
+		key = binary.AppendUvarint(key, uint64(item.Dot))
 	}
-	key := make([]byte, 0, keyLen)
-	for _, itemKey := range itemKeys {
-		key = append(key, itemKey...)
+	return string(key)
+}
+
+func (b *ItemSet) LR1Key() string {
+	key := make([]byte, 0, binary.MaxVarintLen32*3*b.Len())
+	for _, item := range b.GetItems() {
+		if !item.IsKernel() {
+			continue
+		}
+		key = binary.AppendUvarint(key, uint64(item.Prod))
+		key = binary.AppendUvarint(key, uint64(item.Dot))
+		key = binary.AppendUvarint(key, uint64(item.Lookahead))
 	}
 	return string(key)
 }

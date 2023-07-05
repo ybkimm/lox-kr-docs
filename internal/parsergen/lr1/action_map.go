@@ -3,6 +3,7 @@ package lr1
 import (
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
 	"github.com/dcaiafa/lox/internal/util/logger"
+	"github.com/dcaiafa/lox/internal/util/set"
 )
 
 type actionKey struct {
@@ -11,12 +12,12 @@ type actionKey struct {
 }
 
 type ActionMap struct {
-	actions map[actionKey]Action
+	actions map[actionKey]*set.Set[Action]
 }
 
 func NewActionMap() *ActionMap {
 	return &ActionMap{
-		actions: make(map[actionKey]Action),
+		actions: make(map[actionKey]*set.Set[Action]),
 	}
 }
 
@@ -25,11 +26,15 @@ func (m *ActionMap) Add(
 	sym grammar.Symbol,
 	action Action,
 	logger *logger.Logger,
-) bool {
+) {
 	key := actionKey{state, sym}
-	action2, exists := m.actions[key]
-	if exists && action == action2 {
-		return true
+	actionSet := m.actions[key]
+	if actionSet == nil {
+		actionSet = new(set.Set[Action])
+		m.actions[key] = actionSet
+	}
+	if actionSet.Has(action) {
+		return
 	}
 
 	logger.Logf(
@@ -38,21 +43,8 @@ func (m *ActionMap) Add(
 		sym.SymName(),
 		action.String())
 
-	if exists {
-		if action2.Type > action.Type {
-			action, action2 = action2, action
-		}
-		switch {
-		case action.Type == ActionShift && action2.Type == ActionReduce:
-			logger.Logf("CONFLICT: shift/reduce")
-		case action.Type == ActionReduce && action2.Type == ActionReduce:
-			logger.Logf("CONFLICT: reduce/reduce")
-		default:
-			panic("invalid conflict")
-		}
-		return false
+	actionSet.Add(action)
+	if actionSet.Len() > 1 {
+		panic("ambiguous")
 	}
-
-	m.actions[key] = action
-	return true
 }

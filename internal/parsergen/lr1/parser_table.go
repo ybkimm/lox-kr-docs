@@ -12,7 +12,6 @@ type ParserTable struct {
 	States      *StateSet
 	Transitions *TransitionMap
 	Actions     *ActionMap
-	Ambiguous   bool
 }
 
 func NewParserTable(g *grammar.AugmentedGrammar) *ParserTable {

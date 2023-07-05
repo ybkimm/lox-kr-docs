@@ -14,7 +14,7 @@ func ConstructLR(
 	start := NewItemSet()
 	start.Add(NewItem(g, g.Sprime.Prods[0], 0, g.EOF))
 	start.Closure(g)
-	pt.States.Add(start.KeyWithLookahead(), start)
+	pt.States.Add(start.LR1Key(), start)
 
 	changed := true
 	for changed {
@@ -22,7 +22,7 @@ func ConstructLR(
 		pt.States.ForEach(func(from *ItemSet) {
 			for _, sym := range from.Follow(g) {
 				to := from.Goto(g, sym)
-				toKey := to.KeyWithLookahead()
+				toKey := to.LR1Key()
 				existing := pt.States.Get(toKey)
 				if existing != nil {
 					to = existing
@@ -49,7 +49,7 @@ func ConstructLALR(
 	start := NewItemSet()
 	start.Add(NewItem(g, g.Sprime.Prods[0], 0, g.EOF))
 	start.Closure(g)
-	pt.States.Add(start.KeyWithoutLookahead(), start)
+	pt.States.Add(start.LR0Key(), start)
 
 	changed := true
 	for changed {
@@ -57,7 +57,7 @@ func ConstructLALR(
 		pt.States.ForEach(func(from *ItemSet) {
 			for _, sym := range from.Follow(g) {
 				to := from.Goto(g, sym)
-				toKey := to.KeyWithoutLookahead()
+				toKey := to.LR0Key()
 				existing := pt.States.Get(toKey)
 				if existing != nil {
 					for _, item := range to.GetItems() {
@@ -102,9 +102,7 @@ func createActions(pt *ParserTable, logger *logger.Logger) {
 					act = Action{Type: ActionAccept}
 				}
 				terminal := g.Terminals[item.Lookahead]
-				if !pt.Actions.Add(s, terminal, act, logger) {
-					pt.Ambiguous = true
-				}
+				pt.Actions.Add(s, terminal, act, logger)
 				continue
 			}
 			terminal, ok := g.TermSymbol(prod.Terms[item.Dot]).(*grammar.Terminal)
@@ -116,9 +114,7 @@ func createActions(pt *ParserTable, logger *logger.Logger) {
 				Type:  ActionShift,
 				Shift: shiftState,
 			}
-			if !pt.Actions.Add(s, terminal, shiftAction, logger) {
-				pt.Ambiguous = true
-			}
+			pt.Actions.Add(s, terminal, shiftAction, logger)
 		}
 	})
 }

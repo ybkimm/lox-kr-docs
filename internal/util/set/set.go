@@ -43,6 +43,10 @@ func (s *Set[T]) Has(v T) bool {
 	return s.set[v]
 }
 
+func (s *Set[T]) Len() int {
+	return len(s.set)
+}
+
 func (s *Set[T]) Elements() []T {
 	r := make([]T, 0, len(s.set))
 	for x := range s.set {
