@@ -21,6 +21,8 @@ var updateBaseline = flag.Bool("update-baseline", false, "update _baseline/*.txt
 func Assert(t *testing.T, output string) {
 	baselineFilename := filepath.Join("_baseline", t.Name()+".txt")
 
+	t.Log("Output:\n", output)
+
 	if *updateBaseline {
 		err := os.MkdirAll(filepath.Dir(baselineFilename), 0755)
 		if err != nil {

@@ -1,29 +1,40 @@
 package lr1
 
-import (
-	"github.com/dcaiafa/lox/internal/parsergen/grammar"
-	"github.com/dcaiafa/lox/internal/util/logger"
-)
-
+/*
 func ConstructLALR(
 	g *grammar.AugmentedGrammar,
 	logger *logger.Logger,
 ) *ParserTable {
+	pt := NewParserTable(g)
 
-	// Construct sets of LR(0) items.
-	lr0States := lr0.NewStateSet()
-	first := NewItemSet(g)
-	first.Add(NewItem(g, g.Sprime.Prods[0], 0, g.EOF))
-	first.Closure()
-	stateSet.Add(first.State())
+	start := NewItemSet(g)
+	start.Add(NewItem(g, g.Sprime.Prods[0], 0, g.EOF))
+	start.Closure()
 
-	/*
-		for stateSet.Changed() {
-			stateSet.ResetChanged()
-			stateSet.ForEach(func(state *state.State) {
-				itemSet := state.ItemSet(g)
-			})
-		}
-	*/
-
+	return nil
 }
+*/
+
+/*
+func lr0Items(g *grammar.AugmentedGrammar) *lr0.StateSet {
+	lr0States := lr0.NewStateSet()
+	first := lr0.NewItemSet(g)
+	first.Add(lr0.NewItem(g, g.Sprime.Prods[0], 0))
+	first.Closure()
+	lr0States.Add(first.State())
+
+	for lr0States.Changed() {
+		lr0States.ResetChanged()
+		lr0States.ForEach(func(fromState *lr0.State) {
+			fromItemSet := fromState.ItemSet(g)
+			for _, sym := range fromItemSet.FollowingSymbols() {
+				toItemSet := fromItemSet.Goto(sym)
+				lr0States.Add(toItemSet.State())
+			}
+		})
+	}
+	return lr0States
+}
+
+func determineLookaheads(pt *ParserTable, `
+*/

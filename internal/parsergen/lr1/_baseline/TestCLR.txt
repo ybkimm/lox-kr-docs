@@ -1,11 +1,18 @@
 I0:
   S' -> .S, $
+  S -> .C C, $
+  C -> .c C, c
+  C -> .c C, d
+  C -> .d, c
+  C -> .d, d
   
   state 0 with c: shift I3
   state 0 with d: shift I4
 
 I1:
   S -> C .C, $
+  C -> .c C, $
+  C -> .d, $
   
   state 1 with c: shift I6
   state 1 with d: shift I7
@@ -16,8 +23,12 @@ I2:
   state 2 with $: accept
 
 I3:
+  C -> .c C, c
+  C -> .c C, d
   C -> c .C, c
   C -> c .C, d
+  C -> .d, c
+  C -> .d, d
   
   state 3 with c: shift I3
   state 3 with d: shift I4
@@ -35,7 +46,9 @@ I5:
   state 5 with $: reduce S
 
 I6:
+  C -> .c C, $
   C -> c .C, $
+  C -> .d, $
   
   state 6 with c: shift I6
   state 6 with d: shift I7

@@ -1,37 +1,30 @@
 package lr1
 
 type StateSet struct {
-	stateMap map[string]*State
-	states   []*State
-	changed  bool
+	stateMap map[string]*ItemSet
+	states   []*ItemSet
 }
 
 func NewStateSet() *StateSet {
 	return &StateSet{
-		stateMap: make(map[string]*State),
+		stateMap: make(map[string]*ItemSet),
 	}
 }
 
-func (c *StateSet) Changed() bool {
-	return c.changed
+func (c *StateSet) Get(key string) *ItemSet {
+	return c.stateMap[key]
 }
 
-func (c *StateSet) ResetChanged() {
-	c.changed = false
-}
-
-func (c *StateSet) Add(s *State) *State {
-	if existing, ok := c.stateMap[s.Key]; ok {
-		return existing
+func (c *StateSet) Add(key string, s *ItemSet) {
+	if _, ok := c.stateMap[key]; ok {
+		panic("state already exists")
 	}
-	c.changed = true
 	s.Index = len(c.states)
 	c.states = append(c.states, s)
-	c.stateMap[s.Key] = s
-	return s
+	c.stateMap[key] = s
 }
 
-func (c *StateSet) ForEach(fn func(s *State)) {
+func (c *StateSet) ForEach(fn func(s *ItemSet)) {
 	for _, state := range c.states {
 		fn(state)
 	}

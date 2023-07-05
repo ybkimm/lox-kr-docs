@@ -6,7 +6,7 @@ import (
 )
 
 type actionKey struct {
-	state *State
+	state *ItemSet
 	sym   grammar.Symbol
 }
 
@@ -21,7 +21,7 @@ func NewActionMap() *ActionMap {
 }
 
 func (m *ActionMap) Add(
-	state *State,
+	state *ItemSet,
 	sym grammar.Symbol,
 	action Action,
 	logger *logger.Logger,

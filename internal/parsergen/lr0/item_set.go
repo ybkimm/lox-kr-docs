@@ -74,6 +74,25 @@ func (s *ItemSet) FollowingSymbols() []grammar.Symbol {
 	return syms
 }
 
+func (s *ItemSet) Goto(sym grammar.Symbol) *ItemSet {
+	toState := NewItemSet(s.g)
+	s.ForEach(func(item Item) {
+		prod := s.g.Prods[item.Prod]
+		if item.Dot == uint32(len(prod.Terms)) {
+			return
+		}
+		term := s.g.TermSymbol(prod.Terms[item.Dot])
+		if term != sym {
+			return
+		}
+		toItem := item
+		toItem.Dot++
+		toState.Add(toItem)
+	})
+	toState.Closure()
+	return toState
+}
+
 func (b *ItemSet) ForEach(fn func(item Item)) {
 	items := make([]Item, 0, len(b.items))
 	for item := range b.items {

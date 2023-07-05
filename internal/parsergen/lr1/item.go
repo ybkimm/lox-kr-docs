@@ -8,9 +8,13 @@ import (
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
 )
 
+type LR0Item struct {
+	Prod uint32
+	Dot  uint32
+}
+
 type Item struct {
-	Prod      uint32
-	Dot       uint32
+	LR0Item
 	Lookahead uint32
 }
 
@@ -20,8 +24,10 @@ func NewItem(
 	dot int,
 	lookahead *grammar.Terminal) Item {
 	return Item{
-		Prod:      uint32(g.ProdIndex(prod)),
-		Dot:       uint32(dot),
+		LR0Item: LR0Item{
+			Prod: uint32(g.ProdIndex(prod)),
+			Dot:  uint32(dot),
+		},
 		Lookahead: uint32(g.TerminalIndex(lookahead)),
 	}
 }

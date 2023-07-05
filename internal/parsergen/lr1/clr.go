@@ -11,25 +11,31 @@ func ConstructCLR(
 ) *ParserTable {
 	pt := NewParserTable(g)
 
-	initialState := NewItemSet(g)
-	initialState.Add(NewItem(g, g.Sprime.Prods[0], 0, g.EOF))
-	initialState.Closure()
+	initSet := NewItemSet()
+	initSet.Add(NewItem(g, g.Sprime.Prods[0], 0, g.EOF))
+	initSet.Closure(g)
+	pt.States.Add(initSet.KeyWithLookahead(), initSet)
 
-	pt.States.Add(initialState.State())
-
-	for pt.States.Changed() {
-		pt.States.ResetChanged()
-		pt.States.ForEach(func(fromState *State) {
-			fromItemSet := fromState.ItemSet(g)
-			for _, sym := range fromItemSet.FollowingSymbols() {
-				toItemSet := Goto(g, fromItemSet, sym)
-				toState := pt.States.Add(toItemSet.State())
-				pt.Transitions.Add(fromState, toState, sym)
+	changed := true
+	for changed {
+		changed = false
+		pt.States.ForEach(func(from *ItemSet) {
+			for _, sym := range from.Follow(g) {
+				to := from.Goto(g, sym)
+				toKey := to.KeyWithLookahead()
+				existing := pt.States.Get(toKey)
+				if existing != nil {
+					to = existing
+				} else {
+					pt.States.Add(toKey, to)
+					changed = true
+				}
+				pt.Transitions.Add(from, to, sym)
 			}
 		})
 	}
 
-	pt.States.ForEach(func(s *State) {
+	pt.States.ForEach(func(s *ItemSet) {
 		logger := logger
 		if s.Index > 0 {
 			logger.Logf("")
@@ -39,7 +45,7 @@ func ConstructCLR(
 		logger.Logf("%v", s.ToString(g))
 		logger.Logf("")
 
-		s.ItemSet(g).ForEach(func(item Item) {
+		for _, item := range s.GetItems() {
 			prod := g.Prods[item.Prod]
 			if item.Dot == uint32(len(prod.Terms)) {
 				rule := g.ProdRule(prod)
@@ -54,11 +60,11 @@ func ConstructCLR(
 				if !pt.Actions.Add(s, terminal, act, logger) {
 					pt.Ambiguous = true
 				}
-				return
+				continue
 			}
 			terminal, ok := g.TermSymbol(prod.Terms[item.Dot]).(*grammar.Terminal)
 			if !ok {
-				return
+				continue
 			}
 			shiftState := pt.Transitions.Get(s, terminal)
 			shiftAction := Action{
@@ -68,7 +74,7 @@ func ConstructCLR(
 			if !pt.Actions.Add(s, terminal, shiftAction, logger) {
 				pt.Ambiguous = true
 			}
-		})
+		}
 	})
 
 	return pt

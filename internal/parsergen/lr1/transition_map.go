@@ -7,21 +7,21 @@ import (
 )
 
 type transitionKey struct {
-	From *State
+	From *ItemSet
 	Sym  grammar.Symbol
 }
 
 type TransitionMap struct {
-	transitions map[transitionKey]*State
+	transitions map[transitionKey]*ItemSet
 }
 
 func NewTransitionMap() *TransitionMap {
 	return &TransitionMap{
-		transitions: make(map[transitionKey]*State),
+		transitions: make(map[transitionKey]*ItemSet),
 	}
 }
 
-func (m *TransitionMap) Add(from *State, to *State, sym grammar.Symbol) {
+func (m *TransitionMap) Add(from *ItemSet, to *ItemSet, sym grammar.Symbol) {
 	key := transitionKey{from, sym}
 	if existing, ok := m.transitions[key]; ok {
 		if existing != to {
@@ -32,7 +32,7 @@ func (m *TransitionMap) Add(from *State, to *State, sym grammar.Symbol) {
 	m.transitions[key] = to
 }
 
-func (m *TransitionMap) Get(from *State, sym grammar.Symbol) *State {
+func (m *TransitionMap) Get(from *ItemSet, sym grammar.Symbol) *ItemSet {
 	key := transitionKey{from, sym}
 	toState := m.transitions[key]
 	if toState == nil {
@@ -41,7 +41,7 @@ func (m *TransitionMap) Get(from *State, sym grammar.Symbol) *State {
 	return toState
 }
 
-func (m *TransitionMap) ForEach(fn func(from *State, to *State, sym grammar.Symbol)) {
+func (m *TransitionMap) ForEach(fn func(from *ItemSet, to *ItemSet, sym grammar.Symbol)) {
 	keys := make([]transitionKey, 0, len(m.transitions))
 	for key := range m.transitions {
 		keys = append(keys, key)

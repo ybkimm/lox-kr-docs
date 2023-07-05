@@ -17,7 +17,7 @@ const (
 type Action struct {
 	Type   ActionType
 	Reduce *grammar.Rule
-	Shift  *State
+	Shift  *ItemSet
 }
 
 func (a Action) String() string {
