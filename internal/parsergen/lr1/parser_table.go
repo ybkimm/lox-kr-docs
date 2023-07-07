@@ -31,10 +31,10 @@ func (t *ParserTable) Print(w io.Writer) {
 		l.Logf("I%d:", s.Index)
 		l = l.WithIndent()
 		l.Logf("%v", s.ToString(t.Grammar))
+		l = l.WithIndent()
 		t.Actions.ForEachActionSet(
 			t.Grammar, s,
 			func(sym grammar.Symbol, actions []Action) {
-				l := l.WithIndent()
 				conflict := ""
 				if len(actions) > 1 {
 					conflict = " <== CONFLICT"
@@ -45,6 +45,11 @@ func (t *ParserTable) Print(w io.Writer) {
 						sym.SymName(), action.ToString(t.Grammar), conflict)
 				}
 			})
+		t.Transitions.ForEach(s, func(sym grammar.Symbol, to *ItemSet) {
+			if rule, ok := sym.(*grammar.Rule); ok {
+				l.Logf("on %v: goto I%v", rule.Name, to.Index)
+			}
+		})
 	})
 }
 
