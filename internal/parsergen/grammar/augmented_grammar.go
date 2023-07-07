@@ -41,7 +41,7 @@ func (g *Grammar) ToAugmentedGrammar() (*AugmentedGrammar, error) {
 
 	ag.Sprime = &Rule{
 		Name:  "S'",
-		Prods: []*Prod{NewProd(NewTerm(g.Rules[0]))},
+		Prods: []*Prod{NewProd(NewTermS(g.Rules[0]))},
 	}
 	ag.Rules = append([]*Rule{ag.Sprime}, g.Rules...)
 
@@ -57,7 +57,7 @@ func (g *Grammar) ToAugmentedGrammar() (*AugmentedGrammar, error) {
 func (g *AugmentedGrammar) GetSymbol(name string) Symbol {
 	sym := g.nameToSymbol[name]
 	if sym == nil {
-		panic("no symbol")
+		panic("invalid symbol")
 	}
 	return sym
 }
@@ -65,7 +65,7 @@ func (g *AugmentedGrammar) GetSymbol(name string) Symbol {
 func (g *AugmentedGrammar) ProdRule(prod *Prod) *Rule {
 	rule := g.prodToRule[prod]
 	if rule == nil {
-		panic("no rule for prod")
+		panic("invalid prod")
 	}
 	return rule
 }
@@ -228,10 +228,10 @@ func (g *AugmentedGrammar) normalize() {
 						// a' = c+ | e
 						srule := newRule(rule.Name)
 						srule.Prods = []*Prod{
-							NewProd(NewTerm(g.TermSymbol(term), OneOrMore)),
+							NewProd(NewTermS(g.TermSymbol(term), OneOrMore)),
 							NewProd(),
 						}
-						prod.Terms[i] = NewTerm(srule)
+						prod.Terms[i] = NewTermS(srule)
 						changed = true
 					case OneOrMore:
 						// a = b c+
@@ -241,10 +241,10 @@ func (g *AugmentedGrammar) normalize() {
 						//    | c
 						srule := newRule(rule.Name)
 						srule.Prods = []*Prod{
-							NewProd(NewTerm(srule), NewTerm(g.TermSymbol(term))),
-							NewProd(NewTerm(g.TermSymbol(term))),
+							NewProd(NewTermS(srule), NewTermS(g.TermSymbol(term))),
+							NewProd(NewTermS(g.TermSymbol(term))),
 						}
-						prod.Terms[i] = NewTerm(srule)
+						prod.Terms[i] = NewTermS(srule)
 						changed = true
 					case ZeroOrOne:
 						// a = b c?
@@ -253,10 +253,10 @@ func (g *AugmentedGrammar) normalize() {
 						// a' = c | e
 						srule := newRule(rule.Name)
 						srule.Prods = []*Prod{
-							NewProd(NewTerm(g.TermSymbol(term))),
+							NewProd(NewTermS(g.TermSymbol(term))),
 							NewProd(),
 						}
-						prod.Terms[i] = NewTerm(srule)
+						prod.Terms[i] = NewTermS(srule)
 						changed = true
 					default:
 						panic("not reached")

@@ -117,4 +117,36 @@ func TestConstruct(t *testing.T) {
 				},
 			},
 		})
+
+	/*
+		runAllConstructTest(t, "precedence",
+			// E -> E + E
+			//    | E - E
+			//    | E * E
+			//    | num
+			&grammar.Grammar{
+				Terminals: []*grammar.Terminal{
+					{Name: "+"},
+					{Name: "-"},
+					{Name: "*"},
+					{Name: "/"},
+					{Name: "^"},
+					{Name: "num"},
+				},
+				Rules: []*grammar.Rule{
+					{
+						Name: "E",
+						Prods: []*grammar.Prod{
+							{Terms: []*grammar.Term{term("E"), term("+"), term("E")}, Precence: 1},
+							{Terms: []*grammar.Term{term("E"), term("-"), term("E")}, Precence: 1},
+							{Terms: []*grammar.Term{term("E"), term("*"), term("E")}, Precence: 2},
+							{Terms: []*grammar.Term{term("E"), term("/"), term("E")}, Precence: 2},
+							{Terms: []*grammar.Term{term("E"), term("^"), term("E")}, Precence: 2, Associativity: grammar.Right},
+							{Terms: []*grammar.Term{term("num")}},
+						},
+					},
+				},
+			},
+		)
+	*/
 }

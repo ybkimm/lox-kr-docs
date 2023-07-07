@@ -52,8 +52,17 @@ func (r *Rule) Print(w io.Writer) {
 	fmt.Fprintf(w, " .\n")
 }
 
+type Associativity int
+
+const (
+	Left  Associativity = 0
+	Right Associativity = 1
+)
+
 type Prod struct {
-	Terms []*Term
+	Terms         []*Term
+	Precence      int
+	Associativity Associativity
 }
 
 func NewProd(terms ...*Term) *Prod {
@@ -76,14 +85,18 @@ type Term struct {
 	Cardinality Cardinality
 }
 
-func NewTerm(sym Symbol, q ...Cardinality) *Term {
+func NewTerm(symName string, q ...Cardinality) *Term {
 	t := &Term{
-		Name: sym.SymName(),
+		Name: symName,
 	}
 	if len(q) != 0 {
 		t.Cardinality = q[0]
 	}
 	return t
+}
+
+func NewTermS(sym Symbol, q ...Cardinality) *Term {
+	return NewTerm(sym.SymName(), q...)
 }
 
 type Terminal struct {

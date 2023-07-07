@@ -8,15 +8,15 @@ import (
 	"github.com/dcaiafa/lox/internal/util/set"
 )
 
-type stateActions map[grammar.Symbol]*set.Set[Action]
+type symActions map[grammar.Symbol]*set.Set[Action]
 
 type ActionMap struct {
-	states map[*ItemSet]stateActions
+	states map[*ItemSet]symActions
 }
 
 func NewActionMap() *ActionMap {
 	return &ActionMap{
-		states: make(map[*ItemSet]stateActions),
+		states: make(map[*ItemSet]symActions),
 	}
 }
 
@@ -25,15 +25,15 @@ func (m *ActionMap) Add(
 	sym grammar.Symbol,
 	action Action,
 ) {
-	stateActs := m.states[state]
-	if stateActs == nil {
-		stateActs = make(stateActions)
-		m.states[state] = stateActs
+	symActs := m.states[state]
+	if symActs == nil {
+		symActs = make(symActions)
+		m.states[state] = symActs
 	}
-	actionSet := stateActs[sym]
+	actionSet := symActs[sym]
 	if actionSet == nil {
 		actionSet = new(set.Set[Action])
-		stateActs[sym] = actionSet
+		symActs[sym] = actionSet
 	}
 	if actionSet.Has(action) {
 		return
@@ -41,22 +41,38 @@ func (m *ActionMap) Add(
 	actionSet.Add(action)
 }
 
+func (m *ActionMap) Remove(
+	state *ItemSet,
+	sym grammar.Symbol,
+	action Action,
+) {
+	symActs := m.states[state]
+	if symActs == nil {
+		panic("invalid state")
+	}
+	actionSet := symActs[sym]
+	if actionSet == nil {
+		panic("invalid symbol")
+	}
+	actionSet.Remove(action)
+}
+
 func (m *ActionMap) ForEachActionSet(
 	state *ItemSet,
 	fn func(grammar.Symbol, []Action)) {
-	stateActions := m.states[state]
-	if len(stateActions) == 0 {
+	symActs := m.states[state]
+	if len(symActs) == 0 {
 		panic("state has no actions")
 	}
-	syms := make([]grammar.Symbol, 0, len(stateActions))
-	for sym := range stateActions {
+	syms := make([]grammar.Symbol, 0, len(symActs))
+	for sym := range symActs {
 		syms = append(syms, sym)
 	}
 	sort.Slice(syms, func(i, j int) bool {
 		return syms[i].SymName() < syms[j].SymName()
 	})
 	for _, sym := range syms {
-		actions := stateActions[sym].Elements()
+		actions := symActs[sym].Elements()
 		sort.Slice(actions, func(i, j int) bool {
 			symName := func(a Action) string {
 				switch {

@@ -67,6 +67,7 @@ func ConstructLALR(g *grammar.AugmentedGrammar) *ParserTable {
 	}
 
 	createActions(pt)
+	resolveConflicts(pt)
 
 	return pt
 }
@@ -81,6 +82,7 @@ func createActions(pt *ParserTable) {
 				act := Action{
 					Type:   ActionReduce,
 					Reduce: rule,
+					Prod:   prod,
 				}
 				if rule == g.Sprime {
 					act = Action{Type: ActionAccept}
@@ -97,8 +99,51 @@ func createActions(pt *ParserTable) {
 			shiftAction := Action{
 				Type:  ActionShift,
 				Shift: shiftState,
+				Prod:  prod,
 			}
 			pt.Actions.Add(s, terminal, shiftAction)
 		}
 	})
+}
+
+func resolveConflicts(pt *ParserTable) {
+	pt.States.ForEach(
+		func(state *ItemSet) {
+			pt.Actions.ForEachActionSet(
+				state,
+				func(sym grammar.Symbol, actions []Action) {
+					// We can only resolve shift/reduce conflicts.
+					if len(actions) != 2 {
+						return
+					}
+					shift, reduce := actions[0], actions[1]
+					if shift.Type == ActionReduce {
+						shift, reduce = reduce, shift
+					}
+					if shift.Type != ActionShift || reduce.Type != ActionReduce {
+						return
+					}
+
+					// Both Prods involved must belong to the same Rule, and must have
+					// explicit precedences.
+					haveCommonRule :=
+						pt.Grammar.ProdRule(shift.Prod) == pt.Grammar.ProdRule(reduce.Prod)
+					if !haveCommonRule ||
+						shift.Prod.Precence <= 0 ||
+						reduce.Prod.Precence <= 0 {
+						return
+					}
+
+					switch {
+					case shift.Prod.Precence < reduce.Prod.Precence:
+						pt.Actions.Remove(state, sym, shift)
+					case shift.Prod.Precence > reduce.Prod.Precence:
+						pt.Actions.Remove(state, sym, reduce)
+					case shift.Prod == reduce.Prod && shift.Prod.Associativity == grammar.Right:
+						pt.Actions.Remove(state, sym, reduce)
+					default:
+						pt.Actions.Remove(state, sym, shift)
+					}
+				})
+		})
 }

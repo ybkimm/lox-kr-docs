@@ -18,6 +18,10 @@ type Action struct {
 	Type   ActionType
 	Reduce *grammar.Rule
 	Shift  *ItemSet
+
+	// Prod is not relevant to the action, but can be used to resolve conflicts of
+	// precedence.
+	Prod *grammar.Prod
 }
 
 func (a Action) String() string {
