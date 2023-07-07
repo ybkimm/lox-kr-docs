@@ -1,7 +1,6 @@
 package lr1
 
 import (
-	"fmt"
 	"sort"
 
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
@@ -58,6 +57,7 @@ func (m *ActionMap) Remove(
 }
 
 func (m *ActionMap) ForEachActionSet(
+	g *grammar.AugmentedGrammar,
 	state *ItemSet,
 	fn func(grammar.Symbol, []Action)) {
 	symActs := m.states[state]
@@ -74,23 +74,13 @@ func (m *ActionMap) ForEachActionSet(
 	for _, sym := range syms {
 		actions := symActs[sym].Elements()
 		sort.Slice(actions, func(i, j int) bool {
-			symName := func(a Action) string {
-				switch {
-				case a.Reduce != nil:
-					return a.Reduce.SymName()
-				case a.Shift != nil:
-					return fmt.Sprintf("I%v", a.Shift.Index)
-				default:
-					return ""
-				}
-			}
 			switch {
 			case actions[i].Type < actions[j].Type:
 				return true
 			case actions[i].Type > actions[j].Type:
 				return false
 			default:
-				return symName(actions[i]) < symName(actions[j])
+				return g.ProdIndex(actions[i].Prod) < g.ProdIndex(actions[j].Prod)
 			}
 		})
 		fn(sym, actions)

@@ -26,21 +26,23 @@ func NewParserTable(g *grammar.AugmentedGrammar) *ParserTable {
 
 func (t *ParserTable) Print(w io.Writer) {
 	l := logger.New(w)
-
 	t.States.ForEach(func(s *ItemSet) {
 		l := l
 		l.Logf("I%d:", s.Index)
 		l = l.WithIndent()
 		l.Logf("%v", s.ToString(t.Grammar))
 		t.Actions.ForEachActionSet(
-			s, func(sym grammar.Symbol, actions []Action) {
+			t.Grammar, s,
+			func(sym grammar.Symbol, actions []Action) {
 				l := l.WithIndent()
 				conflict := ""
 				if len(actions) > 1 {
 					conflict = " <== CONFLICT"
 				}
 				for _, action := range actions {
-					l.Logf("on %v: %v%v", sym.SymName(), action, conflict)
+					l.Logf(
+						"on %v: %v%v",
+						sym.SymName(), action.ToString(t.Grammar), conflict)
 				}
 			})
 	})

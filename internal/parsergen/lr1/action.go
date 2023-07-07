@@ -15,21 +15,17 @@ const (
 )
 
 type Action struct {
-	Type   ActionType
-	Reduce *grammar.Rule
-	Shift  *ItemSet
-
-	// Prod is not relevant to the action, but can be used to resolve conflicts of
-	// precedence.
-	Prod *grammar.Prod
+	Type  ActionType
+	Prod  *grammar.Prod
+	Shift *ItemSet
 }
 
-func (a Action) String() string {
+func (a Action) ToString(g *grammar.AugmentedGrammar) string {
 	switch a.Type {
 	case ActionShift:
 		return fmt.Sprintf("shift I%v", a.Shift.Index)
 	case ActionReduce:
-		return fmt.Sprintf("reduce %v", a.Reduce.SymName())
+		return fmt.Sprintf("reduce %v", g.ProdRule(a.Prod).SymName())
 	case ActionAccept:
 		return "accept"
 	default:

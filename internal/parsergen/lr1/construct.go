@@ -80,9 +80,8 @@ func createActions(pt *ParserTable) {
 			if item.Dot == uint32(len(prod.Terms)) {
 				rule := g.ProdRule(prod)
 				act := Action{
-					Type:   ActionReduce,
-					Reduce: rule,
-					Prod:   prod,
+					Type: ActionReduce,
+					Prod: prod,
 				}
 				if rule == g.Sprime {
 					act = Action{Type: ActionAccept}
@@ -110,7 +109,7 @@ func resolveConflicts(pt *ParserTable) {
 	pt.States.ForEach(
 		func(state *ItemSet) {
 			pt.Actions.ForEachActionSet(
-				state,
+				pt.Grammar, state,
 				func(sym grammar.Symbol, actions []Action) {
 					// We can only resolve shift/reduce conflicts.
 					if len(actions) != 2 {
