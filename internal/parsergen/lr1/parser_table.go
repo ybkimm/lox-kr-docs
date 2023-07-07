@@ -57,11 +57,13 @@ func (t *ParserTable) PrintStateGraph(w io.Writer) {
 			fmt.Sprintf("I%d\n%v", s.Index, s.ToString(t.Grammar)),
 		)
 	})
-	t.Transitions.ForEach(func(from, to *ItemSet, sym grammar.Symbol) {
-		fmt.Fprintf(w, "  I%d -> I%d [label=%q];\n",
-			from.Index,
-			to.Index,
-			sym.SymName())
+	t.States.ForEach(func(from *ItemSet) {
+		t.Transitions.ForEach(from, func(sym grammar.Symbol, to *ItemSet) {
+			fmt.Fprintf(w, "  I%d -> I%d [label=%q];\n",
+				from.Index,
+				to.Index,
+				sym.SymName())
+		})
 	})
 	fmt.Fprintln(w, `}`)
 }

@@ -6,57 +6,60 @@ import (
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
 )
 
-type transitionKey struct {
-	From *ItemSet
-	Sym  grammar.Symbol
-}
+type symTransitions map[grammar.Symbol]*ItemSet
 
 type TransitionMap struct {
-	transitions map[transitionKey]*ItemSet
+	states map[*ItemSet]symTransitions
 }
 
 func NewTransitionMap() *TransitionMap {
 	return &TransitionMap{
-		transitions: make(map[transitionKey]*ItemSet),
+		states: make(map[*ItemSet]symTransitions),
 	}
 }
 
 func (m *TransitionMap) Add(from *ItemSet, to *ItemSet, sym grammar.Symbol) {
-	key := transitionKey{from, sym}
-	if existing, ok := m.transitions[key]; ok {
+	symTrans := m.states[from]
+	if symTrans == nil {
+		symTrans = make(symTransitions)
+		m.states[from] = symTrans
+	}
+	existing := symTrans[sym]
+	if existing != nil {
 		if existing != to {
 			panic("transition redefined")
 		}
 		return
 	}
-	m.transitions[key] = to
+	symTrans[sym] = to
 }
 
 func (m *TransitionMap) Get(from *ItemSet, sym grammar.Symbol) *ItemSet {
-	key := transitionKey{from, sym}
-	toState := m.transitions[key]
+	symTrans := m.states[from]
+	if symTrans == nil {
+		panic("invalid state")
+	}
+	toState := symTrans[sym]
 	if toState == nil {
 		panic("no transition")
 	}
 	return toState
 }
 
-func (m *TransitionMap) ForEach(fn func(from *ItemSet, to *ItemSet, sym grammar.Symbol)) {
-	keys := make([]transitionKey, 0, len(m.transitions))
-	for key := range m.transitions {
-		keys = append(keys, key)
+func (m *TransitionMap) ForEach(from *ItemSet, fn func(sym grammar.Symbol, to *ItemSet)) {
+	symTrans := m.states[from]
+	if symTrans == nil {
+		return
+	}
+	keys := make([]grammar.Symbol, 0, len(symTrans))
+	for sym := range symTrans {
+		keys = append(keys, sym)
 	}
 	sort.Slice(keys, func(i, j int) bool {
-		switch {
-		case keys[i].From.Index < keys[j].From.Index:
-			return true
-		case keys[i].From.Index > keys[j].From.Index:
-			return false
-		default:
-			return keys[i].Sym.SymName() < keys[j].Sym.SymName()
-		}
+		return keys[i].SymName() < keys[j].SymName()
 	})
-	for _, key := range keys {
-		fn(key.From, m.transitions[key], key.Sym)
+	for _, sym := range keys {
+		to := symTrans[sym]
+		fn(sym, to)
 	}
 }
