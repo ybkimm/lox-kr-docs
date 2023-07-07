@@ -9,6 +9,9 @@ I0:
   R -> .L, $
     on *: shift I1
     on id: shift I5
+    on L: goto I2
+    on R: goto I3
+    on S: goto I4
 I1:
   L -> .* R, $
   L -> .* R, =
@@ -20,6 +23,8 @@ I1:
   R -> .L, =
     on *: shift I1
     on id: shift I5
+    on L: goto I6
+    on R: goto I7
 I2:
   S -> L .= R, $
   R -> L., $
@@ -53,6 +58,8 @@ I8:
   R -> .L, $
     on *: shift I1
     on id: shift I5
+    on L: goto I6
+    on R: goto I9
 I9:
   S -> L = R., $
     on $: reduce S

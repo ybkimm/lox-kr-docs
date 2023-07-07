@@ -7,12 +7,15 @@ I0:
   C -> .d, d
     on c: shift I3
     on d: shift I4
+    on C: goto I1
+    on S: goto I2
 I1:
   S -> C .C, $
   C -> .c C, $
   C -> .d, $
     on c: shift I6
     on d: shift I7
+    on C: goto I5
 I2:
   S' -> S., $
     on $: accept
@@ -25,6 +28,7 @@ I3:
   C -> .d, d
     on c: shift I3
     on d: shift I4
+    on C: goto I8
 I4:
   C -> d., c
   C -> d., d
@@ -39,6 +43,7 @@ I6:
   C -> .d, $
     on c: shift I6
     on d: shift I7
+    on C: goto I9
 I7:
   C -> d., $
     on $: reduce C

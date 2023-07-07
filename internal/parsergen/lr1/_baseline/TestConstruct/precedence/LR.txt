@@ -1,0 +1,221 @@
+I0:
+  S' -> .E, $
+  E -> .E + E, $
+  E -> .E + E, +
+  E -> .E + E, -
+  E -> .E + E, *
+  E -> .E - E, $
+  E -> .E - E, +
+  E -> .E - E, -
+  E -> .E - E, *
+  E -> .E * E, $
+  E -> .E * E, +
+  E -> .E * E, -
+  E -> .E * E, *
+  E -> .num, $
+  E -> .num, +
+  E -> .num, -
+  E -> .num, *
+    on num: shift I2
+    on E: goto I1
+I1:
+  S' -> E., $
+  E -> E .+ E, $
+  E -> E .+ E, +
+  E -> E .+ E, -
+  E -> E .+ E, *
+  E -> E .- E, $
+  E -> E .- E, +
+  E -> E .- E, -
+  E -> E .- E, *
+  E -> E .* E, $
+  E -> E .* E, +
+  E -> E .* E, -
+  E -> E .* E, *
+    on $: accept
+    on *: shift I3
+    on +: shift I4
+    on -: shift I5
+I2:
+  E -> num., $
+  E -> num., +
+  E -> num., -
+  E -> num., *
+    on $: reduce E
+    on *: reduce E
+    on +: reduce E
+    on -: reduce E
+I3:
+  E -> .E + E, $
+  E -> .E + E, +
+  E -> .E + E, -
+  E -> .E + E, *
+  E -> .E - E, $
+  E -> .E - E, +
+  E -> .E - E, -
+  E -> .E - E, *
+  E -> .E * E, $
+  E -> .E * E, +
+  E -> .E * E, -
+  E -> .E * E, *
+  E -> E * .E, $
+  E -> E * .E, +
+  E -> E * .E, -
+  E -> E * .E, *
+  E -> .num, $
+  E -> .num, +
+  E -> .num, -
+  E -> .num, *
+    on num: shift I2
+    on E: goto I6
+I4:
+  E -> .E + E, $
+  E -> .E + E, +
+  E -> .E + E, -
+  E -> .E + E, *
+  E -> E + .E, $
+  E -> E + .E, +
+  E -> E + .E, -
+  E -> E + .E, *
+  E -> .E - E, $
+  E -> .E - E, +
+  E -> .E - E, -
+  E -> .E - E, *
+  E -> .E * E, $
+  E -> .E * E, +
+  E -> .E * E, -
+  E -> .E * E, *
+  E -> .num, $
+  E -> .num, +
+  E -> .num, -
+  E -> .num, *
+    on num: shift I2
+    on E: goto I7
+I5:
+  E -> .E + E, $
+  E -> .E + E, +
+  E -> .E + E, -
+  E -> .E + E, *
+  E -> .E - E, $
+  E -> .E - E, +
+  E -> .E - E, -
+  E -> .E - E, *
+  E -> E - .E, $
+  E -> E - .E, +
+  E -> E - .E, -
+  E -> E - .E, *
+  E -> .E * E, $
+  E -> .E * E, +
+  E -> .E * E, -
+  E -> .E * E, *
+  E -> .num, $
+  E -> .num, +
+  E -> .num, -
+  E -> .num, *
+    on num: shift I2
+    on E: goto I8
+I6:
+  E -> E .+ E, $
+  E -> E .+ E, +
+  E -> E .+ E, -
+  E -> E .+ E, *
+  E -> E .- E, $
+  E -> E .- E, +
+  E -> E .- E, -
+  E -> E .- E, *
+  E -> E .* E, $
+  E -> E .* E, +
+  E -> E .* E, -
+  E -> E .* E, *
+  E -> E * E., $
+  E -> E * E., +
+  E -> E * E., -
+  E -> E * E., *
+    on $: reduce E
+    on *: shift I3 <== CONFLICT
+    on *: reduce E <== CONFLICT
+    on +: shift I4 <== CONFLICT
+    on +: reduce E <== CONFLICT
+    on -: shift I5 <== CONFLICT
+    on -: reduce E <== CONFLICT
+I7:
+  E -> E .+ E, $
+  E -> E .+ E, +
+  E -> E .+ E, -
+  E -> E .+ E, *
+  E -> E + E., $
+  E -> E + E., +
+  E -> E + E., -
+  E -> E + E., *
+  E -> E .- E, $
+  E -> E .- E, +
+  E -> E .- E, -
+  E -> E .- E, *
+  E -> E .* E, $
+  E -> E .* E, +
+  E -> E .* E, -
+  E -> E .* E, *
+    on $: reduce E
+    on *: shift I3 <== CONFLICT
+    on *: reduce E <== CONFLICT
+    on +: shift I4 <== CONFLICT
+    on +: reduce E <== CONFLICT
+    on -: shift I5 <== CONFLICT
+    on -: reduce E <== CONFLICT
+I8:
+  E -> E .+ E, $
+  E -> E .+ E, +
+  E -> E .+ E, -
+  E -> E .+ E, *
+  E -> E .- E, $
+  E -> E .- E, +
+  E -> E .- E, -
+  E -> E .- E, *
+  E -> E - E., $
+  E -> E - E., +
+  E -> E - E., -
+  E -> E - E., *
+  E -> E .* E, $
+  E -> E .* E, +
+  E -> E .* E, -
+  E -> E .* E, *
+    on $: reduce E
+    on *: shift I3 <== CONFLICT
+    on *: reduce E <== CONFLICT
+    on +: shift I4 <== CONFLICT
+    on +: reduce E <== CONFLICT
+    on -: shift I5 <== CONFLICT
+    on -: reduce E <== CONFLICT
+
+digraph G {
+  rankdir="LR";
+  I0 [label="I0\nS' -> .E, $\nE -> .E + E, $\nE -> .E + E, +\nE -> .E + E, -\nE -> .E + E, *\nE -> .E - E, $\nE -> .E - E, +\nE -> .E - E, -\nE -> .E - E, *\nE -> .E * E, $\nE -> .E * E, +\nE -> .E * E, -\nE -> .E * E, *\nE -> .num, $\nE -> .num, +\nE -> .num, -\nE -> .num, *"];
+  I1 [label="I1\nS' -> E., $\nE -> E .+ E, $\nE -> E .+ E, +\nE -> E .+ E, -\nE -> E .+ E, *\nE -> E .- E, $\nE -> E .- E, +\nE -> E .- E, -\nE -> E .- E, *\nE -> E .* E, $\nE -> E .* E, +\nE -> E .* E, -\nE -> E .* E, *"];
+  I2 [label="I2\nE -> num., $\nE -> num., +\nE -> num., -\nE -> num., *"];
+  I3 [label="I3\nE -> .E + E, $\nE -> .E + E, +\nE -> .E + E, -\nE -> .E + E, *\nE -> .E - E, $\nE -> .E - E, +\nE -> .E - E, -\nE -> .E - E, *\nE -> .E * E, $\nE -> .E * E, +\nE -> .E * E, -\nE -> .E * E, *\nE -> E * .E, $\nE -> E * .E, +\nE -> E * .E, -\nE -> E * .E, *\nE -> .num, $\nE -> .num, +\nE -> .num, -\nE -> .num, *"];
+  I4 [label="I4\nE -> .E + E, $\nE -> .E + E, +\nE -> .E + E, -\nE -> .E + E, *\nE -> E + .E, $\nE -> E + .E, +\nE -> E + .E, -\nE -> E + .E, *\nE -> .E - E, $\nE -> .E - E, +\nE -> .E - E, -\nE -> .E - E, *\nE -> .E * E, $\nE -> .E * E, +\nE -> .E * E, -\nE -> .E * E, *\nE -> .num, $\nE -> .num, +\nE -> .num, -\nE -> .num, *"];
+  I5 [label="I5\nE -> .E + E, $\nE -> .E + E, +\nE -> .E + E, -\nE -> .E + E, *\nE -> .E - E, $\nE -> .E - E, +\nE -> .E - E, -\nE -> .E - E, *\nE -> E - .E, $\nE -> E - .E, +\nE -> E - .E, -\nE -> E - .E, *\nE -> .E * E, $\nE -> .E * E, +\nE -> .E * E, -\nE -> .E * E, *\nE -> .num, $\nE -> .num, +\nE -> .num, -\nE -> .num, *"];
+  I6 [label="I6\nE -> E .+ E, $\nE -> E .+ E, +\nE -> E .+ E, -\nE -> E .+ E, *\nE -> E .- E, $\nE -> E .- E, +\nE -> E .- E, -\nE -> E .- E, *\nE -> E .* E, $\nE -> E .* E, +\nE -> E .* E, -\nE -> E .* E, *\nE -> E * E., $\nE -> E * E., +\nE -> E * E., -\nE -> E * E., *"];
+  I7 [label="I7\nE -> E .+ E, $\nE -> E .+ E, +\nE -> E .+ E, -\nE -> E .+ E, *\nE -> E + E., $\nE -> E + E., +\nE -> E + E., -\nE -> E + E., *\nE -> E .- E, $\nE -> E .- E, +\nE -> E .- E, -\nE -> E .- E, *\nE -> E .* E, $\nE -> E .* E, +\nE -> E .* E, -\nE -> E .* E, *"];
+  I8 [label="I8\nE -> E .+ E, $\nE -> E .+ E, +\nE -> E .+ E, -\nE -> E .+ E, *\nE -> E .- E, $\nE -> E .- E, +\nE -> E .- E, -\nE -> E .- E, *\nE -> E - E., $\nE -> E - E., +\nE -> E - E., -\nE -> E - E., *\nE -> E .* E, $\nE -> E .* E, +\nE -> E .* E, -\nE -> E .* E, *"];
+  I0 -> I1 [label="E"];
+  I0 -> I2 [label="num"];
+  I1 -> I3 [label="*"];
+  I1 -> I4 [label="+"];
+  I1 -> I5 [label="-"];
+  I3 -> I6 [label="E"];
+  I3 -> I2 [label="num"];
+  I4 -> I7 [label="E"];
+  I4 -> I2 [label="num"];
+  I5 -> I8 [label="E"];
+  I5 -> I2 [label="num"];
+  I6 -> I3 [label="*"];
+  I6 -> I4 [label="+"];
+  I6 -> I5 [label="-"];
+  I7 -> I3 [label="*"];
+  I7 -> I4 [label="+"];
+  I7 -> I5 [label="-"];
+  I8 -> I3 [label="*"];
+  I8 -> I4 [label="+"];
+  I8 -> I5 [label="-"];
+}
