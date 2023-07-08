@@ -2,16 +2,17 @@ package codegen
 
 import (
 	"fmt"
-	"go/ast"
-	"go/importer"
 	"go/parser"
 	"go/token"
 	"go/types"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
 
-	_ "golang.org/x/tools/go/loader"
+	"github.com/dcaiafa/lox/internal/util/multierror"
+	"golang.org/x/tools/go/packages"
 )
 
 const loxGenGo = `
@@ -19,134 +20,168 @@ package {{package}}
 
 type loxParser struct {}
 `
+const loxGenGoName = "lox.gen.go"
+const loxParserTypeName = "loxParser"
 
 type State struct {
-	Files map[string]*File
+	Fset          *token.FileSet
+	ParserDecl    types.Object
+	ReduceMethods map[string]*ReduceMethod
 }
 
-type File struct {
-	Filename string
+type ReduceMethod struct {
+	Method     *types.Func
+	ProdName   string
+	MethodName string
+	Params     []*ReduceParam
+	ReturnType types.Type
 }
+
+type ReduceParam struct {
+	TermIndex int
+	Type      types.Type
+}
+
+var reduceParamRegex = regexp.MustCompile(`^.+?(\d+)$`)
 
 func Parse(path string) (*State, error) {
-	entries, err := os.ReadDir(path)
+	dirEntries, err := os.ReadDir(path)
 	if err != nil {
 		return nil, err
 	}
-
-	var astFiles []*ast.File
-	fset := token.NewFileSet()
-	for _, entry := range entries {
-		if entry.IsDir() ||
-			filepath.Ext(entry.Name()) != ".go" ||
-			entry.Name() == "lox.gen.go" {
-			continue
+	var oneSourceName string
+	for _, dirEntry := range dirEntries {
+		if !dirEntry.IsDir() &&
+			filepath.Ext(dirEntry.Name()) == ".go" &&
+			dirEntry.Name() != loxGenGoName {
+			oneSourceName = filepath.Join(path, dirEntry.Name())
 		}
-		filename := filepath.Join(path, entry.Name())
-		astFile, err := parseFile(fset, filename)
-		if err != nil {
-			return nil, err
-		}
-		astFiles = append(astFiles, astFile)
+	}
+	if oneSourceName == "" {
+		return nil, fmt.Errorf("package contains no source files")
 	}
 
-	if len(astFiles) == 0 {
-		return nil, fmt.Errorf("no files")
+	oneSource, err := parser.ParseFile(token.NewFileSet(), oneSourceName, nil, 0)
+	if err != nil {
+		return nil, fmt.Errorf("%v: %w", oneSourceName, err)
 	}
 
-	packageName := astFiles[0].Name.Name
+	packageName := oneSource.Name.Name
 	loxGenGo := strings.Replace(loxGenGo, "{{package}}", packageName, 1)
-
-	loxGenGoAST, err := parser.ParseFile(
-		fset, "lox.gen.go", loxGenGo, parser.DeclarationErrors)
+	loxGenGoPath, err := filepath.Abs(
+		filepath.Join(path, loxGenGoName))
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse lox.gen.go: %w", err)
+		return nil, fmt.Errorf("filepath.Abs failed: %w", err)
 	}
 
-	astFiles = append(astFiles, loxGenGoAST)
-
-	conf := types.Config{
-		Importer:                 importer.Default(),
-		IgnoreFuncBodies:         true,
-		Error:                    func(err error) { fmt.Println(err) },
-		DisableUnusedImportCheck: true,
+	fset := token.NewFileSet()
+	cfg := &packages.Config{
+		Mode: packages.NeedName | packages.NeedTypes | packages.NeedSyntax,
+		Dir:  filepath.Clean(path),
+		Fset: fset,
+		Overlay: map[string][]byte{
+			loxGenGoPath: []byte(loxGenGo),
+		},
 	}
 
-	pkg, err := conf.Check(packageName, fset, astFiles, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	_ = pkg
-
-	return nil, nil
-}
-
-func parseFile(fset *token.FileSet, filename string) (*ast.File, error) {
-	astFile, err := parser.ParseFile(
-		fset, filename, nil, parser.ParseComments|parser.DeclarationErrors)
-	if err != nil {
-		return nil, fmt.Errorf("%v: %w", filename, err)
-	}
-	return astFile, nil
-}
-
-/*
-func parseFile_(filename string) (*File, error) {
-	astFile, err := parser.ParseFile(fset, filename, nil, parser.ParseComments|parser.DeclarationErrors)
+	pkgs, err := packages.Load(cfg, ".")
 	if err != nil {
 		return nil, err
 	}
 
-	conf := types.Config{
-		Importer:                 importer.Default(),
-		IgnoreFuncBodies:         true,
-		Error:                    func(err error) { fmt.Println(err) },
-		DisableUnusedImportCheck: true,
+	pkg := pkgs[0]
+
+	if len(pkg.Errors) != 0 {
+		errs := multierror.MultiError{}
+		for _, err := range pkg.Errors {
+			errs.Add(err)
+		}
+		return nil, errs
 	}
 
-	pkg, _ := conf.Check("foobar", fset, []*ast.File{astFile}, nil)
+	scope := pkg.Types.Scope()
 
-	if pkg == nil {
-		return nil, errors.New("Check() failed completely")
+	loxStateTypeObj := scope.Lookup(loxParserTypeName)
+	if loxStateTypeObj == nil {
+		panic(fmt.Errorf("could not find type %q", loxParserTypeName))
 	}
+	loxStateType := loxStateTypeObj.Type()
 
-	scope := pkg.Scope()
-
-	for _, name := range scope.Names() {
-		obj := scope.Lookup(name)
-		fmt.Println(obj)
-	}
-
-	return nil, nil
-}
-
-func findParserStruct(astFile *ast.File) *ast.TypeSpec {
-	for _, decl := range astFile.Decls {
-		genDecl, ok := decl.(*ast.GenDecl)
+	var parserObj types.Object
+	for _, typeName := range scope.Names() {
+		obj := scope.Lookup(typeName)
+		namedType, ok := obj.Type().(*types.Named)
 		if !ok {
 			continue
 		}
-		if genDecl.Tok != token.TYPE {
+		structType, ok := namedType.Underlying().(*types.Struct)
+		if !ok {
 			continue
 		}
-		for _, spec := range genDecl.Specs {
-			typeSpec, ok := spec.(*ast.TypeSpec)
-			if !ok {
-				continue
-			}
-			structType, ok := typeSpec.Type.(*ast.StructType)
-			if !ok {
-      	continue
-			}
-			for _, field := range structType.Fields.List {
-				if field.Names != nil {
-					continue
+		for i := 0; i < structType.NumFields(); i++ {
+			field := structType.Field(i)
+			if field.Embedded() && field.Type() == loxStateType {
+				if parserObj != nil {
+					return nil, fmt.Errorf("multiple Parser objects")
 				}
-
-
+				parserObj = obj
+				break
 			}
 		}
 	}
+	if parserObj == nil {
+		return nil, fmt.Errorf("no parser found")
+	}
+
+	if parserObj.Type().(*types.Named).TypeParams().Len() != 0 {
+		return nil, fmt.Errorf("%v: cannot have type parameters", parserObj.Name())
+	}
+
+	state := &State{
+		Fset:          fset,
+		ParserDecl:    parserObj,
+		ReduceMethods: make(map[string]*ReduceMethod),
+	}
+
+	parserNamed := parserObj.Type().(*types.Named)
+	for i := 0; i < parserNamed.NumMethods(); i++ {
+		method := parserNamed.Method(i)
+		if !strings.HasPrefix(method.Name(), "reduce") {
+			continue
+		}
+
+		sig := method.Type().(*types.Signature)
+		if sig.Results().Len() != 1 {
+			return nil, fmt.Errorf(
+				"%v: reduce method must return exactly one result",
+				method.Name())
+		}
+
+		reduceMethod := &ReduceMethod{
+			Method:     method,
+			ProdName:   strings.TrimPrefix(method.Name(), "reduce"),
+			MethodName: method.Name(),
+			ReturnType: sig.Results().At(0).Type(),
+		}
+
+		params := sig.Params()
+		for i := 0; i < params.Len(); i++ {
+			param := params.At(i)
+			matches := reduceParamRegex.FindStringSubmatch(param.Name())
+			if matches == nil {
+				return nil, fmt.Errorf(
+					"%v: invalid parameter name: %v",
+					method.Name(), param.Name())
+			}
+			reduceParam := &ReduceParam{
+				Type: param.Type(),
+			}
+			reduceParam.TermIndex, _ = strconv.Atoi(matches[1])
+			reduceMethod.Params = append(reduceMethod.Params, reduceParam)
+		}
+
+		state.ReduceMethods[reduceMethod.ProdName] = reduceMethod
+	}
+
+	return nil, nil
 }
-*/
