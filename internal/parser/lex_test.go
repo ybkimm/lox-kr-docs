@@ -14,11 +14,11 @@ func TestLexer(t *testing.T) {
 		const input = `
 @lexer
 
-@custom ID '*'
+@custom ID '*' ;
 
 @parser
 
-syntax     = decl* '=' qterm+ label? # foo123 .
+syntax     = decl* '=' qterm+ label? #foo123 ;
 `
 
 		errs := errs.New()
@@ -41,6 +41,7 @@ syntax     = decl* '=' qterm+ label? # foo123 .
 3:1: kCUSTOM
 3:9: ID
 3:12: LITERAL
+3:16: ';'
 5:1: kPARSER
 7:1: ID
 7:12: '='
@@ -51,9 +52,8 @@ syntax     = decl* '=' qterm+ label? # foo123 .
 7:29: '+'
 7:31: ID
 7:36: '?'
-7:38: '#'
-7:40: ID
-7:47: '.'
+7:38: LABEL
+7:46: ';'
 0:0: $end
 `
 		expected = strings.TrimSpace(expected)

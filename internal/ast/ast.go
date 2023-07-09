@@ -47,7 +47,6 @@ type Prod struct {
 
 type Term struct {
 	Name      string
-	Literal   string
 	Qualifier Qualifier
 }
 
@@ -73,6 +72,5 @@ type CustomTokenDecl struct {
 }
 
 type CustomToken struct {
-	Name    string
-	Literal string
+	Name string
 }

@@ -6,9 +6,21 @@ type Type int
 
 const (
 	Undefined Type = iota
+
 	ID
-	Literal
-	Keyword
+	LITERAL
+	LABEL
+
+	ZERO_OR_MANY
+	ONE_OR_MANY
+	ZERO_OR_ONE
+
+	DEFINE
+	SEMICOLON
+
+	PARSER
+	LEXER
+	CUSTOM
 )
 
 type Token struct {

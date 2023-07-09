@@ -50,8 +50,8 @@ func listOne[T any](x any) []T {
 
 %token<tok> LEXERR
 
-%token<tok> ID LITERAL
-%token<tok> '=' '.' '|' '*' '+' '?' '#'
+%token<tok> ID LITERAL LABEL
+%token<tok> '=' ';' '|' '*' '+' '?'
 %token<tok> kLEXER kPARSER kCUSTOM
 
 %type<prod> spec
@@ -135,7 +135,7 @@ parser_decls_opt: parser_decls
 parser_decl: rule
            ;
 
-rule: ID '=' productions '.'
+rule: ID '=' productions ';'
       {
         $$ = &ast.Rule{
           Name: $1.Str,
@@ -192,8 +192,7 @@ qterm: term qualifier_opt
        }
      ;
 
-term: ID       { $$ = &ast.Term{ Name: $1.Str } }
-    | LITERAL  { $$ = &ast.Term{ Literal: $1.Str} }
+term: ID { $$ = &ast.Term{ Name: $1.Str } }
     ;
 
 qualifier: '*'  { $$ = ast.ZeroOrMore }
@@ -239,7 +238,7 @@ lexer_decls_opt: lexer_decls
 lexer_decl: custom_token_decl
           ;
 
-custom_token_decl: kCUSTOM custom_tokens
+custom_token_decl: kCUSTOM custom_tokens ';'
                    {
                      $$ = &ast.CustomTokenDecl{
                        CustomTokens: cast[[]*ast.CustomToken]($2),
@@ -257,6 +256,6 @@ custom_tokens: custom_tokens custom_token
                }
              ;
 
-custom_token: ID      { $$ = &ast.CustomToken{Name: $1.Str} }
-            | LITERAL { $$ = &ast.CustomToken{Literal: $1.Str} }
+custom_token: ID  { $$ = &ast.CustomToken{Name: $1.Str} }
+            ;
               

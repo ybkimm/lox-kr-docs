@@ -1,16 +1,33 @@
 @lexer
 
-@custom ID LITERAL
-@custom '*' '+' '?' '#' '.' '='
+@custom 
+  ID
+  LITERAL
+  LABEL
+
+  ZERO_OR_MANY
+  ONE_OR_MANY
+  ZERO_OR_ONE
+
+  DEFINE
+  SEMICOLON
+
+  PARSER
+  LEXER
+  CUSTOM ;
 
 @parser
 
-syntax     = decl* .
-decl       = rule .
-rule       = ID '=' production+ '.' .
-production = qterm+ label? .
-qterm      = term qualifier? .
-term       = ID | LITERAL .
-qualifier  = '*' | '+' | '?' .
-label      = '#' ID .
+Spec     = Section+ ;
+Section  = Parser | Lexer;
+Parser   = PARSER Pdecl* ;
+Pdecl    = Prule ;
+Prule    = ID DEFINE Pprod+ SEMICOLON ;
+Pprod    = Pterm+ Label? ;
+Pterm    = ID Pcard? ;
+Pcard    = ZERO_OR_MANY | ONE_OR_MANY | ZERO_OR_ONE ; 
+Label    = LABEL ;
 
+Lexer    = LEXER Ldecl* ;
+Ldecl    = Lcustom ;
+Lcustom  = CUSTOM ID+ SEMICOLON ;

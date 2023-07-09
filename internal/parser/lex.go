@@ -74,7 +74,9 @@ func (l *lex) scan(lval *yySymType) (tok int) {
 			return l.scanSingleQuotedString(lval)
 		case '@':
 			return l.scanKeyword(lval)
-		case '=', '.', '|', '*', '+', '?', '#':
+		case '#':
+			return l.scanLabel(lval)
+		case '=', ';', '|', '*', '+', '?':
 			l.advance()
 			return int(r)
 		default:
@@ -131,7 +133,7 @@ func (l *lex) scanKeyword(lval *yySymType) int {
 		l.buf.WriteRune(r)
 	}
 
-	lval.tok.Type = token.Keyword
+	lval.tok.Type = token.ID
 	lval.tok.Str = l.buf.String()
 
 	keyword, ok := keywords[lval.tok.Str]
@@ -140,6 +142,31 @@ func (l *lex) scanKeyword(lval *yySymType) int {
 	}
 
 	return keyword
+}
+
+func (l *lex) scanLabel(lval *yySymType) int {
+	l.buf.Reset()
+
+	r := l.peek()
+	if l.peek() != '#' {
+		return LEXERR
+	}
+	l.advance()
+	l.buf.WriteRune(r)
+
+	for {
+		r := l.peek()
+		if !isLetter(r) && !isNumber(r) && r != '_' {
+			break
+		}
+		l.advance()
+		l.buf.WriteRune(r)
+	}
+
+	lval.tok.Type = token.LABEL
+	lval.tok.Str = l.buf.String()
+
+	return LABEL
 }
 
 func (l *lex) scanSingleQuotedString(lval *yySymType) int {
@@ -162,7 +189,7 @@ func (l *lex) scanSingleQuotedString(lval *yySymType) int {
 		l.buf.WriteRune(r)
 	}
 
-	lval.tok.Type = token.Literal
+	lval.tok.Type = token.LITERAL
 	lval.tok.Str = l.buf.String()
 	return LITERAL
 }

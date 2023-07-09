@@ -45,12 +45,24 @@ func (g *Grammar) ToAugmentedGrammar() (*AugmentedGrammar, error) {
 	}
 	ag.Rules = append([]*Rule{ag.Sprime}, g.Rules...)
 
-	ag.normalize()
+	// Resolve references before calling normalize() to detect reference errors
+	// before altering the grammar.
 	err := ag.resolveReferences()
 	if err != nil {
 		return nil, err
 	}
+
+	ag.normalize()
+
+	// We have to resolve references again because normalize() might have changed
+	// the grammar. This is guaranteed to succeed, though.
+	err = ag.resolveReferences()
+	if err != nil {
+		panic(err)
+	}
+
 	ag.assignIndex()
+
 	return ag, nil
 }
 
@@ -72,6 +84,9 @@ func (g *AugmentedGrammar) ProdRule(prod *Prod) *Rule {
 
 func (g *AugmentedGrammar) resolveReferences() error {
 	var errs multierror.MultiError
+
+	g.nameToSymbol = make(map[string]Symbol)
+	g.termToSymbol = make(map[*Term]Symbol)
 
 	for _, terminal := range g.Terminals {
 		if other := g.nameToSymbol[terminal.SymName()]; other != nil {
@@ -228,7 +243,7 @@ func (g *AugmentedGrammar) normalize() {
 						// a' = c+ | e
 						srule := newRule(rule.Name)
 						srule.Prods = []*Prod{
-							NewProd(NewTermS(g.TermSymbol(term), OneOrMore)),
+							NewProd(NewTerm(term.Name, OneOrMore)),
 							NewProd(),
 						}
 						prod.Terms[i] = NewTermS(srule)
@@ -241,8 +256,8 @@ func (g *AugmentedGrammar) normalize() {
 						//    | c
 						srule := newRule(rule.Name)
 						srule.Prods = []*Prod{
-							NewProd(NewTermS(srule), NewTermS(g.TermSymbol(term))),
-							NewProd(NewTermS(g.TermSymbol(term))),
+							NewProd(NewTerm(srule.Name), NewTerm(term.Name)),
+							NewProd(NewTerm(term.Name)),
 						}
 						prod.Terms[i] = NewTermS(srule)
 						changed = true
@@ -253,10 +268,10 @@ func (g *AugmentedGrammar) normalize() {
 						// a' = c | e
 						srule := newRule(rule.Name)
 						srule.Prods = []*Prod{
-							NewProd(NewTermS(g.TermSymbol(term))),
+							NewProd(NewTerm(term.Name)),
 							NewProd(),
 						}
-						prod.Terms[i] = NewTermS(srule)
+						prod.Terms[i] = NewTerm(srule.Name)
 						changed = true
 					default:
 						panic("not reached")

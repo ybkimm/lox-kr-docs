@@ -168,7 +168,7 @@ func Parse(path string) (*State, error) {
 		for i := 0; i < params.Len(); i++ {
 			param := params.At(i)
 			matches := reduceParamRegex.FindStringSubmatch(param.Name())
-			if matches == nil {
+			if len(matches) == 0 {
 				return nil, fmt.Errorf(
 					"%v: invalid parameter name: %v",
 					method.Name(), param.Name())

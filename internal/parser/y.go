@@ -57,9 +57,10 @@ type yySymType struct {
 const LEXERR = 57346
 const ID = 57347
 const LITERAL = 57348
-const kLEXER = 57349
-const kPARSER = 57350
-const kCUSTOM = 57351
+const LABEL = 57349
+const kLEXER = 57350
+const kPARSER = 57351
+const kCUSTOM = 57352
 
 var yyToknames = [...]string{
 	"$end",
@@ -68,16 +69,17 @@ var yyToknames = [...]string{
 	"LEXERR",
 	"ID",
 	"LITERAL",
+	"LABEL",
 	"'='",
-	"'.'",
+	"';'",
 	"'|'",
 	"'*'",
 	"'+'",
 	"'?'",
-	"'#'",
 	"kLEXER",
 	"kPARSER",
 	"kCUSTOM",
+	"'#'",
 }
 
 var yyStatenames = [...]string{}
@@ -95,80 +97,78 @@ var yyExca = [...]int8{
 
 const yyPrivate = 57344
 
-const yyLast = 49
+const yyLast = 48
 
 var yyAct = [...]int8{
-	28, 30, 24, 17, 19, 8, 7, 32, 33, 43,
-	44, 45, 12, 35, 36, 40, 32, 33, 25, 26,
-	22, 21, 47, 14, 20, 4, 34, 1, 23, 9,
-	18, 38, 15, 16, 6, 37, 39, 46, 41, 42,
-	31, 29, 27, 13, 10, 11, 5, 3, 2,
+	27, 29, 24, 31, 17, 19, 8, 7, 42, 43,
+	44, 12, 34, 35, 25, 39, 21, 46, 32, 31,
+	25, 22, 14, 20, 4, 1, 33, 23, 9, 18,
+	37, 15, 16, 6, 36, 38, 45, 40, 41, 30,
+	28, 26, 13, 10, 11, 5, 3, 2,
 }
 
 var yyPact = [...]int16{
-	-9, -1000, -1000, -9, -1000, -1000, -1000, 18, -12, -1000,
-	-1000, 18, -1000, -1000, 14, -1000, -12, -1000, -1000, 13,
-	-1000, 11, -1000, 13, -1000, -1000, -1000, 5, -1000, 2,
-	-1000, -1, -1000, -1000, -1000, -1000, 11, -1000, -1000, -1000,
-	17, -1000, -1000, -1000, -1000, -1000, -1000, -1000,
+	-8, -1000, -1000, -8, -1000, -1000, -1000, 17, -11, -1000,
+	-1000, 17, -1000, -1000, 8, -1000, -11, -1000, -1000, 15,
+	-1000, 14, -1000, 9, -1000, -1000, 3, -1000, -2, -1000,
+	-3, -1000, -1000, -1000, -1000, 14, -1000, -1000, -1000, 12,
+	-1000, -1000, -1000, -1000, -1000, -1000, -1000,
 }
 
 var yyPgo = [...]int8{
-	0, 48, 47, 25, 46, 45, 44, 12, 43, 42,
-	0, 41, 1, 40, 39, 38, 36, 35, 34, 33,
-	32, 3, 30, 28, 2, 27,
+	0, 47, 46, 24, 45, 44, 43, 11, 42, 41,
+	0, 40, 1, 39, 38, 37, 35, 34, 33, 32,
+	31, 4, 29, 27, 2, 25,
 }
 
 var yyR1 = [...]int8{
 	0, 25, 1, 2, 2, 3, 3, 4, 5, 5,
 	6, 6, 7, 8, 9, 9, 10, 11, 11, 12,
-	13, 13, 14, 14, 14, 15, 15, 16, 17, 17,
-	18, 19, 19, 20, 20, 21, 22, 23, 23, 24,
-	24,
+	13, 14, 14, 14, 15, 15, 16, 17, 17, 18,
+	19, 19, 20, 20, 21, 22, 23, 23, 24,
 }
 
 var yyR2 = [...]int8{
 	0, 1, 1, 2, 1, 1, 1, 2, 2, 1,
 	1, 0, 1, 4, 3, 1, 2, 2, 1, 2,
-	1, 1, 1, 1, 1, 1, 0, 2, 1, 0,
-	2, 2, 1, 1, 0, 1, 2, 2, 1, 1,
-	1,
+	1, 1, 1, 1, 1, 0, 2, 1, 0, 2,
+	2, 1, 1, 0, 1, 3, 2, 1, 1,
 }
 
 var yyChk = [...]int16{
 	-1000, -25, -1, -2, -3, -4, -18, 15, 14, -3,
 	-6, -5, -7, -8, 5, -20, -19, -21, -22, 16,
-	-7, 7, -21, -23, -24, 5, 6, -9, -10, -11,
-	-12, -13, 5, 6, -24, 8, 9, -17, -12, -16,
-	13, -15, -14, 10, 11, 12, -10, 5,
+	-7, 8, -21, -23, -24, 5, -9, -10, -11, -12,
+	-13, 5, 9, -24, 9, 10, -17, -12, -16, 17,
+	-15, -14, 11, 12, 13, -10, 5,
 }
 
 var yyDef = [...]int8{
-	0, -2, 1, 2, 4, 5, 6, 11, 34, 3,
-	7, 10, 9, 12, 0, 30, 33, 32, 35, 0,
-	8, 0, 31, 36, 38, 39, 40, 0, 15, 29,
-	18, 26, 20, 21, 37, 13, 0, 16, 17, 28,
-	0, 19, 25, 22, 23, 24, 14, 27,
+	0, -2, 1, 2, 4, 5, 6, 11, 33, 3,
+	7, 10, 9, 12, 0, 29, 32, 31, 34, 0,
+	8, 0, 30, 0, 37, 38, 0, 15, 28, 18,
+	25, 20, 35, 36, 13, 0, 16, 17, 27, 0,
+	19, 24, 21, 22, 23, 14, 26,
 }
 
 var yyTok1 = [...]int8{
 	1, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 13, 3, 3, 3, 3,
-	3, 3, 10, 11, 3, 3, 8, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 7, 3, 12, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 17, 3, 3, 3, 3,
+	3, 3, 11, 12, 3, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 9,
+	3, 8, 3, 13, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 9,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 10,
 }
 
 var yyTok2 = [...]int8{
-	2, 3, 4, 5, 6, 14, 15, 16,
+	2, 3, 4, 5, 6, 7, 14, 15, 16,
 }
 
 var yyTok3 = [...]int8{
@@ -638,105 +638,93 @@ yydefault:
 		}
 	case 21:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:196
+//line parser.y:198
 		{
-			yyVAL.prod = &ast.Term{Literal: yyDollar[1].tok.Str}
+			yyVAL.prod = ast.ZeroOrMore
 		}
 	case 22:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser.y:199
 		{
-			yyVAL.prod = ast.ZeroOrMore
+			yyVAL.prod = ast.OneOrMore
 		}
 	case 23:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser.y:200
 		{
-			yyVAL.prod = ast.OneOrMore
-		}
-	case 24:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:201
-		{
 			yyVAL.prod = ast.ZeroOrOne
 		}
-	case 26:
+	case 25:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line parser.y:205
+//line parser.y:204
 		{
 			yyVAL.prod = ast.NoQualifier
 		}
-	case 27:
+	case 26:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser.y:209
+//line parser.y:208
 		{
 			yyVAL.prod = &ast.Label{
 				Label: yyDollar[2].tok.Str,
 			}
 		}
-	case 29:
+	case 28:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line parser.y:217
+//line parser.y:216
 		{
 			yyVAL.prod = nil
 		}
-	case 30:
+	case 29:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser.y:221
+//line parser.y:220
 		{
 			yyVAL.prod = &ast.Lexer{
 				Decls: cast[[]ast.LexerDecl](yyDollar[2].prod),
 			}
 		}
-	case 31:
+	case 30:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser.y:229
+//line parser.y:228
 		{
 			yyVAL.prod = listAppend[ast.LexerDecl](yyDollar[1].prod, yyDollar[2].prod)
 		}
-	case 32:
+	case 31:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:231
+//line parser.y:230
 		{
 			yyVAL.prod = listOne[ast.LexerDecl](yyDollar[1].prod)
 		}
-	case 34:
+	case 33:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line parser.y:236
+//line parser.y:235
 		{
 			yyVAL.prod = nil
 		}
-	case 36:
-		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser.y:243
+	case 35:
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line parser.y:242
 		{
 			yyVAL.prod = &ast.CustomTokenDecl{
 				CustomTokens: cast[[]*ast.CustomToken](yyDollar[2].prod),
 			}
 		}
-	case 37:
+	case 36:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser.y:251
+//line parser.y:250
 		{
 			yyVAL.prod = listAppend[*ast.CustomToken](yyDollar[1].prod, yyDollar[2].prod)
 		}
-	case 38:
+	case 37:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:255
+//line parser.y:254
 		{
 			yyVAL.prod = listOne[*ast.CustomToken](yyDollar[1].prod)
 		}
-	case 39:
+	case 38:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:260
+//line parser.y:259
 		{
 			yyVAL.prod = &ast.CustomToken{Name: yyDollar[1].tok.Str}
-		}
-	case 40:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:261
-		{
-			yyVAL.prod = &ast.CustomToken{Literal: yyDollar[1].tok.Str}
 		}
 	}
 	goto yystack /* stack new state and value */
