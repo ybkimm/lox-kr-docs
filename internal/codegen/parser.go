@@ -2,15 +2,18 @@ package codegen
 
 import (
 	"fmt"
-	"go/parser"
-	"go/token"
-	"go/types"
+	goparser "go/parser"
+	gotoken "go/token"
+	gotypes "go/types"
 	"os"
 	"path/filepath"
-	"regexp"
-	"strconv"
 	"strings"
 
+	"github.com/dcaiafa/lox/internal/ast"
+	"github.com/dcaiafa/lox/internal/errs"
+	"github.com/dcaiafa/lox/internal/parser"
+	"github.com/dcaiafa/lox/internal/parsergen/grammar"
+	"github.com/dcaiafa/lox/internal/parsergen/lr1"
 	"github.com/dcaiafa/lox/internal/util/multierror"
 	"golang.org/x/tools/go/packages"
 )
@@ -24,30 +27,73 @@ const loxGenGoName = "lox.gen.go"
 const loxParserTypeName = "loxParser"
 
 type State struct {
-	Fset          *token.FileSet
-	ParserDecl    types.Object
+	Grammar       *grammar.AugmentedGrammar
+	Fset          *gotoken.FileSet
+	Parser        gotypes.Object
+	Token         gotypes.Object
+	ParserTable   *lr1.ParserTable
 	ReduceMethods map[string]*ReduceMethod
+	ReduceMap     map[lr1.Action]*ReduceMethod
+	ProdLabels    map[*grammar.Prod]string
 }
 
 type ReduceMethod struct {
-	Method     *types.Func
+	Method     *gotypes.Func
 	ProdName   string
 	MethodName string
 	Params     []*ReduceParam
-	ReturnType types.Type
+	ReturnType gotypes.Type
 }
 
 type ReduceParam struct {
-	TermIndex int
-	Type      types.Type
+	Type gotypes.Type
 }
 
-var reduceParamRegex = regexp.MustCompile(`^.+?(\d+)$`)
+func NewState() *State {
+	return &State{}
+}
 
-func Parse(path string) (*State, error) {
+func (s *State) ParseGrammar(dir string) error {
+	loxFiles, err := filepath.Glob(filepath.Join(dir, "*.lox"))
+	if err != nil {
+		return err
+	}
+
+	if len(loxFiles) == 0 {
+		return fmt.Errorf("%v contains no .lox files", dir)
+	}
+
+	grammar := new(grammar.Grammar)
+	for _, loxFile := range loxFiles {
+		loxFileData, err := os.ReadFile(loxFile)
+		if err != nil {
+			return err
+		}
+		errs := errs.New()
+		spec := parser.Parse(loxFile, loxFileData, errs)
+		if errs.HasErrors() {
+			errs.Dump(os.Stderr)
+			return fmt.Errorf("parsing lox files")
+		}
+		addSpecToGrammar(spec, grammar)
+	}
+
+	s.Grammar, err = grammar.ToAugmentedGrammar()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *State) ConstructParseTables() {
+	s.ParserTable = lr1.ConstructLR(s.Grammar)
+}
+
+func (s *State) ParseGo(path string) error {
 	dirEntries, err := os.ReadDir(path)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	var oneSourceName string
 	for _, dirEntry := range dirEntries {
@@ -58,12 +104,12 @@ func Parse(path string) (*State, error) {
 		}
 	}
 	if oneSourceName == "" {
-		return nil, fmt.Errorf("package contains no source files")
+		return fmt.Errorf("package contains no source files")
 	}
 
-	oneSource, err := parser.ParseFile(token.NewFileSet(), oneSourceName, nil, 0)
+	oneSource, err := goparser.ParseFile(gotoken.NewFileSet(), oneSourceName, nil, 0)
 	if err != nil {
-		return nil, fmt.Errorf("%v: %w", oneSourceName, err)
+		return fmt.Errorf("%v: %w", oneSourceName, err)
 	}
 
 	packageName := oneSource.Name.Name
@@ -71,10 +117,10 @@ func Parse(path string) (*State, error) {
 	loxGenGoPath, err := filepath.Abs(
 		filepath.Join(path, loxGenGoName))
 	if err != nil {
-		return nil, fmt.Errorf("filepath.Abs failed: %w", err)
+		return fmt.Errorf("filepath.Abs failed: %w", err)
 	}
 
-	fset := token.NewFileSet()
+	fset := gotoken.NewFileSet()
 	cfg := &packages.Config{
 		Mode: packages.NeedName | packages.NeedTypes | packages.NeedSyntax,
 		Dir:  filepath.Clean(path),
@@ -86,7 +132,7 @@ func Parse(path string) (*State, error) {
 
 	pkgs, err := packages.Load(cfg, ".")
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	pkg := pkgs[0]
@@ -96,63 +142,32 @@ func Parse(path string) (*State, error) {
 		for _, err := range pkg.Errors {
 			errs.Add(err)
 		}
-		return nil, errs
+		return errs
 	}
 
 	scope := pkg.Types.Scope()
-
-	loxStateTypeObj := scope.Lookup(loxParserTypeName)
-	if loxStateTypeObj == nil {
-		panic(fmt.Errorf("could not find type %q", loxParserTypeName))
-	}
-	loxStateType := loxStateTypeObj.Type()
-
-	var parserObj types.Object
-	for _, typeName := range scope.Names() {
-		obj := scope.Lookup(typeName)
-		namedType, ok := obj.Type().(*types.Named)
-		if !ok {
-			continue
-		}
-		structType, ok := namedType.Underlying().(*types.Struct)
-		if !ok {
-			continue
-		}
-		for i := 0; i < structType.NumFields(); i++ {
-			field := structType.Field(i)
-			if field.Embedded() && field.Type() == loxStateType {
-				if parserObj != nil {
-					return nil, fmt.Errorf("multiple Parser objects")
-				}
-				parserObj = obj
-				break
-			}
-		}
-	}
-	if parserObj == nil {
-		return nil, fmt.Errorf("no parser found")
+	parserObj, err := getParserObj(scope)
+	if err != nil {
+		return err
 	}
 
-	if parserObj.Type().(*types.Named).TypeParams().Len() != 0 {
-		return nil, fmt.Errorf("%v: cannot have type parameters", parserObj.Name())
-	}
+	tokenObj := scope.Lookup("Token")
 
-	state := &State{
-		Fset:          fset,
-		ParserDecl:    parserObj,
-		ReduceMethods: make(map[string]*ReduceMethod),
-	}
+	s.Fset = fset
+	s.Parser = parserObj
+	s.Token = tokenObj
+	s.ReduceMethods = make(map[string]*ReduceMethod)
 
-	parserNamed := parserObj.Type().(*types.Named)
+	parserNamed := parserObj.Type().(*gotypes.Named)
 	for i := 0; i < parserNamed.NumMethods(); i++ {
 		method := parserNamed.Method(i)
 		if !strings.HasPrefix(method.Name(), "reduce") {
 			continue
 		}
 
-		sig := method.Type().(*types.Signature)
+		sig := method.Type().(*gotypes.Signature)
 		if sig.Results().Len() != 1 {
-			return nil, fmt.Errorf(
+			return fmt.Errorf(
 				"%v: reduce method must return exactly one result",
 				method.Name())
 		}
@@ -167,21 +182,108 @@ func Parse(path string) (*State, error) {
 		params := sig.Params()
 		for i := 0; i < params.Len(); i++ {
 			param := params.At(i)
-			matches := reduceParamRegex.FindStringSubmatch(param.Name())
-			if len(matches) == 0 {
-				return nil, fmt.Errorf(
-					"%v: invalid parameter name: %v",
-					method.Name(), param.Name())
-			}
 			reduceParam := &ReduceParam{
 				Type: param.Type(),
 			}
-			reduceParam.TermIndex, _ = strconv.Atoi(matches[1])
 			reduceMethod.Params = append(reduceMethod.Params, reduceParam)
 		}
 
-		state.ReduceMethods[reduceMethod.ProdName] = reduceMethod
+		s.ReduceMethods[reduceMethod.ProdName] = reduceMethod
 	}
 
-	return nil, nil
+	return nil
+}
+
+func getParserObj(scope *gotypes.Scope) (gotypes.Object, error) {
+	loxStateTypeObj := scope.Lookup(loxParserTypeName)
+	if loxStateTypeObj == nil {
+		panic(fmt.Errorf("could not find type %q", loxParserTypeName))
+	}
+	loxStateType := loxStateTypeObj.Type()
+
+	obj := scope.Lookup("Parser")
+	if obj == nil {
+		return nil, fmt.Errorf("no type named Parser")
+	}
+	namedType, ok := obj.Type().(*gotypes.Named)
+	if !ok {
+		return nil, fmt.Errorf("Parser is not a struct")
+	}
+	structType, ok := namedType.Underlying().(*gotypes.Struct)
+	if !ok {
+		return nil, fmt.Errorf("Parser is not a struct")
+	}
+	foundLoxState := false
+	for i := 0; i < structType.NumFields(); i++ {
+		field := structType.Field(i)
+		if field.Embedded() && field.Type() == loxStateType {
+			foundLoxState = true
+			break
+		}
+	}
+	if !foundLoxState {
+		return nil, fmt.Errorf("Parser does not embed %v", loxParserTypeName)
+	}
+	if obj.Type().(*gotypes.Named).TypeParams().Len() != 0 {
+		return nil, fmt.Errorf("Parser cannot have type parameters")
+	}
+	return obj, nil
+}
+
+func addSpecToGrammar(spec *ast.Spec, g *grammar.Grammar) {
+	for _, section := range spec.Sections {
+		switch section := section.(type) {
+		case *ast.Lexer:
+			for _, decl := range section.Decls {
+				switch decl := decl.(type) {
+				case *ast.CustomTokenDecl:
+					for _, token := range decl.CustomTokens {
+						terminal := &grammar.Terminal{
+							Name: token.Name,
+						}
+						g.Terminals = append(g.Terminals, terminal)
+					}
+				default:
+					panic("not-reached")
+				}
+			}
+		case *ast.Parser:
+			for _, decl := range section.Decls {
+				switch decl := decl.(type) {
+				case *ast.Rule:
+					rule := &grammar.Rule{
+						Name: decl.Name,
+					}
+					for _, astProd := range decl.Prods {
+						prod := &grammar.Prod{}
+						for _, astTerm := range astProd.Terms {
+							term := &grammar.Term{
+								Name: astTerm.Name,
+							}
+							switch astTerm.Qualifier {
+							case ast.NoQualifier:
+								term.Cardinality = grammar.One
+							case ast.ZeroOrMore:
+								term.Cardinality = grammar.ZeroOrMore
+							case ast.OneOrMore:
+								term.Cardinality = grammar.OneOrMore
+							case ast.ZeroOrOne:
+								term.Cardinality = grammar.ZeroOrOne
+							default:
+								panic("not-reached")
+							}
+							prod.Terms = append(prod.Terms, term)
+						}
+						rule.Prods = append(rule.Prods, prod)
+					}
+					g.Rules = append(g.Rules, rule)
+
+				default:
+					panic("not-reached")
+				}
+			}
+		default:
+			panic("not-reached")
+		}
+	}
 }

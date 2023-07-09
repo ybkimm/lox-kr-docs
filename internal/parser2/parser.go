@@ -5,53 +5,55 @@ import (
 	"github.com/dcaiafa/lox/internal/token"
 )
 
+type Token = *token.Token
+
 type Parser struct {
 	loxParser
 }
 
-func (p *Parser) reduceSpec(s1 []ast.Section) *ast.Spec {
+func (p *Parser) reduceSpec(s []ast.Section) *ast.Spec {
 	return &ast.Spec{
-		Sections: s1,
+		Sections: s,
 	}
 }
 
-func (p *Parser) reduceSection(s1 ast.Section) ast.Section {
-	return s1
+func (p *Parser) reduceSection(s ast.Section) ast.Section {
+	return s
 }
 
-func (p *Parser) reduceParser(decls2 []ast.ParserDecl) ast.Section {
+func (p *Parser) reduceParser(_ Token, decls []ast.ParserDecl) ast.Section {
 	return &ast.Parser{
-		Decls: decls2,
+		Decls: decls,
 	}
 }
 
-func (p *Parser) reducePdecl(r1 *ast.Rule) ast.ParserDecl {
-	return r1
+func (p *Parser) reducePdecl(r *ast.Rule) ast.ParserDecl {
+	return r
 }
 
-func (p *Parser) reducePrule(name1 token.Token, prods3 []*ast.Prod) *ast.Rule {
+func (p *Parser) reducePrule(name Token, _ Token, prods []*ast.Prod, _ Token) *ast.Rule {
 	return &ast.Rule{
-		Name:  name1.Str,
-		Prods: prods3,
+		Name:  name.Str,
+		Prods: prods,
 	}
 }
 
-func (p *Parser) reducePprod(terms1 []*ast.Term, label2 *ast.Label) *ast.Prod {
+func (p *Parser) reducePprod(terms []*ast.Term, label *ast.Label) *ast.Prod {
 	return &ast.Prod{
-		Terms: terms1,
-		Label: label2,
+		Terms: terms,
+		Label: label,
 	}
 }
 
-func (p *Parser) reducePterm(name1 token.Token, q2 ast.Qualifier) *ast.Term {
+func (p *Parser) reducePterm(name Token, q ast.Qualifier) *ast.Term {
 	return &ast.Term{
-		Name:      name1.Str,
-		Qualifier: q2,
+		Name:      name.Str,
+		Qualifier: q,
 	}
 }
 
-func (p *Parser) reducePcard(card1 token.Token) ast.Qualifier {
-	switch card1.Type {
+func (p *Parser) reducePcard(card Token) ast.Qualifier {
+	switch card.Type {
 	case token.ZERO_OR_MANY:
 		return ast.ZeroOrMore
 	case token.ONE_OR_MANY:
@@ -63,23 +65,23 @@ func (p *Parser) reducePcard(card1 token.Token) ast.Qualifier {
 	}
 }
 
-func (p *Parser) reduceLabel(l1 token.Token) *ast.Label {
+func (p *Parser) reduceLabel(l Token) *ast.Label {
 	return &ast.Label{
-		Label: l1.Str,
+		Label: l.Str,
 	}
 }
 
-func (p *Parser) reduceLexer(decls2 []ast.LexerDecl) *ast.Lexer {
+func (p *Parser) reduceLexer(_ Token, decls []ast.LexerDecl) *ast.Lexer {
 	return &ast.Lexer{
-		Decls: decls2,
+		Decls: decls,
 	}
 }
 
-func (p *Parser) reduceLcustom(names2 []token.Token) ast.LexerDecl {
+func (p *Parser) reduceLcustom(_ Token, names []Token, _ Token) ast.LexerDecl {
 	d := &ast.CustomTokenDecl{
-		CustomTokens: make([]*ast.CustomToken, len(names2)),
+		CustomTokens: make([]*ast.CustomToken, len(names)),
 	}
-	for i, name := range names2 {
+	for i, name := range names {
 		d.CustomTokens[i] = &ast.CustomToken{
 			Name: name.Str,
 		}
