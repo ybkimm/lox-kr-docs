@@ -5,6 +5,14 @@ import (
 	"io"
 )
 
+type Generated int
+
+const (
+	NotGenerated Generated = iota
+	GeneratedZeroOrOne
+	GeneratedOneOrMore
+)
+
 type Grammar struct {
 	Terminals []*Terminal
 	Rules     []*Rule
@@ -17,6 +25,8 @@ type Symbol interface {
 type Rule struct {
 	Name  string
 	Prods []*Prod
+
+	Generated Generated
 }
 
 func (r *Rule) SymName() string {

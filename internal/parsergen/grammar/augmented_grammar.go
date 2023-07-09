@@ -220,9 +220,10 @@ func (g *AugmentedGrammar) TerminalIndex(terminal *Terminal) int {
 }
 
 func (g *AugmentedGrammar) normalize() {
-	newRule := func(namePrefix string) *Rule {
+	newRule := func(namePrefix string, generated Generated) *Rule {
 		r := &Rule{
-			Name: fmt.Sprintf("%s__%d", namePrefix, len(g.Rules)),
+			Name:      fmt.Sprintf("%s__%d", namePrefix, len(g.Rules)),
+			Generated: generated,
 		}
 		g.Rules = append(g.Rules, r)
 		return r
@@ -241,7 +242,7 @@ func (g *AugmentedGrammar) normalize() {
 						//  =>
 						// a = b a'
 						// a' = c+ | e
-						srule := newRule(rule.Name)
+						srule := newRule(rule.Name, GeneratedZeroOrOne)
 						srule.Prods = []*Prod{
 							NewProd(NewTerm(term.Name, OneOrMore)),
 							NewProd(),
@@ -254,7 +255,7 @@ func (g *AugmentedGrammar) normalize() {
 						// a = b a'
 						// a' = a' c
 						//    | c
-						srule := newRule(rule.Name)
+						srule := newRule(rule.Name, GeneratedOneOrMore)
 						srule.Prods = []*Prod{
 							NewProd(NewTerm(srule.Name), NewTerm(term.Name)),
 							NewProd(NewTerm(term.Name)),
@@ -266,7 +267,7 @@ func (g *AugmentedGrammar) normalize() {
 						//  =>
 						// a = b a'
 						// a' = c | e
-						srule := newRule(rule.Name)
+						srule := newRule(rule.Name, GeneratedZeroOrOne)
 						srule.Prods = []*Prod{
 							NewProd(NewTerm(term.Name)),
 							NewProd(),

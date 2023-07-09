@@ -34,6 +34,10 @@ func realMain() error {
 	if err != nil {
 		return err
 	}
+	err = state.MapReduceActions()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

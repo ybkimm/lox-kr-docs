@@ -77,6 +77,10 @@ func (p *Parser) reduceLexer(_ Token, decls []ast.LexerDecl) *ast.Lexer {
 	}
 }
 
+func (p *Parser) reduceLdecl(d *ast.LexerDecl) *ast.LexerDecl {
+	return d
+}
+
 func (p *Parser) reduceLcustom(_ Token, names []Token, _ Token) ast.LexerDecl {
 	d := &ast.CustomTokenDecl{
 		CustomTokens: make([]*ast.CustomToken, len(names)),

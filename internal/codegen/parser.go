@@ -32,9 +32,10 @@ type State struct {
 	Parser        gotypes.Object
 	Token         gotypes.Object
 	ParserTable   *lr1.ParserTable
-	ReduceMethods map[string]*ReduceMethod
-	ReduceMap     map[lr1.Action]*ReduceMethod
 	ProdLabels    map[*grammar.Prod]string
+	ReduceMethods map[string]*ReduceMethod
+	ReduceTypes   map[*grammar.Rule]gotypes.Type
+	ReduceMap     map[*grammar.Prod]*ReduceMethod
 }
 
 type ReduceMethod struct {
@@ -54,6 +55,8 @@ func NewState() *State {
 }
 
 func (s *State) ParseGrammar(dir string) error {
+	s.ProdLabels = make(map[*grammar.Prod]string)
+
 	loxFiles, err := filepath.Glob(filepath.Join(dir, "*.lox"))
 	if err != nil {
 		return err
@@ -75,7 +78,7 @@ func (s *State) ParseGrammar(dir string) error {
 			errs.Dump(os.Stderr)
 			return fmt.Errorf("parsing lox files")
 		}
-		addSpecToGrammar(spec, grammar)
+		s.addSpecToGrammar(spec, grammar)
 	}
 
 	s.Grammar, err = grammar.ToAugmentedGrammar()
@@ -230,7 +233,7 @@ func getParserObj(scope *gotypes.Scope) (gotypes.Object, error) {
 	return obj, nil
 }
 
-func addSpecToGrammar(spec *ast.Spec, g *grammar.Grammar) {
+func (s *State) addSpecToGrammar(spec *ast.Spec, g *grammar.Grammar) {
 	for _, section := range spec.Sections {
 		switch section := section.(type) {
 		case *ast.Lexer:
@@ -273,6 +276,9 @@ func addSpecToGrammar(spec *ast.Spec, g *grammar.Grammar) {
 								panic("not-reached")
 							}
 							prod.Terms = append(prod.Terms, term)
+						}
+						if astProd.Label != nil {
+							s.ProdLabels[prod] = astProd.Label.Label
 						}
 						rule.Prods = append(rule.Prods, prod)
 					}
