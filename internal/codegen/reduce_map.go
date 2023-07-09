@@ -29,6 +29,7 @@ func (s *State) MapReduceActions() error {
 				"conflicting reduce types for %v: %v and %v",
 				rule.Name, existing, reduceType)
 		}
+		s.ReduceMap[prod] = method
 	}
 
 	getReduceTypeForGeneratedRule := func(
@@ -106,6 +107,32 @@ func (s *State) MapReduceActions() error {
 			panic("unreachable")
 		}
 		fmt.Println(rule.Name, ruleReduceType)
+	}
+
+	for prod, method := range s.ReduceMap {
+		if len(method.Params) != len(prod.Terms) {
+			return fmt.Errorf(
+				"%v: prod has %v terms but reduce method has %v parameters",
+				method.MethodName,
+				len(prod.Terms),
+				len(method.Params))
+		}
+		for i, param := range method.Params {
+			termSym := s.Grammar.TermSymbol(prod.Terms[i])
+			termReduceType := s.Token.Type()
+			if cRule, ok := termSym.(*grammar.Rule); ok {
+				termReduceType = s.ReduceTypes[cRule]
+			}
+			if !gotypes.AssignableTo(termReduceType, param.Type) {
+				return fmt.Errorf(
+					"%v: param %v has type %v but term symbol %v has reduce type %v",
+					method.MethodName,
+					i,
+					param.Type,
+					termSym.SymName(),
+					termReduceType.String())
+			}
+		}
 	}
 
 	return nil

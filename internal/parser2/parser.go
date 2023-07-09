@@ -77,7 +77,7 @@ func (p *Parser) reduceLexer(_ Token, decls []ast.LexerDecl) *ast.Lexer {
 	}
 }
 
-func (p *Parser) reduceLdecl(d *ast.LexerDecl) *ast.LexerDecl {
+func (p *Parser) reduceLdecl(d ast.LexerDecl) ast.LexerDecl {
 	return d
 }
 
