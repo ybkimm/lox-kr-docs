@@ -9,6 +9,7 @@ type Generated int
 
 const (
 	NotGenerated Generated = iota
+	GeneratedSPrime
 	GeneratedZeroOrOne
 	GeneratedOneOrMore
 )

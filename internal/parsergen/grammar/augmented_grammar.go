@@ -40,8 +40,9 @@ func (g *Grammar) ToAugmentedGrammar() (*AugmentedGrammar, error) {
 		g.Terminals...)
 
 	ag.Sprime = &Rule{
-		Name:  "S'",
-		Prods: []*Prod{NewProd(NewTermS(g.Rules[0]))},
+		Name:      "S'",
+		Prods:     []*Prod{NewProd(NewTermS(g.Rules[0]))},
+		Generated: GeneratedSPrime,
 	}
 	ag.Rules = append([]*Rule{ag.Sprime}, g.Rules...)
 
