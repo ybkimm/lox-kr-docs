@@ -3,8 +3,11 @@ package codegen
 import (
 	"bytes"
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
+	"sort"
+	"strings"
 	"text/template"
 
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
@@ -33,17 +36,49 @@ func (b *importBuilder) Import(path string) string {
 	return alias
 }
 
+func (b *importBuilder) WriteTo(w *bytes.Buffer) {
+	fmt.Fprintf(w, "import (\n")
+	aliases := make([]string, 0, len(b.imports))
+	for alias := range b.imports {
+		aliases = append(aliases, alias)
+	}
+	sort.Strings(aliases)
+	for _, alias := range aliases {
+		path := b.imports[alias]
+		fmt.Fprintf(w, "  %v %q\n", alias, path)
+	}
+	fmt.Fprintf(w, ")\n")
+}
+
 func (s *State) Generate() error {
 	s.imports = newImportBuilder()
-	s.writeProdTables()
-	s.writeActionTable()
-	s.writeGotoTable()
-	s.writeOwl()
 
-	out := bytes.NewBuffer(make([]byte, 0, s.body.Len()+2048))
-	fmt.Fprintf(out, "package %v\n", s.PackageName)
-	s.body.WriteTo(out)
-	err := os.WriteFile(filepath.Join(s.ImplDir, loxGenGoName), out.Bytes(), 0666)
+	templ, err := template.New("lox").
+		Funcs(map[string]any{
+			"loxProdRule":  s.loxProdRule,
+			"loxProdTerms": s.loxProdTerms,
+			"loxAction":    s.loxAction,
+			"loxGoto":      s.loxGoto,
+			"import":       s.loxImport,
+		}).
+		Parse(loxGenTemplate)
+	if err != nil {
+		panic(err)
+	}
+
+	body := &bytes.Buffer{}
+	err = templ.Execute(body, map[string]any{
+		"accept": math.MaxInt32,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	out := bytes.NewBuffer(make([]byte, 0, body.Len()+2048))
+	fmt.Fprintf(out, "package %v\n\n", s.PackageName)
+	s.imports.WriteTo(out)
+	body.WriteTo(out)
+	err = os.WriteFile(filepath.Join(s.ImplDir, loxGenGoName), out.Bytes(), 0666)
 	if err != nil {
 		return err
 	}
@@ -51,25 +86,37 @@ func (s *State) Generate() error {
 	return nil
 }
 
-func (s *State) writeProdTables() {
+func (s *State) loxImport(path string) string {
+	return s.imports.Import(path)
+}
+
+func (s *State) loxProdRule() string {
+	str := new(strings.Builder)
 	prods := make([]int32, len(s.Grammar.Prods))
 	for prodIndex, prod := range s.Grammar.Prods {
 		rule := s.Grammar.ProdRule(prod)
 		prods[prodIndex] = int32(s.Grammar.RuleIndex(rule))
 	}
-	fmt.Fprintf(&s.body, "var loxProdRule = []int32 {\n")
-	writeArray(&s.body, prods)
-	fmt.Fprintf(&s.body, "}\n")
+	fmt.Fprintf(str, "var loxProdRule = []int32 {\n")
+	writeArray(str, prods)
+	fmt.Fprintf(str, "}\n")
+	return str.String()
+}
 
+func (s *State) loxProdTerms() string {
+	str := new(strings.Builder)
+	prods := make([]int32, len(s.Grammar.Prods))
 	for prodIndex, prod := range s.Grammar.Prods {
 		prods[prodIndex] = int32(len(prod.Terms))
 	}
-	fmt.Fprintf(&s.body, "var loxProdTerms = []int32 {\n")
-	writeArray(&s.body, prods)
-	fmt.Fprintf(&s.body, "}\n")
+	fmt.Fprintf(str, "var loxProdTerms = []int32 {\n")
+	writeArray(str, prods)
+	fmt.Fprintf(str, "}\n")
+	return str.String()
 }
 
-func (s *State) writeActionTable() {
+func (s *State) loxAction() string {
+	str := new(strings.Builder)
 	actionRows := newRows()
 	actionIndex := make([]*row, len(s.ParserTable.States.States()))
 	for i, state := range s.ParserTable.States.States() {
@@ -96,21 +143,25 @@ func (s *State) writeActionTable() {
 		actionIndex[i] = row
 	}
 
-	fmt.Fprintf(&s.body, "var loxAction = []int32 {\n")
-	writeArray(&s.body, actionRows.ToArray())
-	fmt.Fprintf(&s.body, "}\n")
+	fmt.Fprintf(str, "var loxAction = []int32 {\n")
+	writeArray(str, actionRows.ToArray())
+	fmt.Fprintf(str, "}\n")
 
 	actionIndexInt := make([]int32, len(actionIndex))
 	for stateIndex, row := range actionIndex {
 		actionIndexInt[stateIndex] = int32(row.Index)
 	}
 
-	fmt.Fprintf(&s.body, "var loxActionIndex = []int32 {\n")
-	writeArray(&s.body, actionIndexInt)
-	fmt.Fprintf(&s.body, "}\n")
+	fmt.Fprintf(str, "var loxActionIndex = []int32 {\n")
+	writeArray(str, actionIndexInt)
+	fmt.Fprintf(str, "}\n")
+
+	return str.String()
 }
 
-func (s *State) writeGotoTable() {
+func (s *State) loxGoto() string {
+	str := new(strings.Builder)
+
 	gotoRows := newRows()
 	gotoIndex := make([]*row, len(s.ParserTable.States.States()))
 	for stateIndex, state := range s.ParserTable.States.States() {
@@ -133,9 +184,9 @@ func (s *State) writeGotoTable() {
 		gotoIndex[stateIndex] = row
 	}
 
-	fmt.Fprintf(&s.body, "var loxGoto = []int32 {\n")
-	writeArray(&s.body, gotoRows.ToArray())
-	fmt.Fprintf(&s.body, "}\n")
+	fmt.Fprintf(str, "var loxGoto = []int32 {\n")
+	writeArray(str, gotoRows.ToArray())
+	fmt.Fprintf(str, "}\n")
 
 	gotoIndexInt := make([]int32, len(gotoIndex))
 	for stateIndex, row := range gotoIndex {
@@ -146,22 +197,22 @@ func (s *State) writeGotoTable() {
 		}
 	}
 
-	fmt.Fprintf(&s.body, "var loxGotoIndex = []int32 {\n")
-	writeArray(&s.body, gotoIndexInt)
-	fmt.Fprintf(&s.body, "}\n")
+	fmt.Fprintf(str, "var loxGotoIndex = []int32 {\n")
+	writeArray(str, gotoIndexInt)
+	fmt.Fprintf(str, "}\n")
+
+	return str.String()
 }
 
-func (s *State) writeOwl() {
-	data := map[string]any{
-		"accept": accept,
-	}
-	err := loxGenGoTemplate.Execute(&s.body, data)
-	if err != nil {
-		panic(err)
-	}
-}
+const loxGenTemplate = `
 
-var loxGenGoTemplate = template.Must(template.New("lox").Parse(`
+{{ loxProdRule }}
+
+{{ loxProdTerms }}
+
+{{ loxAction }}
+
+{{ loxGoto }}
 
 const loxAccept = {{.accept}}
 
@@ -230,8 +281,8 @@ func (p *Parser) parse(lex loxLexer) {
 }
 
 func (p *Parser) onError(tok Token, err string) {
-	fmt.Println("ERROR:", err)
-	os.Exit(1)
+	{{ import "fmt" }}.Println("ERROR:", err)
+	{{ import "os" }}.Exit(1)
 }
 
-`))
+`

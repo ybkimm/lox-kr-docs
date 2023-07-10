@@ -1,7 +1,6 @@
 package codegen
 
 import (
-	"bytes"
 	gotoken "go/token"
 	gotypes "go/types"
 	"math"
@@ -34,7 +33,6 @@ type State struct {
 	ReduceTypes   map[*grammar.Rule]gotypes.Type
 	ReduceMap     map[*grammar.Prod]*ReduceMethod
 	imports       *importBuilder
-	body          bytes.Buffer
 }
 
 type ReduceMethod struct {

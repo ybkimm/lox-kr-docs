@@ -1,9 +1,9 @@
 package codegen
 
 import (
-	"bytes"
 	"encoding/binary"
 	"fmt"
+	"strings"
 )
 
 type row struct {
@@ -56,7 +56,7 @@ func (r *rows) ToArray() []int32 {
 	return arr
 }
 
-func writeArray(w *bytes.Buffer, xs []int32) {
+func writeArray(w *strings.Builder, xs []int32) {
 	for i, x := range xs {
 		if i != 0 && i%20 == 0 {
 			w.WriteByte('\n')
