@@ -21,6 +21,7 @@ type AugmentedGrammar struct {
 	terminalToIndex map[*Terminal]int
 	prodToIndex     map[*Prod]int
 	prodToRule      map[*Prod]*Rule
+	ruleToIndex     map[*Rule]int
 	firstSets       map[*Rule]*set.Set[*Terminal]
 }
 
@@ -31,6 +32,7 @@ func (g *Grammar) ToAugmentedGrammar() (*AugmentedGrammar, error) {
 		terminalToIndex: make(map[*Terminal]int),
 		prodToIndex:     make(map[*Prod]int),
 		prodToRule:      make(map[*Prod]*Rule),
+		ruleToIndex:     make(map[*Rule]int),
 		firstSets:       make(map[*Rule]*set.Set[*Terminal]),
 	}
 
@@ -126,9 +128,11 @@ func (g *AugmentedGrammar) assignIndex() {
 	}
 
 	g.Prods = nil
+	g.ruleToIndex = make(map[*Rule]int)
 	g.prodToIndex = make(map[*Prod]int, len(g.Prods))
 	g.prodToRule = make(map[*Prod]*Rule, len(g.Prods))
-	for _, rule := range g.Rules {
+	for ruleIndex, rule := range g.Rules {
+		g.ruleToIndex[rule] = ruleIndex
 		for _, prod := range rule.Prods {
 			g.prodToIndex[prod] = len(g.Prods)
 			g.prodToRule[prod] = rule
@@ -202,6 +206,14 @@ func (g *AugmentedGrammar) TermSymbols(terms []*Term) []Symbol {
 		syms[i] = g.TermSymbol(terms[i])
 	}
 	return syms
+}
+
+func (g *AugmentedGrammar) RuleIndex(rule *Rule) int {
+	index, ok := g.ruleToIndex[rule]
+	if !ok {
+		panic("invalid Rule")
+	}
+	return index
 }
 
 func (g *AugmentedGrammar) ProdIndex(prod *Prod) int {
