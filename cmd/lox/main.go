@@ -24,17 +24,21 @@ func realMain() error {
 	}
 	dir := flag.Arg(0)
 
-	state := codegen.NewState()
-	err := state.ParseGrammar(dir)
+	state := codegen.NewState(dir, dir)
+	err := state.ParseGrammar()
 	if err != nil {
 		return err
 	}
 	state.ConstructParseTables()
-	err = state.ParseGo(dir)
+	err = state.ParseGo()
 	if err != nil {
 		return err
 	}
 	err = state.MapReduceActions()
+	if err != nil {
+		return err
+	}
+	err = state.Generate()
 	if err != nil {
 		return err
 	}

@@ -18,52 +18,16 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-const loxGenGo = `
-package {{package}}
-
-type loxParser struct {}
-`
-const loxGenGoName = "lox.gen.go"
-const loxParserTypeName = "loxParser"
-
-type State struct {
-	Grammar       *grammar.AugmentedGrammar
-	Fset          *gotoken.FileSet
-	Parser        gotypes.Object
-	Token         gotypes.Object
-	ParserTable   *lr1.ParserTable
-	ProdLabels    map[*grammar.Prod]string
-	ReduceMethods map[string]*ReduceMethod
-	ReduceTypes   map[*grammar.Rule]gotypes.Type
-	ReduceMap     map[*grammar.Prod]*ReduceMethod
-}
-
-type ReduceMethod struct {
-	Method     *gotypes.Func
-	ProdName   string
-	MethodName string
-	Params     []*ReduceParam
-	ReturnType gotypes.Type
-}
-
-type ReduceParam struct {
-	Type gotypes.Type
-}
-
-func NewState() *State {
-	return &State{}
-}
-
-func (s *State) ParseGrammar(dir string) error {
+func (s *State) ParseGrammar() error {
 	s.ProdLabels = make(map[*grammar.Prod]string)
 
-	loxFiles, err := filepath.Glob(filepath.Join(dir, "*.lox"))
+	loxFiles, err := filepath.Glob(filepath.Join(s.LoxDir, "*.lox"))
 	if err != nil {
 		return err
 	}
 
 	if len(loxFiles) == 0 {
-		return fmt.Errorf("%v contains no .lox files", dir)
+		return fmt.Errorf("%v contains no .lox files", s.LoxDir)
 	}
 
 	grammar := new(grammar.Grammar)
@@ -93,8 +57,8 @@ func (s *State) ConstructParseTables() {
 	s.ParserTable = lr1.ConstructLR(s.Grammar)
 }
 
-func (s *State) ParseGo(path string) error {
-	dirEntries, err := os.ReadDir(path)
+func (s *State) ParseGo() error {
+	dirEntries, err := os.ReadDir(s.ImplDir)
 	if err != nil {
 		return err
 	}
@@ -103,7 +67,7 @@ func (s *State) ParseGo(path string) error {
 		if !dirEntry.IsDir() &&
 			filepath.Ext(dirEntry.Name()) == ".go" &&
 			dirEntry.Name() != loxGenGoName {
-			oneSourceName = filepath.Join(path, dirEntry.Name())
+			oneSourceName = filepath.Join(s.ImplDir, dirEntry.Name())
 		}
 	}
 	if oneSourceName == "" {
@@ -115,10 +79,10 @@ func (s *State) ParseGo(path string) error {
 		return fmt.Errorf("%v: %w", oneSourceName, err)
 	}
 
-	packageName := oneSource.Name.Name
-	loxGenGo := strings.Replace(loxGenGo, "{{package}}", packageName, 1)
+	s.PackageName = oneSource.Name.Name
+	loxGenGo := strings.Replace(loxGenGo, "{{package}}", s.PackageName, 1)
 	loxGenGoPath, err := filepath.Abs(
-		filepath.Join(path, loxGenGoName))
+		filepath.Join(s.ImplDir, loxGenGoName))
 	if err != nil {
 		return fmt.Errorf("filepath.Abs failed: %w", err)
 	}
@@ -126,7 +90,7 @@ func (s *State) ParseGo(path string) error {
 	fset := gotoken.NewFileSet()
 	cfg := &packages.Config{
 		Mode: packages.NeedName | packages.NeedTypes | packages.NeedSyntax,
-		Dir:  filepath.Clean(path),
+		Dir:  filepath.Clean(s.ImplDir),
 		Fset: fset,
 		Overlay: map[string][]byte{
 			loxGenGoPath: []byte(loxGenGo),

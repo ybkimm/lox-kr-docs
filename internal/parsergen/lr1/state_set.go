@@ -11,6 +11,10 @@ func NewStateSet() *StateSet {
 	}
 }
 
+func (c *StateSet) States() []*ItemSet {
+	return c.states
+}
+
 func (c *StateSet) Get(key string) *ItemSet {
 	return c.stateMap[key]
 }
