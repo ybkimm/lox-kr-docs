@@ -36,7 +36,7 @@ func (g *Grammar) ToAugmentedGrammar() (*AugmentedGrammar, error) {
 		firstSets:       make(map[*Rule]*set.Set[*Terminal]),
 	}
 
-	ag.EOF = &Terminal{Name: "$"}
+	ag.EOF = &Terminal{Name: "EOF"}
 	ag.Terminals = append(
 		[]*Terminal{ag.EOF},
 		g.Terminals...)

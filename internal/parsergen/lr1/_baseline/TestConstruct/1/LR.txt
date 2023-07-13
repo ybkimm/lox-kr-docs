@@ -1,6 +1,6 @@
 I0:
-  S' -> .S, $
-  S -> .C C, $
+  S' -> .S, EOF
+  S -> .C C, EOF
   C -> .c C, c
   C -> .c C, d
   C -> .d, c
@@ -10,15 +10,15 @@ I0:
     on C: goto I1
     on S: goto I2
 I1:
-  S -> C .C, $
-  C -> .c C, $
-  C -> .d, $
+  S -> C .C, EOF
+  C -> .c C, EOF
+  C -> .d, EOF
     on c: shift I6
     on d: shift I7
     on C: goto I5
 I2:
-  S' -> S., $
-    on $: accept
+  S' -> S., EOF
+    on EOF: accept
 I3:
   C -> .c C, c
   C -> .c C, d
@@ -35,39 +35,39 @@ I4:
     on c: reduce C
     on d: reduce C
 I5:
-  S -> C C., $
-    on $: reduce S
+  S -> C C., EOF
+    on EOF: reduce S
 I6:
-  C -> .c C, $
-  C -> c .C, $
-  C -> .d, $
+  C -> .c C, EOF
+  C -> c .C, EOF
+  C -> .d, EOF
     on c: shift I6
     on d: shift I7
     on C: goto I9
 I7:
-  C -> d., $
-    on $: reduce C
+  C -> d., EOF
+    on EOF: reduce C
 I8:
   C -> c C., c
   C -> c C., d
     on c: reduce C
     on d: reduce C
 I9:
-  C -> c C., $
-    on $: reduce C
+  C -> c C., EOF
+    on EOF: reduce C
 
 digraph G {
   rankdir="LR";
-  I0 [label="I0\nS' -> .S, $\nS -> .C C, $\nC -> .c C, c\nC -> .c C, d\nC -> .d, c\nC -> .d, d"];
-  I1 [label="I1\nS -> C .C, $\nC -> .c C, $\nC -> .d, $"];
-  I2 [label="I2\nS' -> S., $"];
+  I0 [label="I0\nS' -> .S, EOF\nS -> .C C, EOF\nC -> .c C, c\nC -> .c C, d\nC -> .d, c\nC -> .d, d"];
+  I1 [label="I1\nS -> C .C, EOF\nC -> .c C, EOF\nC -> .d, EOF"];
+  I2 [label="I2\nS' -> S., EOF"];
   I3 [label="I3\nC -> .c C, c\nC -> .c C, d\nC -> c .C, c\nC -> c .C, d\nC -> .d, c\nC -> .d, d"];
   I4 [label="I4\nC -> d., c\nC -> d., d"];
-  I5 [label="I5\nS -> C C., $"];
-  I6 [label="I6\nC -> .c C, $\nC -> c .C, $\nC -> .d, $"];
-  I7 [label="I7\nC -> d., $"];
+  I5 [label="I5\nS -> C C., EOF"];
+  I6 [label="I6\nC -> .c C, EOF\nC -> c .C, EOF\nC -> .d, EOF"];
+  I7 [label="I7\nC -> d., EOF"];
   I8 [label="I8\nC -> c C., c\nC -> c C., d"];
-  I9 [label="I9\nC -> c C., $"];
+  I9 [label="I9\nC -> c C., EOF"];
   I0 -> I1 [label="C"];
   I0 -> I2 [label="S"];
   I0 -> I3 [label="c"];
