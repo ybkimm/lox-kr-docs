@@ -10,6 +10,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/dcaiafa/lox/internal/codegen/table"
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
 	"github.com/dcaiafa/lox/internal/parsergen/lr1"
 )
@@ -55,12 +56,12 @@ func (s *State) Generate() error {
 
 	templ, err := template.New("lox").
 		Funcs(map[string]any{
-			"loxProdRule":  s.templLoxProdRule,
-			"loxProdTerms": s.templLoxProdTerms,
-			"loxAction":    s.templLoxAction,
-			"loxGoto":      s.templLoxGoto,
-			"import":       s.templImport,
-			"terminals":    s.templTerminals,
+			"p":         func() string { return "_lx" },
+			"lhs":       s.templLHS,
+			"reduction": s.templReduction,
+			"action":    s.templAction,
+			"goto":      s.templGoto,
+			"import":    s.templImport,
 		}).
 		Parse(loxGenTemplate)
 	if err != nil {
@@ -70,7 +71,7 @@ func (s *State) Generate() error {
 	body := &bytes.Buffer{}
 	err = templ.Execute(body, map[string]any{
 		"accept":    math.MaxInt32,
-		"terminals": s.Grammar.Terminals,
+		"terminals": s.terminals(),
 	})
 	if err != nil {
 		panic(err)
@@ -88,98 +89,73 @@ func (s *State) Generate() error {
 	return nil
 }
 
-func (s *State) templTerminals() string {
-	str := new(strings.Builder)
-
-	fmt.Fprintf(str, "const (\n")
-	for terminalIndex, terminal := range s.Grammar.Terminals {
-		fmt.Fprintf(str, "  %v = %v\n", terminal.Name, terminalIndex)
+func (s *State) terminals() map[int]string {
+	terminals := make(map[int]string)
+	for i, terminal := range s.Grammar.Terminals {
+		if terminal == s.Grammar.EOF {
+			continue
+		}
+		terminals[i] = terminal.Name
 	}
-	fmt.Fprintf(str, ")\n")
-
-	return str.String()
+	return terminals
 }
 
 func (s *State) templImport(path string) string {
 	return s.imports.Import(path)
 }
 
-func (s *State) templLoxProdRule() string {
+func (s *State) templLHS() string {
 	str := new(strings.Builder)
 	prods := make([]int32, len(s.Grammar.Prods))
 	for prodIndex, prod := range s.Grammar.Prods {
 		rule := s.Grammar.ProdRule(prod)
 		prods[prodIndex] = int32(s.Grammar.RuleIndex(rule))
 	}
-	fmt.Fprintf(str, "var loxProdRule = []int32 {\n")
-	writeArray(str, prods)
-	fmt.Fprintf(str, "}\n")
+	table.WriteArray(str, prods)
 	return str.String()
 }
 
-func (s *State) templLoxProdTerms() string {
+func (s *State) templReduction() string {
 	str := new(strings.Builder)
 	prods := make([]int32, len(s.Grammar.Prods))
 	for prodIndex, prod := range s.Grammar.Prods {
 		prods[prodIndex] = int32(len(prod.Terms))
 	}
-	fmt.Fprintf(str, "var loxProdTerms = []int32 {\n")
-	writeArray(str, prods)
-	fmt.Fprintf(str, "}\n")
+	table.WriteArray(str, prods)
 	return str.String()
 }
 
-func (s *State) templLoxAction() string {
-	str := new(strings.Builder)
-	actionRows := newRows()
-	actionIndex := make([]*row, len(s.ParserTable.States.States()))
-	for i, state := range s.ParserTable.States.States() {
-		row := new(row)
+func (s *State) templAction() string {
+	actionTable := table.New()
+	for _, state := range s.ParserTable.States.States() {
+		var row []int32
 		s.ParserTable.Actions.ForEachActionSet(s.Grammar, state,
 			func(sym grammar.Symbol, actions []lr1.Action) {
 				action := actions[0]
 				terminal := sym.(*grammar.Terminal)
 				terminalIndex := s.Grammar.TerminalIndex(terminal)
-				row.Add(int32(terminalIndex))
+				row = append(row, int32(terminalIndex))
 
 				switch action.Type {
 				case lr1.ActionShift:
-					row.Add(int32(action.Shift.Index))
+					row = append(row, int32(action.Shift.Index))
 				case lr1.ActionReduce:
-					row.Add(int32(s.Grammar.ProdIndex(action.Prod) * -1))
+					row = append(row, int32(s.Grammar.ProdIndex(action.Prod)*-1))
 				case lr1.ActionAccept:
-					row.Add(accept)
+					row = append(row, accept)
 				default:
 					panic("unreachable")
 				}
 			})
-		row = actionRows.Add(row)
-		actionIndex[i] = row
+		actionTable.AddRow(state.Index, row)
 	}
-
-	fmt.Fprintf(str, "var loxAction = []int32 {\n")
-	writeArray(str, actionRows.ToArray())
-	fmt.Fprintf(str, "}\n")
-
-	actionIndexInt := make([]int32, len(actionIndex))
-	for stateIndex, row := range actionIndex {
-		actionIndexInt[stateIndex] = int32(row.Index)
-	}
-
-	fmt.Fprintf(str, "var loxActionIndex = []int32 {\n")
-	writeArray(str, actionIndexInt)
-	fmt.Fprintf(str, "}\n")
-
-	return str.String()
+	return actionTable.String()
 }
 
-func (s *State) templLoxGoto() string {
-	str := new(strings.Builder)
-
-	gotoRows := newRows()
-	gotoIndex := make([]*row, len(s.ParserTable.States.States()))
+func (s *State) templGoto() string {
+	gotoTable := table.New()
 	for stateIndex, state := range s.ParserTable.States.States() {
-		row := new(row)
+		var row []int32
 		s.ParserTable.Transitions.ForEach(
 			state,
 			func(sym grammar.Symbol, to *lr1.ItemSet) {
@@ -188,74 +164,113 @@ func (s *State) templLoxGoto() string {
 					return
 				}
 				ruleIndex := s.Grammar.RuleIndex(rule)
-				row.Add(int32(ruleIndex))
-				row.Add(int32(to.Index))
+				row = append(row, int32(ruleIndex), int32(to.Index))
 			})
-		if len(row.Cols) == 0 {
-			continue
-		}
-		row = gotoRows.Add(row)
-		gotoIndex[stateIndex] = row
+		gotoTable.AddRow(stateIndex, row)
 	}
-
-	fmt.Fprintf(str, "var loxGoto = []int32 {\n")
-	writeArray(str, gotoRows.ToArray())
-	fmt.Fprintf(str, "}\n")
-
-	gotoIndexInt := make([]int32, len(gotoIndex))
-	for stateIndex, row := range gotoIndex {
-		if row != nil {
-			gotoIndexInt[stateIndex] = int32(row.Index)
-		} else {
-			gotoIndexInt[stateIndex] = -1
-		}
-	}
-
-	fmt.Fprintf(str, "var loxGotoIndex = []int32 {\n")
-	writeArray(str, gotoIndexInt)
-	fmt.Fprintf(str, "}\n")
-
-	return str.String()
+	return gotoTable.String()
 }
 
 const loxGenTemplate = `
 
-{{ terminals }}
+const (
+{{- range $index, $name := .terminals }}
+  {{ $name }} = {{ $index }}
+{{- end}}
+)
 
-{{ loxProdRule }}
+var {{p}}LHS = []int32 {
+	{{ lhs }} 
+}
 
-{{ loxProdTerms }}
+var {{p}}Reduction = []int32 {
+	{{ reduction }}
+}
 
-{{ loxAction }}
+var {{p}}Action = []int32 {
+	{{ action }}
+}
 
-{{ loxGoto }}
+var {{p}}Goto = []int32 {
+	{{ goto }}
+}
 
-const loxAccept = {{.accept}}
+type {{p}}Stack[T any] []T
 
-type loxStack[T any] []T
-
-func (s *loxStack[T]) Push(x T) {
+func (s *{{p}}Stack[T]) Push(x T) {
 	*s = append(*s, x)
 }
 
-func (s *loxStack[T]) Pop(n int) {
+func (s *{{p}}Stack[T]) Pop(n int) {
 	*s = (*s)[:len(*s)-n]
 }
 
-func (s loxStack[T]) Peek(n int) T {
+func (s {{p}}Stack[T]) Peek(n int) T {
 	return s[len(s)-n-1]
 }
 
-func loxFind(index []int32, data []int32, s, k int32) (int32, bool) {
-	i := index[int(s)]
-	n := data[int(i)]
-	for i = i+1; i < n; i+=2 {
-		if data[i] == k {
-			return data[i+1], true
+func {{p}}Find(table []int32, y, x int32) (int32, bool) {
+	i := int(table[int(x)])
+	count := int(table[i])
+	i++
+	end := i + count
+	for ; i < end; i+=2 {
+		if table[i] == x {
+			return table[i+1], true
 		}
 	}
 	return 0, false
 }
+
+type {{p}}Lexer interface {
+	Token() (int, Token)
+}
+
+type loxParser struct {
+	state {{p}}Stack[int32]
+	sym   {{p}}Stack[any]
+}
+
+func (p *Parser) parse(lex {{p}}Lexer) {
+  const accept = {{ .accept }}
+
+	p.loxParser.state.Push(0)
+	lookahead, tok := lex.Token()
+
+	for {
+		topState := p.loxParser.state.Peek(0)
+		action, ok := {{p}}Find({{p}}Action, topState, int32(lookahead))
+		if !ok {
+			p.onError(tok, "boom")
+			return
+		}
+		if action == accept {
+    	break
+		} else if action >= 0 { // shift
+			p.loxParser.state.Push(action)
+			p.loxParser.sym.Push(tok)
+		} else { // reduce
+			prod := -action
+			termCount := {{p}}Reduction[int(prod)]
+			rule := {{p}}LHS[int(prod)]
+			p.loxParser.state.Pop(int(termCount))
+			p.loxParser.sym.Pop(int(termCount))
+			topState = p.loxParser.state.Peek(0)
+			nextState, _ := {{p}}Find({{p}}Goto, topState, rule)
+			p.loxParser.state.Push(nextState)
+			p.loxParser.sym.Push(nil)
+		}
+	}
+}
+
+func (p *Parser) onError(tok Token, err string) {
+	{{ import "fmt" }}.Println("ERROR:", err)
+	{{ import "os" }}.Exit(1)
+}
+
+`
+
+/*
 
 type loxLexer interface {
 	Token() (int, Token)
@@ -301,4 +316,4 @@ func (p *Parser) onError(tok Token, err string) {
 	{{ import "os" }}.Exit(1)
 }
 
-`
+*/
