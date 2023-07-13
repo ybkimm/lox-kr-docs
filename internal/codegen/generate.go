@@ -55,11 +55,12 @@ func (s *State) Generate() error {
 
 	templ, err := template.New("lox").
 		Funcs(map[string]any{
-			"loxProdRule":  s.loxProdRule,
-			"loxProdTerms": s.loxProdTerms,
-			"loxAction":    s.loxAction,
-			"loxGoto":      s.loxGoto,
-			"import":       s.loxImport,
+			"loxProdRule":  s.templLoxProdRule,
+			"loxProdTerms": s.templLoxProdTerms,
+			"loxAction":    s.templLoxAction,
+			"loxGoto":      s.templLoxGoto,
+			"import":       s.templImport,
+			"terminals":    s.templTerminals,
 		}).
 		Parse(loxGenTemplate)
 	if err != nil {
@@ -68,7 +69,8 @@ func (s *State) Generate() error {
 
 	body := &bytes.Buffer{}
 	err = templ.Execute(body, map[string]any{
-		"accept": math.MaxInt32,
+		"accept":    math.MaxInt32,
+		"terminals": s.Grammar.Terminals,
 	})
 	if err != nil {
 		panic(err)
@@ -86,11 +88,23 @@ func (s *State) Generate() error {
 	return nil
 }
 
-func (s *State) loxImport(path string) string {
+func (s *State) templTerminals() string {
+	str := new(strings.Builder)
+
+	fmt.Fprintf(str, "const (\n")
+	for terminalIndex, terminal := range s.Grammar.Terminals {
+		fmt.Fprintf(str, "  %v = %v\n", terminal.Name, terminalIndex)
+	}
+	fmt.Fprintf(str, ")\n")
+
+	return str.String()
+}
+
+func (s *State) templImport(path string) string {
 	return s.imports.Import(path)
 }
 
-func (s *State) loxProdRule() string {
+func (s *State) templLoxProdRule() string {
 	str := new(strings.Builder)
 	prods := make([]int32, len(s.Grammar.Prods))
 	for prodIndex, prod := range s.Grammar.Prods {
@@ -103,7 +117,7 @@ func (s *State) loxProdRule() string {
 	return str.String()
 }
 
-func (s *State) loxProdTerms() string {
+func (s *State) templLoxProdTerms() string {
 	str := new(strings.Builder)
 	prods := make([]int32, len(s.Grammar.Prods))
 	for prodIndex, prod := range s.Grammar.Prods {
@@ -115,7 +129,7 @@ func (s *State) loxProdTerms() string {
 	return str.String()
 }
 
-func (s *State) loxAction() string {
+func (s *State) templLoxAction() string {
 	str := new(strings.Builder)
 	actionRows := newRows()
 	actionIndex := make([]*row, len(s.ParserTable.States.States()))
@@ -159,7 +173,7 @@ func (s *State) loxAction() string {
 	return str.String()
 }
 
-func (s *State) loxGoto() string {
+func (s *State) templLoxGoto() string {
 	str := new(strings.Builder)
 
 	gotoRows := newRows()
@@ -205,6 +219,8 @@ func (s *State) loxGoto() string {
 }
 
 const loxGenTemplate = `
+
+{{ terminals }}
 
 {{ loxProdRule }}
 
