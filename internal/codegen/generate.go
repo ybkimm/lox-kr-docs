@@ -92,9 +92,6 @@ func (s *State) Generate() error {
 func (s *State) terminals() map[int]string {
 	terminals := make(map[int]string)
 	for i, terminal := range s.Grammar.Terminals {
-		if terminal == s.Grammar.EOF {
-			continue
-		}
 		terminals[i] = terminal.Name
 	}
 	return terminals
@@ -273,7 +270,7 @@ func (p *Parser) onError(tok Token, err string) {
 /*
 
 type loxLexer interface {
-	Token() (int, Token)
+	NextToken() (int, Token)
 }
 
 type loxParser struct {
@@ -283,7 +280,7 @@ type loxParser struct {
 
 func (p *Parser) parse(lex loxLexer) {
 	p.loxParser.state.Push(0)
-	lookahead, tok := lex.Token()
+	lookahead, tok := lex.NextToken()
 
 	for {
 		topState := p.loxParser.state.Peek(0)
@@ -297,6 +294,7 @@ func (p *Parser) parse(lex loxLexer) {
 		} else if action >= 0 { // shift
 			p.loxParser.state.Push(action)
 			p.loxParser.sym.Push(tok)
+			lookahead, tok = lex.NextToken()
 		} else if action < 0 { // reduce
 			prod := -action
 			terms := loxProdTerms[int(prod)]

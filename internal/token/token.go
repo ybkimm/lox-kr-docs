@@ -5,19 +5,15 @@ import "github.com/dcaiafa/lox/internal/loc"
 type Type int
 
 const (
-	Undefined Type = iota
-
+	EOF Type = iota
 	ID
 	LITERAL
 	LABEL
-
 	ZERO_OR_MANY
 	ONE_OR_MANY
 	ZERO_OR_ONE
-
 	DEFINE
 	SEMICOLON
-
 	PARSER
 	LEXER
 	CUSTOM

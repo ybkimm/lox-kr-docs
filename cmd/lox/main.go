@@ -17,6 +17,9 @@ func main() {
 }
 
 func realMain() error {
+	var (
+		flagTerminals = flag.Bool("terminals", false, "list terminals and quit")
+	)
 	flag.Parse()
 	if flag.NArg() != 1 {
 		flag.Usage()
@@ -29,6 +32,14 @@ func realMain() error {
 	if err != nil {
 		return err
 	}
+
+	if *flagTerminals {
+		for _, terminal := range state.Grammar.Terminals {
+			fmt.Println(terminal.Name)
+		}
+		return nil
+	}
+
 	state.ConstructParseTables()
 	err = state.ParseGo()
 	if err != nil {
