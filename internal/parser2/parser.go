@@ -5,6 +5,8 @@ import (
 	"github.com/dcaiafa/lox/internal/token"
 )
 
+//go:generate go run ../../cmd/lox .
+
 type Token = *token.Token
 
 type Parser struct {
@@ -36,6 +38,10 @@ func (p *Parser) reducePrule(name Token, _ Token, prods []*ast.Prod, _ Token) *a
 		Name:  name.Str,
 		Prods: prods,
 	}
+}
+
+func (p *Parser) reducePprods(prods []*ast.Prod, _ Token, prod *ast.Prod) []*ast.Prod {
+	panic("unreachable")
 }
 
 func (p *Parser) reducePprod(terms []*ast.Term, label *ast.Label) *ast.Prod {

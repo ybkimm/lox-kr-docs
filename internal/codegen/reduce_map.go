@@ -106,7 +106,6 @@ func (s *State) MapReduceActions() error {
 		if ruleReduceType == nil {
 			panic("unreachable")
 		}
-		fmt.Println(rule.Name, ruleReduceType)
 	}
 
 	for prod, method := range s.ReduceMap {

@@ -220,7 +220,7 @@ func {{p}}Find(table []int32, y, x int32) (int32, bool) {
 }
 
 type {{p}}Lexer interface {
-	Token() (int, Token)
+	NextToken() (int, Token)
 }
 
 type loxParser struct {
@@ -232,7 +232,7 @@ func (p *Parser) parse(lex {{p}}Lexer) {
   const accept = {{ .accept }}
 
 	p.loxParser.state.Push(0)
-	lookahead, tok := lex.Token()
+	lookahead, tok := lex.NextToken()
 
 	for {
 		topState := p.loxParser.state.Peek(0)
@@ -246,6 +246,7 @@ func (p *Parser) parse(lex {{p}}Lexer) {
 		} else if action >= 0 { // shift
 			p.loxParser.state.Push(action)
 			p.loxParser.sym.Push(tok)
+			lookahead, tok = lex.NextToken()
 		} else { // reduce
 			prod := -action
 			termCount := {{p}}Reduction[int(prod)]

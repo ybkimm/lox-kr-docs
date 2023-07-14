@@ -45,6 +45,9 @@ func realMain() error {
 	if err != nil {
 		return err
 	}
+
+	state.ParserTable.Print(os.Stdout)
+
 	err = state.MapReduceActions()
 	if err != nil {
 		return err

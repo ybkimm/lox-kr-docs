@@ -10,6 +10,7 @@
   ZERO_OR_ONE
 
   DEFINE
+  OR
   SEMICOLON
 
   PARSER
@@ -22,7 +23,8 @@ Spec     = Section+ ;
 Section  = Parser | Lexer;
 Parser   = PARSER Pdecl* ;
 Pdecl    = Prule ;
-Prule    = ID DEFINE Pprod+ SEMICOLON ;
+Prule    = ID DEFINE Pprods SEMICOLON ;
+Pprods   = Pprod ;
 Pprod    = Pterm+ Label? ;
 Pterm    = ID Pcard? ;
 Pcard    = ZERO_OR_MANY | ONE_OR_MANY | ZERO_OR_ONE ; 
