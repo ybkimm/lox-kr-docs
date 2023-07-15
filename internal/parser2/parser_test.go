@@ -1,3 +1,8 @@
+package parser2
+
+import "testing"
+
+const parserLox = `
 @lexer
 
 @custom 
@@ -34,3 +39,8 @@ Label    = LABEL ;
 Lexer    = LEXER Ldecl* ;
 Ldecl    = Lcustom ;
 Lcustom  = CUSTOM ID+ SEMICOLON ;
+`
+
+func TestParser(t *testing.T) {
+	Parse("foo.lox", []byte(parserLox))
+}

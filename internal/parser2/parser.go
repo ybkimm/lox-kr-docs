@@ -2,15 +2,23 @@ package parser2
 
 import (
 	"github.com/dcaiafa/lox/internal/ast"
+	"github.com/dcaiafa/lox/internal/errs"
 	"github.com/dcaiafa/lox/internal/token"
 )
 
 //go:generate go run ../../cmd/lox .
 
-type Token = *token.Token
+type Token = token.Token
 
 type Parser struct {
 	loxParser
+	logger errs.Errs
+}
+
+func Parse(filename string, data []byte) {
+	var parser Parser
+	lex := newLex(filename, data, &parser.logger)
+	parser.parse(lex)
 }
 
 func (p *Parser) reduceSpec(s []ast.Section) *ast.Spec {
@@ -41,6 +49,10 @@ func (p *Parser) reducePrule(name Token, _ Token, prods []*ast.Prod, _ Token) *a
 }
 
 func (p *Parser) reducePprods(prods []*ast.Prod, _ Token, prod *ast.Prod) []*ast.Prod {
+	panic("unreachable")
+}
+
+func (p *Parser) reducePprods_1(prod *ast.Prod) []*ast.Prod {
 	panic("unreachable")
 }
 

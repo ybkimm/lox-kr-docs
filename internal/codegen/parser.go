@@ -7,6 +7,7 @@ import (
 	gotypes "go/types"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/dcaiafa/lox/internal/ast"
@@ -17,6 +18,8 @@ import (
 	"github.com/dcaiafa/lox/internal/util/multierror"
 	"golang.org/x/tools/go/packages"
 )
+
+var reduceMethodNameRegex = regexp.MustCompile(`^reduce([A-Za-z][A-Za-z0-9]*).*$`)
 
 func (s *State) ParseGrammar() error {
 	s.ProdLabels = make(map[*grammar.Prod]string)
@@ -123,14 +126,17 @@ func (s *State) ParseGo() error {
 	s.Fset = fset
 	s.Parser = parserObj
 	s.Token = tokenObj
-	s.ReduceMethods = make(map[string]*ReduceMethod)
+	s.ReduceMethods = make(map[string][]*ReduceMethod)
 
 	parserNamed := parserObj.Type().(*gotypes.Named)
 	for i := 0; i < parserNamed.NumMethods(); i++ {
 		method := parserNamed.Method(i)
-		if !strings.HasPrefix(method.Name(), "reduce") {
+		matches := reduceMethodNameRegex.FindStringSubmatch(method.Name())
+		if matches == nil {
 			continue
 		}
+
+		ruleName := matches[1]
 
 		sig := method.Type().(*gotypes.Signature)
 		if sig.Results().Len() != 1 {
@@ -141,7 +147,6 @@ func (s *State) ParseGo() error {
 
 		reduceMethod := &ReduceMethod{
 			Method:     method,
-			ProdName:   strings.TrimPrefix(method.Name(), "reduce"),
 			MethodName: method.Name(),
 			ReturnType: sig.Results().At(0).Type(),
 		}
@@ -155,7 +160,8 @@ func (s *State) ParseGo() error {
 			reduceMethod.Params = append(reduceMethod.Params, reduceParam)
 		}
 
-		s.ReduceMethods[reduceMethod.ProdName] = reduceMethod
+		s.ReduceMethods[ruleName] =
+			append(s.ReduceMethods[ruleName], reduceMethod)
 	}
 
 	return nil

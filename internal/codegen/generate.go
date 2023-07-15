@@ -207,7 +207,7 @@ func (s {{p}}Stack[T]) Peek(n int) T {
 }
 
 func {{p}}Find(table []int32, y, x int32) (int32, bool) {
-	i := int(table[int(x)])
+	i := int(table[int(y)])
 	count := int(table[i])
 	i++
 	end := i + count
@@ -267,52 +267,3 @@ func (p *Parser) onError(tok Token, err string) {
 }
 
 `
-
-/*
-
-type loxLexer interface {
-	NextToken() (int, Token)
-}
-
-type loxParser struct {
-	state loxStack[int32]
-	sym   loxStack[any]
-}
-
-func (p *Parser) parse(lex loxLexer) {
-	p.loxParser.state.Push(0)
-	lookahead, tok := lex.NextToken()
-
-	for {
-		topState := p.loxParser.state.Peek(0)
-		action, ok := loxFind(loxActionIndex, loxAction, topState, int32(lookahead))
-		if !ok {
-    	p.onError(tok, "boom")
-			return
-		}
-		if action == loxAccept {
-			break
-		} else if action >= 0 { // shift
-			p.loxParser.state.Push(action)
-			p.loxParser.sym.Push(tok)
-			lookahead, tok = lex.NextToken()
-		} else if action < 0 { // reduce
-			prod := -action
-			terms := loxProdTerms[int(prod)]
-			rule := loxProdRule[int(prod)]
-			p.loxParser.state.Pop(int(terms))
-			p.loxParser.sym.Pop(int(terms))
-			topState = p.loxParser.state.Peek(0)
-			nextState, _ := loxFind(loxGotoIndex, loxGoto, topState, rule)
-			p.loxParser.state.Push(nextState)
-			p.loxParser.sym.Push(nil)
-		}
-	}
-}
-
-func (p *Parser) onError(tok Token, err string) {
-	{{ import "fmt" }}.Println("ERROR:", err)
-	{{ import "os" }}.Exit(1)
-}
-
-*/

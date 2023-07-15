@@ -14,7 +14,14 @@ const accept = math.MaxInt32
 const loxGenGo = `
 package {{package}}
 
+type _lxLexer interface {
+	NextToken() (int, Token)
+}
+
 type loxParser struct {}
+
+func (p *loxParser) parse(l _lxLexer) {}
+
 `
 const loxGenGoName = "lox.gen.go"
 const loxParserTypeName = "loxParser"
@@ -29,7 +36,7 @@ type State struct {
 	Token         gotypes.Object
 	ParserTable   *lr1.ParserTable
 	ProdLabels    map[*grammar.Prod]string
-	ReduceMethods map[string]*ReduceMethod
+	ReduceMethods map[string][]*ReduceMethod
 	ReduceTypes   map[*grammar.Rule]gotypes.Type
 	ReduceMap     map[*grammar.Prod]*ReduceMethod
 	imports       *importBuilder
@@ -37,7 +44,6 @@ type State struct {
 
 type ReduceMethod struct {
 	Method     *gotypes.Func
-	ProdName   string
 	MethodName string
 	Params     []*ReduceParam
 	ReturnType gotypes.Type

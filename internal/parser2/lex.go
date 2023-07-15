@@ -82,11 +82,9 @@ func (l *lex) nextToken(tok *token.Token) {
 			l.advance()
 			tok.Type = token.SEMICOLON
 			return
-			/*
-				case '|':
-					l.advance()
-					tok.Type = token.OR
-			*/
+		case '|':
+			l.advance()
+			tok.Type = token.OR
 		case '*':
 			l.advance()
 			tok.Type = token.ZERO_OR_MANY

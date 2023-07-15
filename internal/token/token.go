@@ -13,11 +13,28 @@ const (
 	ONE_OR_MANY
 	ZERO_OR_ONE
 	DEFINE
+	OR
 	SEMICOLON
 	PARSER
 	LEXER
 	CUSTOM
 )
+
+var names = []string{
+	"EOF",
+	"ID",
+	"LITERAL",
+	"LABEL",
+	"ZERO_OR_MANY",
+	"ONE_OR_MANY",
+	"ZERO_OR_ONE",
+	"DEFINE",
+	"OR",
+	"SEMICOLON",
+	"PARSER",
+	"LEXER",
+	"CUSTOM",
+}
 
 type Token struct {
 	Pos  loc.Loc

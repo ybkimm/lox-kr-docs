@@ -46,6 +46,7 @@ func realMain() error {
 		return err
 	}
 
+	state.Grammar.Print(os.Stdout)
 	state.ParserTable.Print(os.Stdout)
 
 	err = state.MapReduceActions()
