@@ -11,19 +11,19 @@ import (
 
 const accept = math.MaxInt32
 
-const loxGenGo = `
+const parserGenGo = `
 package {{package}}
 
-type _lxLexer interface {
+type {{p}}Lexer interface {
 	NextToken() (int, Token)
 }
 
 type loxParser struct {}
 
-func (p *loxParser) parse(l _lxLexer) {}
-
+func (p *loxParser) parse(l {{p}}Lexer) {}
 `
-const loxGenGoName = "lox.gen.go"
+
+const parserGenGoName = "parser.gen.go"
 const loxParserTypeName = "loxParser"
 
 type State struct {

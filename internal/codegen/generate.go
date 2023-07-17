@@ -82,7 +82,7 @@ func (s *State) Generate2() error {
 	fmt.Fprintf(out, "package %v\n\n", s.PackageName)
 	s.imports.WriteTo(out)
 	body.WriteTo(out)
-	err = os.WriteFile(filepath.Join(s.ImplDir, loxGenGoName), out.Bytes(), 0666)
+	err = os.WriteFile(filepath.Join(s.ImplDir, parserGenGoName), out.Bytes(), 0666)
 	if err != nil {
 		return err
 	}

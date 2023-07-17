@@ -1,8 +1,11 @@
 package codegen
 
 import (
+	"bytes"
 	"fmt"
 	"runtime"
+
+	"github.com/CloudyKit/jet/v6"
 )
 
 func assert(p bool) {
@@ -19,4 +22,23 @@ func assert(p bool) {
 
 func unreachable() {
 	panic("unreachable")
+}
+
+func renderTemplate(templ string, vars jet.VarMap) string {
+	loader := jet.NewInMemLoader()
+	loader.Set("lox", templ)
+
+	set := jet.NewSet(loader, jet.WithSafeWriter(nil))
+	t, err := set.GetTemplate("lox")
+	if err != nil {
+		panic(err)
+	}
+
+	body := &bytes.Buffer{}
+	err = t.Execute(body, vars, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	return body.String()
 }

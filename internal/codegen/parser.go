@@ -8,8 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strings"
 
+	"github.com/CloudyKit/jet/v6"
 	"github.com/dcaiafa/lox/internal/ast"
 	"github.com/dcaiafa/lox/internal/errs"
 	"github.com/dcaiafa/lox/internal/parser"
@@ -69,7 +69,7 @@ func (s *State) ParseGo() error {
 	for _, dirEntry := range dirEntries {
 		if !dirEntry.IsDir() &&
 			filepath.Ext(dirEntry.Name()) == ".go" &&
-			dirEntry.Name() != loxGenGoName {
+			dirEntry.Name() != parserGenGoName {
 			oneSourceName = filepath.Join(s.ImplDir, dirEntry.Name())
 		}
 	}
@@ -83,9 +83,14 @@ func (s *State) ParseGo() error {
 	}
 
 	s.PackageName = oneSource.Name.Name
-	loxGenGo := strings.Replace(loxGenGo, "{{package}}", s.PackageName, 1)
+
+	vars := make(jet.VarMap)
+	vars.Set("p", prefix)
+	vars.Set("package", s.PackageName)
+	fmt.Println(parserGenGo)
+	loxGenGo := renderTemplate(parserGenGo, vars)
 	loxGenGoPath, err := filepath.Abs(
-		filepath.Join(s.ImplDir, loxGenGoName))
+		filepath.Join(s.ImplDir, parserGenGoName))
 	if err != nil {
 		return fmt.Errorf("filepath.Abs failed: %w", err)
 	}
