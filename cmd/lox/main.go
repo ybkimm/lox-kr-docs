@@ -27,11 +27,12 @@ func realMain() error {
 	}
 	dir := flag.Arg(0)
 
-	state := codegen.NewState(dir, dir)
-	err := state.ParseGrammar()
+	grammar, err := codegen.ParseGrammar(dir)
 	if err != nil {
 		return err
 	}
+
+	state := codegen.NewState(grammar, dir)
 
 	if *flagTerminals {
 		for _, terminal := range state.Grammar.Terminals {

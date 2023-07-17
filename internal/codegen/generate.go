@@ -53,15 +53,6 @@ func (b *importBuilder) WriteTo(w *bytes.Buffer) {
 func (s *State) Generate2() error {
 	s.imports = newImportBuilder()
 
-	loader := jet.NewInMemLoader()
-	loader.Set("lox", loxGenJet)
-
-	set := jet.NewSet(loader, jet.WithSafeWriter(nil))
-	templ, err := set.GetTemplate("lox")
-	if err != nil {
-		panic(err)
-	}
-
 	vars := jet.VarMap{}
 	vars.Set("accept", accept)
 	vars.Set("imp", s.templImport)
@@ -72,17 +63,13 @@ func (s *State) Generate2() error {
 	vars.Set("lhs", s.templLHS)
 	vars.Set("term_counts", s.templTermCounts)
 
-	body := &bytes.Buffer{}
-	err = templ.Execute(body, vars, nil)
-	if err != nil {
-		panic(err)
-	}
+	body := renderTemplate(loxGenJet, vars)
 
-	out := bytes.NewBuffer(make([]byte, 0, body.Len()+2048))
+	out := bytes.NewBuffer(make([]byte, 0, len(body)+2048))
 	fmt.Fprintf(out, "package %v\n\n", s.PackageName)
 	s.imports.WriteTo(out)
-	body.WriteTo(out)
-	err = os.WriteFile(filepath.Join(s.ImplDir, parserGenGoName), out.Bytes(), 0666)
+	out.WriteString(body)
+	err := os.WriteFile(filepath.Join(s.ImplDir, parserGenGoName), out.Bytes(), 0666)
 	if err != nil {
 		return err
 	}

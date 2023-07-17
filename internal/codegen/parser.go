@@ -5,56 +5,68 @@ import (
 	goparser "go/parser"
 	gotoken "go/token"
 	gotypes "go/types"
+	"math"
 	"os"
 	"path/filepath"
 	"regexp"
 
 	"github.com/CloudyKit/jet/v6"
-	"github.com/dcaiafa/lox/internal/ast"
-	"github.com/dcaiafa/lox/internal/errs"
-	"github.com/dcaiafa/lox/internal/parser"
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
 	"github.com/dcaiafa/lox/internal/parsergen/lr1"
 	"github.com/dcaiafa/lox/internal/util/multierror"
 	"golang.org/x/tools/go/packages"
 )
 
-var reduceMethodNameRegex = regexp.MustCompile(`^reduce([A-Za-z][A-Za-z0-9]*).*$`)
+const accept = math.MaxInt32
 
-func (s *State) ParseGrammar() error {
-	s.ProdLabels = make(map[*grammar.Prod]string)
+const parserGenGo = `
+package {{package}}
 
-	loxFiles, err := filepath.Glob(filepath.Join(s.LoxDir, "*.lox"))
-	if err != nil {
-		return err
-	}
-
-	if len(loxFiles) == 0 {
-		return fmt.Errorf("%v contains no .lox files", s.LoxDir)
-	}
-
-	grammar := new(grammar.Grammar)
-	for _, loxFile := range loxFiles {
-		loxFileData, err := os.ReadFile(loxFile)
-		if err != nil {
-			return err
-		}
-		errs := errs.New()
-		spec := parser.Parse(loxFile, loxFileData, errs)
-		if errs.HasErrors() {
-			errs.Dump(os.Stderr)
-			return fmt.Errorf("parsing lox files")
-		}
-		s.addSpecToGrammar(spec, grammar)
-	}
-
-	s.Grammar, err = grammar.ToAugmentedGrammar()
-	if err != nil {
-		return err
-	}
-
-	return nil
+type {{p}}Lexer interface {
+	NextToken() (int, Token)
 }
+
+type loxParser struct {}
+
+func (p *loxParser) parse(l {{p}}Lexer) {}
+`
+
+const parserGenGoName = "parser.gen.go"
+const loxParserTypeName = "loxParser"
+
+type State struct {
+	ImplDir       string
+	Grammar       *grammar.AugmentedGrammar
+	PackageName   string
+	Fset          *gotoken.FileSet
+	Parser        gotypes.Object
+	Token         gotypes.Object
+	ParserTable   *lr1.ParserTable
+	ReduceMethods map[string][]*ReduceMethod
+	ReduceTypes   map[*grammar.Rule]gotypes.Type
+	ReduceMap     map[*grammar.Prod]*ReduceMethod
+	imports       *importBuilder
+}
+
+type ReduceMethod struct {
+	Method     *gotypes.Func
+	MethodName string
+	Params     []*ReduceParam
+	ReturnType gotypes.Type
+}
+
+type ReduceParam struct {
+	Type gotypes.Type
+}
+
+func NewState(g *grammar.AugmentedGrammar, implDir string) *State {
+	return &State{
+		Grammar: g,
+		ImplDir: implDir,
+	}
+}
+
+var reduceMethodNameRegex = regexp.MustCompile(`^reduce([A-Za-z][A-Za-z0-9]*).*$`)
 
 func (s *State) ConstructParseTables() {
 	s.ParserTable = lr1.ConstructLR(s.Grammar)
@@ -206,65 +218,4 @@ func getParserObj(scope *gotypes.Scope) (gotypes.Object, error) {
 		return nil, fmt.Errorf("Parser cannot have type parameters")
 	}
 	return obj, nil
-}
-
-func (s *State) addSpecToGrammar(spec *ast.Spec, g *grammar.Grammar) {
-	for _, section := range spec.Sections {
-		switch section := section.(type) {
-		case *ast.Lexer:
-			for _, decl := range section.Decls {
-				switch decl := decl.(type) {
-				case *ast.CustomTokenDecl:
-					for _, token := range decl.CustomTokens {
-						terminal := &grammar.Terminal{
-							Name: token.Name,
-						}
-						g.Terminals = append(g.Terminals, terminal)
-					}
-				default:
-					panic("not-reached")
-				}
-			}
-		case *ast.Parser:
-			for _, decl := range section.Decls {
-				switch decl := decl.(type) {
-				case *ast.Rule:
-					rule := &grammar.Rule{
-						Name: decl.Name,
-					}
-					for _, astProd := range decl.Prods {
-						prod := &grammar.Prod{}
-						for _, astTerm := range astProd.Terms {
-							term := &grammar.Term{
-								Name: astTerm.Name,
-							}
-							switch astTerm.Qualifier {
-							case ast.NoQualifier:
-								term.Cardinality = grammar.One
-							case ast.ZeroOrMore:
-								term.Cardinality = grammar.ZeroOrMore
-							case ast.OneOrMore:
-								term.Cardinality = grammar.OneOrMore
-							case ast.ZeroOrOne:
-								term.Cardinality = grammar.ZeroOrOne
-							default:
-								panic("not-reached")
-							}
-							prod.Terms = append(prod.Terms, term)
-						}
-						if astProd.Label != nil {
-							s.ProdLabels[prod] = astProd.Label.Label
-						}
-						rule.Prods = append(rule.Prods, prod)
-					}
-					g.Rules = append(g.Rules, rule)
-
-				default:
-					panic("not-reached")
-				}
-			}
-		default:
-			panic("not-reached")
-		}
-	}
 }
