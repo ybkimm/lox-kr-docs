@@ -32,7 +32,7 @@ func realMain() error {
 		return err
 	}
 
-	state := codegen.NewState(grammar, dir)
+	state := codegen.NewParserGenState(dir, grammar)
 
 	if *flagTerminals {
 		for _, terminal := range state.Grammar.Terminals {

@@ -10,67 +10,67 @@ import (
 
 type Token = token.Token
 
-type Parser struct {
+type parser struct {
 	loxParser
 	logger errs.Errs
 }
 
 func Parse(filename string, data []byte) {
-	var parser Parser
+	var parser parser
 	lex := newLex(filename, data, &parser.logger)
 	parser.parse(lex)
 }
 
-func (p *Parser) reduceSpec(s []ast.Section) *ast.Spec {
+func (p *parser) reduceSpec(s []ast.Section) *ast.Spec {
 	return &ast.Spec{
 		Sections: s,
 	}
 }
 
-func (p *Parser) reduceSection(s ast.Section) ast.Section {
+func (p *parser) reduceSection(s ast.Section) ast.Section {
 	return s
 }
 
-func (p *Parser) reduceParser(_ Token, decls []ast.ParserDecl) ast.Section {
+func (p *parser) reduceParser(_ Token, decls []ast.ParserDecl) ast.Section {
 	return &ast.Parser{
 		Decls: decls,
 	}
 }
 
-func (p *Parser) reducePdecl(r *ast.Rule) ast.ParserDecl {
+func (p *parser) reducePdecl(r *ast.Rule) ast.ParserDecl {
 	return r
 }
 
-func (p *Parser) reducePrule(name Token, _ Token, prods []*ast.Prod, _ Token) *ast.Rule {
+func (p *parser) reducePrule(name Token, _ Token, prods []*ast.Prod, _ Token) *ast.Rule {
 	return &ast.Rule{
 		Name:  name.Str,
 		Prods: prods,
 	}
 }
 
-func (p *Parser) reducePprods(prods []*ast.Prod, _ Token, prod *ast.Prod) []*ast.Prod {
+func (p *parser) reducePprods(prods []*ast.Prod, _ Token, prod *ast.Prod) []*ast.Prod {
 	panic("unreachable")
 }
 
-func (p *Parser) reducePprods_1(prod *ast.Prod) []*ast.Prod {
+func (p *parser) reducePprods_1(prod *ast.Prod) []*ast.Prod {
 	panic("unreachable")
 }
 
-func (p *Parser) reducePprod(terms []*ast.Term, label *ast.Label) *ast.Prod {
+func (p *parser) reducePprod(terms []*ast.Term, label *ast.Label) *ast.Prod {
 	return &ast.Prod{
 		Terms: terms,
 		Label: label,
 	}
 }
 
-func (p *Parser) reducePterm(name Token, q ast.Qualifier) *ast.Term {
+func (p *parser) reducePterm(name Token, q ast.Qualifier) *ast.Term {
 	return &ast.Term{
 		Name:      name.Str,
 		Qualifier: q,
 	}
 }
 
-func (p *Parser) reducePcard(card Token) ast.Qualifier {
+func (p *parser) reducePcard(card Token) ast.Qualifier {
 	switch card.Type {
 	case token.ZERO_OR_MANY:
 		return ast.ZeroOrMore
@@ -83,23 +83,23 @@ func (p *Parser) reducePcard(card Token) ast.Qualifier {
 	}
 }
 
-func (p *Parser) reduceLabel(l Token) *ast.Label {
+func (p *parser) reduceLabel(l Token) *ast.Label {
 	return &ast.Label{
 		Label: l.Str,
 	}
 }
 
-func (p *Parser) reduceLexer(_ Token, decls []ast.LexerDecl) *ast.Lexer {
+func (p *parser) reduceLexer(_ Token, decls []ast.LexerDecl) *ast.Lexer {
 	return &ast.Lexer{
 		Decls: decls,
 	}
 }
 
-func (p *Parser) reduceLdecl(d ast.LexerDecl) ast.LexerDecl {
+func (p *parser) reduceLdecl(d ast.LexerDecl) ast.LexerDecl {
 	return d
 }
 
-func (p *Parser) reduceLcustom(_ Token, names []Token, _ Token) ast.LexerDecl {
+func (p *parser) reduceLcustom(_ Token, names []Token, _ Token) ast.LexerDecl {
 	d := &ast.CustomTokenDecl{
 		CustomTokens: make([]*ast.CustomToken, len(names)),
 	}

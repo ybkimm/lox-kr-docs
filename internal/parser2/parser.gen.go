@@ -93,7 +93,7 @@ type loxParser struct {
 	sym   _lxStack[any]
 }
 
-func (p *Parser) parse(lex _lxLexer) {
+func (p *parser) parse(lex _lxLexer) {
   const accept = 2147483647
 
 	p.loxParser.state.Push(0)
@@ -126,7 +126,7 @@ func (p *Parser) parse(lex _lxLexer) {
 	}
 }
 
-func (p *Parser) onError(tok Token, err string) {
+func (p *parser) onError(tok Token, err string) {
 	_i0.Println("ERROR:", err)
 	_i1.Exit(1)
 }
