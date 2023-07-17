@@ -130,4 +130,3 @@ func (p *Parser) onError(tok Token, err string) {
 	_i0.Println("ERROR:", err)
 	_i1.Exit(1)
 }
-
