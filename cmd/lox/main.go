@@ -53,7 +53,7 @@ func realMain() error {
 	if err != nil {
 		return err
 	}
-	err = state.Generate()
+	err = state.Generate2()
 	if err != nil {
 		return err
 	}

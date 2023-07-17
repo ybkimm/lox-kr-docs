@@ -74,5 +74,4 @@ func WriteArray(w *strings.Builder, xs []int32) {
 		}
 		fmt.Fprintf(w, "%d, ", x)
 	}
-	w.WriteByte('\n')
 }

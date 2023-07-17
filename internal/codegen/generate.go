@@ -3,13 +3,12 @@ package codegen
 import (
 	"bytes"
 	"fmt"
-	"math"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
-	"text/template"
 
+	"github.com/CloudyKit/jet/v6"
 	"github.com/dcaiafa/lox/internal/codegen/table"
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
 	"github.com/dcaiafa/lox/internal/parsergen/lr1"
@@ -51,28 +50,30 @@ func (b *importBuilder) WriteTo(w *bytes.Buffer) {
 	fmt.Fprintf(w, ")\n")
 }
 
-func (s *State) Generate() error {
+func (s *State) Generate2() error {
 	s.imports = newImportBuilder()
 
-	templ, err := template.New("lox").
-		Funcs(map[string]any{
-			"p":         func() string { return "_lx" },
-			"lhs":       s.templLHS,
-			"reduction": s.templReduction,
-			"action":    s.templAction,
-			"goto":      s.templGoto,
-			"import":    s.templImport,
-		}).
-		Parse(loxGenTemplate)
+	loader := jet.NewInMemLoader()
+	loader.Set("lox", loxGenJet)
+
+	set := jet.NewSet(loader, jet.WithSafeWriter(nil))
+	templ, err := set.GetTemplate("lox")
 	if err != nil {
 		panic(err)
 	}
 
+	vars := jet.VarMap{}
+	vars.Set("accept", accept)
+	vars.Set("imp", s.templImport)
+	vars.Set("p", "_lx")
+	vars.Set("actions", s.templActions)
+	vars.Set("array", s.templArray)
+	vars.Set("goto", s.templGoto)
+	vars.Set("lhs", s.templLHS)
+	vars.Set("term_counts", s.templTermCounts)
+
 	body := &bytes.Buffer{}
-	err = templ.Execute(body, map[string]any{
-		"accept":    math.MaxInt32,
-		"terminals": s.terminals(),
-	})
+	err = templ.Execute(body, vars, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -101,28 +102,30 @@ func (s *State) templImport(path string) string {
 	return s.imports.Import(path)
 }
 
-func (s *State) templLHS() string {
-	str := new(strings.Builder)
+func (s *State) templLHS() []int32 {
 	prods := make([]int32, len(s.Grammar.Prods))
 	for prodIndex, prod := range s.Grammar.Prods {
 		rule := s.Grammar.ProdRule(prod)
 		prods[prodIndex] = int32(s.Grammar.RuleIndex(rule))
 	}
-	table.WriteArray(str, prods)
+	return prods
+}
+
+func (s *State) templArray(arr []int32) string {
+	var str strings.Builder
+	table.WriteArray(&str, arr)
 	return str.String()
 }
 
-func (s *State) templReduction() string {
-	str := new(strings.Builder)
+func (s *State) templTermCounts() []int32 {
 	prods := make([]int32, len(s.Grammar.Prods))
 	for prodIndex, prod := range s.Grammar.Prods {
 		prods[prodIndex] = int32(len(prod.Terms))
 	}
-	table.WriteArray(str, prods)
-	return str.String()
+	return prods
 }
 
-func (s *State) templAction() string {
+func (s *State) templActions() []int32 {
 	actionTable := table.New()
 	for _, state := range s.ParserTable.States.States() {
 		var row []int32
@@ -146,10 +149,10 @@ func (s *State) templAction() string {
 			})
 		actionTable.AddRow(state.Index, row)
 	}
-	return actionTable.String()
+	return actionTable.Array()
 }
 
-func (s *State) templGoto() string {
+func (s *State) templGoto() []int32 {
 	gotoTable := table.New()
 	for stateIndex, state := range s.ParserTable.States.States() {
 		var row []int32
@@ -165,31 +168,24 @@ func (s *State) templGoto() string {
 			})
 		gotoTable.AddRow(stateIndex, row)
 	}
-	return gotoTable.String()
+	return gotoTable.Array()
 }
 
-const loxGenTemplate = `
-
-const (
-{{- range $index, $name := .terminals }}
-  {{ $name }} = {{ $index }}
-{{- end}}
-)
-
+const loxGenJet = `
 var {{p}}LHS = []int32 {
-	{{ lhs }} 
+	{{ lhs() | array }}
 }
 
-var {{p}}Reduction = []int32 {
-	{{ reduction }}
+var {{p}}TermCounts = []int32 {
+	{{ term_counts() | array }}	
 }
 
-var {{p}}Action = []int32 {
-	{{ action }}
+var {{p}}Actions = []int32 {
+	{{ actions() | array }}
 }
 
 var {{p}}Goto = []int32 {
-	{{ goto }}
+	{{ goto() | array }}
 }
 
 type {{p}}Stack[T any] []T
@@ -229,14 +225,14 @@ type loxParser struct {
 }
 
 func (p *Parser) parse(lex {{p}}Lexer) {
-  const accept = {{ .accept }}
+  const accept = {{ accept }}
 
 	p.loxParser.state.Push(0)
 	lookahead, tok := lex.NextToken()
 
 	for {
 		topState := p.loxParser.state.Peek(0)
-		action, ok := {{p}}Find({{p}}Action, topState, int32(lookahead))
+		action, ok := {{p}}Find({{p}}Actions, topState, int32(lookahead))
 		if !ok {
 			p.onError(tok, "boom")
 			return
@@ -249,7 +245,7 @@ func (p *Parser) parse(lex {{p}}Lexer) {
 			lookahead, tok = lex.NextToken()
 		} else { // reduce
 			prod := -action
-			termCount := {{p}}Reduction[int(prod)]
+			termCount := {{p}}TermCounts[int(prod)]
 			rule := {{p}}LHS[int(prod)]
 			p.loxParser.state.Pop(int(termCount))
 			p.loxParser.sym.Pop(int(termCount))
@@ -262,8 +258,8 @@ func (p *Parser) parse(lex {{p}}Lexer) {
 }
 
 func (p *Parser) onError(tok Token, err string) {
-	{{ import "fmt" }}.Println("ERROR:", err)
-	{{ import "os" }}.Exit(1)
+	{{ imp("fmt") }}.Println("ERROR:", err)
+	{{ imp("os") }}.Exit(1)
 }
 
 `
