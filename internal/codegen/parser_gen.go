@@ -3,7 +3,6 @@ package codegen
 import (
 	"bytes"
 	"fmt"
-	goparser "go/parser"
 	gotoken "go/token"
 	gotypes "go/types"
 	"math"
@@ -134,7 +133,6 @@ const parserStateTypeName = "loxParser"
 type ParserGenState struct {
 	ImplDir       string
 	Grammar       *grammar.AugmentedGrammar
-	PackageName   string
 	Fset          *gotoken.FileSet
 	Parser        gotypes.Object
 	Token         gotypes.Object
@@ -142,6 +140,7 @@ type ParserGenState struct {
 	ReduceMethods map[string][]*ReduceMethod
 	ReduceTypes   map[*grammar.Rule]gotypes.Type
 	ReduceMap     map[*grammar.Prod]*ReduceMethod
+	packageName   string
 	imports       *importBuilder
 }
 
@@ -161,8 +160,8 @@ func NewParserGenState(
 	g *grammar.AugmentedGrammar,
 ) *ParserGenState {
 	return &ParserGenState{
-		Grammar: g,
 		ImplDir: implDir,
+		Grammar: g,
 	}
 }
 
@@ -174,32 +173,15 @@ func (s *ParserGenState) ConstructParseTables() {
 }
 
 func (s *ParserGenState) ParseGo() error {
-	dirEntries, err := os.ReadDir(s.ImplDir)
+	var err error
+	s.packageName, err = computePackageName(s.ImplDir)
 	if err != nil {
 		return err
 	}
-	var oneSourceName string
-	for _, dirEntry := range dirEntries {
-		if !dirEntry.IsDir() &&
-			filepath.Ext(dirEntry.Name()) == ".go" &&
-			dirEntry.Name() != parserGenGoName {
-			oneSourceName = filepath.Join(s.ImplDir, dirEntry.Name())
-		}
-	}
-	if oneSourceName == "" {
-		return fmt.Errorf("package contains no source files")
-	}
-
-	oneSource, err := goparser.ParseFile(gotoken.NewFileSet(), oneSourceName, nil, 0)
-	if err != nil {
-		return fmt.Errorf("%v: %w", oneSourceName, err)
-	}
-
-	s.PackageName = oneSource.Name.Name
 
 	vars := make(jet.VarMap)
 	vars.Set("p", prefix)
-	vars.Set("package", s.PackageName)
+	vars.Set("package", s.packageName)
 	loxGenGo := renderTemplate(parserPlaceholderTemplate, vars)
 	loxGenGoPath, err := filepath.Abs(
 		filepath.Join(s.ImplDir, parserGenGoName))
@@ -532,7 +514,7 @@ func (s *ParserGenState) Generate2() error {
 	body := renderTemplate(parserTemplate, vars)
 
 	out := bytes.NewBuffer(make([]byte, 0, len(body)+2048))
-	fmt.Fprintf(out, "package %v\n\n", s.PackageName)
+	fmt.Fprintf(out, "package %v\n\n", s.packageName)
 	s.imports.WriteTo(out)
 	out.WriteString(body)
 	err := os.WriteFile(filepath.Join(s.ImplDir, parserGenGoName), out.Bytes(), 0666)

@@ -42,12 +42,19 @@ func realMain() error {
 	}
 
 	state.ConstructParseTables()
+	state.Grammar.Print(os.Stdout)
+
+	lexerState := codegen.NewLexerGenState(dir, grammar)
+	err = lexerState.Generate()
+	if err != nil {
+		return err
+	}
+
 	err = state.ParseGo()
 	if err != nil {
 		return err
 	}
 
-	state.Grammar.Print(os.Stdout)
 	state.ParserTable.Print(os.Stdout)
 
 	err = state.MapReduceActions()

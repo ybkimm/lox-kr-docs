@@ -3,6 +3,10 @@ package codegen
 import (
 	"bytes"
 	"fmt"
+	goparser "go/parser"
+	gotoken "go/token"
+	"os"
+	"path/filepath"
 	"runtime"
 
 	"github.com/CloudyKit/jet/v6"
@@ -41,4 +45,29 @@ func renderTemplate(templ string, vars jet.VarMap) string {
 	}
 
 	return body.String()
+}
+
+func computePackageName(dir string) (string, error) {
+	dirEntries, err := os.ReadDir(dir)
+	if err != nil {
+		return "", err
+	}
+	var oneSourceName string
+	for _, dirEntry := range dirEntries {
+		if !dirEntry.IsDir() &&
+			filepath.Ext(dirEntry.Name()) == ".go" &&
+			dirEntry.Name() != parserGenGoName {
+			oneSourceName = filepath.Join(dir, dirEntry.Name())
+		}
+	}
+	if oneSourceName == "" {
+		return "", fmt.Errorf("package contains no source files")
+	}
+
+	oneSource, err := goparser.ParseFile(gotoken.NewFileSet(), oneSourceName, nil, 0)
+	if err != nil {
+		return "", fmt.Errorf("%v: %w", oneSourceName, err)
+	}
+
+	return oneSource.Name.Name, nil
 }
