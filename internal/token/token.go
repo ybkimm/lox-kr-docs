@@ -41,3 +41,7 @@ type Token struct {
 	Type Type
 	Str  string
 }
+
+func (t Token) ID() int {
+	return int(t.Type)
+}

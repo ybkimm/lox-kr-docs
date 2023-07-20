@@ -2,6 +2,7 @@ package parser2
 
 import (
 	"bytes"
+	"fmt"
 
 	"github.com/dcaiafa/lox/internal/ast"
 	"github.com/dcaiafa/lox/internal/errs"
@@ -40,21 +41,21 @@ func newLex(filename string, input []byte, errs *errs.Errs) *lex {
 	return l
 }
 
-func (l *lex) NextToken() (int, token.Token) {
+func (l *lex) NextToken() (token.Token, error) {
 	var tok token.Token
-	l.nextToken(&tok)
+	err := l.nextToken(&tok)
 	if tok.Pos.Line != 0 {
 		l.lastPos = tok.Pos
 	}
-	return int(tok.Type), tok
+	return tok, err
 }
 
-func (l *lex) nextToken(tok *token.Token) {
+func (l *lex) nextToken(tok *token.Token) error {
 	for {
 		r := l.peek()
 		if r == 0 {
 			tok.Type = token.EOF
-			return
+			return nil
 		}
 		if isSpace(r) {
 			l.advance()
@@ -68,42 +69,37 @@ func (l *lex) nextToken(tok *token.Token) {
 		tok.Pos = l.pos
 
 		switch r {
-		case '@':
-			l.scanKeyword(tok)
-			return
-		case '#':
-			l.scanLabel(tok)
-			return
 		case '=':
 			l.advance()
 			tok.Type = token.DEFINE
-			return
 		case ';':
 			l.advance()
 			tok.Type = token.SEMICOLON
-			return
 		case '|':
 			l.advance()
 			tok.Type = token.OR
 		case '*':
 			l.advance()
 			tok.Type = token.ZERO_OR_MANY
-			return
 		case '+':
 			l.advance()
 			tok.Type = token.ONE_OR_MANY
-			return
 		case '?':
 			l.advance()
 			tok.Type = token.ZERO_OR_ONE
+		case '@':
+			err := l.scanKeyword(tok)
+			if err != nil {
+				return err
+			}
 		default:
 			if isLetter(r) || r == '_' {
 				l.scanIdentifier(tok)
-				return
+			} else {
+				return fmt.Errorf("unexpected character: %v", r)
 			}
-			tok.Type = -1
-			return
 		}
+		return nil
 	}
 }
 
@@ -111,10 +107,6 @@ func (l *lex) scanIdentifier(tok *token.Token) {
 	l.buf.Reset()
 
 	r := l.peek()
-	if !isLetter(r) && r != '_' {
-		tok.Type = -1
-		return
-	}
 	l.advance()
 	l.buf.WriteRune(r)
 
@@ -128,17 +120,12 @@ func (l *lex) scanIdentifier(tok *token.Token) {
 	}
 	tok.Type = token.ID
 	tok.Str = l.buf.String()
-	return
 }
 
-func (l *lex) scanKeyword(tok *token.Token) {
+func (l *lex) scanKeyword(tok *token.Token) error {
 	l.buf.Reset()
 
 	r := l.peek()
-	if l.peek() != '@' {
-		tok.Type = -1
-		return
-	}
 	l.advance()
 	l.buf.WriteRune(r)
 
@@ -154,36 +141,11 @@ func (l *lex) scanKeyword(tok *token.Token) {
 	tokStr := l.buf.String()
 	keyword, ok := keywords[tokStr]
 	if !ok {
-		tok.Type = -1
-		return
+		return fmt.Errorf("invalid keyword %v", tokStr)
 	}
 	tok.Type = keyword
 	tok.Str = l.buf.String()
-	return
-}
-
-func (l *lex) scanLabel(tok *token.Token) {
-	l.buf.Reset()
-
-	r := l.peek()
-	if l.peek() != '#' {
-		tok.Type = -1
-		return
-	}
-	l.advance()
-	l.buf.WriteRune(r)
-
-	for {
-		r := l.peek()
-		if !isLetter(r) && !isNumber(r) && r != '_' {
-			break
-		}
-		l.advance()
-		l.buf.WriteRune(r)
-	}
-
-	tok.Type = token.LABEL
-	tok.Str = l.buf.String()
+	return nil
 }
 
 func (l *lex) peek() rune {

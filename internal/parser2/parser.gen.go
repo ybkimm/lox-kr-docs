@@ -95,7 +95,7 @@ func (e _lxUnexpectedTokenError) Error() string {
 }
 
 type _lxLexer interface {
-	NextToken() (int, Token)
+	NextToken() (Token, error)
 }
 
 type loxParser struct {
@@ -107,11 +107,15 @@ func (p *parser) parse(lex _lxLexer) error {
   const accept = 2147483647
 
 	p.loxParser.state.Push(0)
-	lookahead, tok := lex.NextToken()
+	tok, err := lex.NextToken()
+	if err != nil {
+		return err
+	}
 
 	for {
+		lookahead := int32(tok.ID())
 		topState := p.loxParser.state.Peek(0)
-		action, ok := _lxFind(_lxActions, topState, int32(lookahead))
+		action, ok := _lxFind(_lxActions, topState, lookahead)
 		if !ok {
 			return &_lxUnexpectedTokenError{Token: tok}
 		}
@@ -120,7 +124,10 @@ func (p *parser) parse(lex _lxLexer) error {
 		} else if action >= 0 { // shift
 			p.loxParser.state.Push(action)
 			p.loxParser.sym.Push(tok)
-			lookahead, tok = lex.NextToken()
+			tok, err = lex.NextToken()
+			if err != nil {
+				return err
+			}
 		} else { // reduce
 			prod := -action
 			termCount := _lxTermCounts[int(prod)]
