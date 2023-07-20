@@ -98,7 +98,7 @@ func (p *{{parser}}) parse(lex {{p}}Lexer) {
 		topState := p.loxParser.state.Peek(0)
 		action, ok := {{p}}Find({{p}}Actions, topState, int32(lookahead))
 		if !ok {
-			p.onError(tok, "boom")
+			p.{{p}}Recover(tok, "boom")
 			return
 		}
 		if action == accept {
@@ -111,22 +111,23 @@ func (p *{{parser}}) parse(lex {{p}}Lexer) {
 			prod := -action
 			termCount := {{p}}TermCounts[int(prod)]
 			rule := {{p}}LHS[int(prod)]
+			res := p.{{p}}Act(prod)
 			p.loxParser.state.Pop(int(termCount))
 			p.loxParser.sym.Pop(int(termCount))
 			topState = p.loxParser.state.Peek(0)
 			nextState, _ := {{p}}Find({{p}}Goto, topState, rule)
 			p.loxParser.state.Push(nextState)
-			p.loxParser.sym.Push(nil)
+			p.loxParser.sym.Push(res)
 		}
 	}
 }
 
-func (p *{{parser}}) onError(tok Token, err string) {
+func (p *{{parser}}) {{p}}Recover(tok Token, err string) {
 	{{ imp("fmt") }}.Println("ERROR:", err)
 	{{ imp("os") }}.Exit(1)
 }
 
-func (p *{{parser}}) act(prod int32) any {
+func (p *{{parser}}) {{p}}Act(prod int32) any {
 	switch prod {
 {{- range prod_index, prod := grammar.Prods }}
 	{{- rule := grammar.ProdRule(prod) }}
@@ -140,11 +141,29 @@ func (p *{{parser}}) act(prod int32) any {
 		    )
 	{{- else if rule.Generated == generated_one_or_more }}
   case {{ prod_index }}:  // OneOrMore
-
-
-
+		{{- if len(prod.Terms) == 1 }}
+			{{- term_go_type := go_type(term_reduce_type(prod.Terms[0])) }}
+		  return []{{ term_go_type }}{
+				p.sym.Peek(0).({{ term_go_type }}),
+			}
+		{{- else }}
+			{{- term_go_type := go_type(term_reduce_type(prod.Terms[1])) }}
+			return append(
+				p.sym.Peek(1).([]{{term_go_type}}),
+				p.sym.Peek(0).({{term_go_type}}),
+			)
+		{{- end }}
 	{{- else if rule.Generated == generated_zero_or_one }}
   case {{ prod_index }}:  // ZeroOrOne
+		{{- rule_go_type := go_type(rule_reduce_type[rule]) }}
+		{{- if len(prod.Terms) == 1 }}
+			return p.sym.Peek(0).({{rule_go_type}})
+		{{- else }}
+			{
+				var zero {{rule_go_type}}
+				return zero
+			}
+		{{- end }}
 	{{- end }}
 {{- end }}
 	default:
@@ -427,24 +446,30 @@ func (s *ParserGenState) MapReduceActions() error {
 				len(method.Params))
 		}
 		for i, param := range method.Params {
-			termSym := s.Grammar.TermSymbol(prod.Terms[i])
-			termReduceType := s.Token.Type()
-			if cRule, ok := termSym.(*grammar.Rule); ok {
-				termReduceType = s.ReduceTypes[cRule]
-			}
+			term := prod.Terms[i]
+			termReduceType := s.termReduceType(term)
 			if !gotypes.AssignableTo(termReduceType, param.Type) {
 				return fmt.Errorf(
 					"%v: param %v has type %v but term symbol %v has reduce type %v",
 					method.MethodName,
 					i,
 					param.Type,
-					termSym.SymName(),
+					term.Name,
 					termReduceType.String())
 			}
 		}
 	}
 
 	return nil
+}
+
+func (s *ParserGenState) termReduceType(term *grammar.Term) gotypes.Type {
+	termSym := s.Grammar.TermSymbol(term)
+	termReduceType := s.Token.Type()
+	if cRule, ok := termSym.(*grammar.Rule); ok {
+		termReduceType = s.ReduceTypes[cRule]
+	}
+	return termReduceType
 }
 
 func (s *ParserGenState) findMethodForProd(
@@ -542,6 +567,8 @@ func (s *ParserGenState) Generate2() error {
 	vars.Set("generated_zero_or_one", grammar.GeneratedZeroOrOne)
 	vars.Set("generated_one_or_more", grammar.GeneratedOneOrMore)
 	vars.Set("go_type", s.templGoType)
+	vars.Set("term_reduce_type", s.termReduceType)
+	vars.Set("rule_reduce_type", s.ReduceTypes)
 
 	body := renderTemplate(parserTemplate, vars)
 

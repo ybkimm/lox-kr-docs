@@ -49,11 +49,11 @@ func (p *parser) reducePrule(name Token, _ Token, prods []*ast.Prod, _ Token) *a
 }
 
 func (p *parser) reducePprods(prods []*ast.Prod, _ Token, prod *ast.Prod) []*ast.Prod {
-	panic("unreachable")
+	return append(prods, prod)
 }
 
 func (p *parser) reducePprods_1(prod *ast.Prod) []*ast.Prod {
-	panic("unreachable")
+	return []*ast.Prod{prod}
 }
 
 func (p *parser) reducePprod(terms []*ast.Term, label *ast.Label) *ast.Prod {
