@@ -23,19 +23,19 @@ func (b *importBuilder) Import(path string) string {
 		return alias
 	}
 	alias = fmt.Sprintf("_i%d", len(b.imports))
-	b.imports[alias] = path
+	b.imports[path] = alias
 	return alias
 }
 
 func (b *importBuilder) WriteTo(w *bytes.Buffer) {
 	fmt.Fprintf(w, "import (\n")
-	aliases := make([]string, 0, len(b.imports))
-	for alias := range b.imports {
-		aliases = append(aliases, alias)
+	paths := make([]string, 0, len(b.imports))
+	for path := range b.imports {
+		paths = append(paths, path)
 	}
-	sort.Strings(aliases)
-	for _, alias := range aliases {
-		path := b.imports[alias]
+	sort.Strings(paths)
+	for _, path := range paths {
+		alias := b.imports[path]
 		fmt.Fprintf(w, "  %v %q\n", alias, path)
 	}
 	fmt.Fprintf(w, ")\n")

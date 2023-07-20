@@ -125,6 +125,32 @@ func (p *{{parser}}) onError(tok Token, err string) {
 	{{ imp("fmt") }}.Println("ERROR:", err)
 	{{ imp("os") }}.Exit(1)
 }
+
+func (p *{{parser}}) act(prod int32) any {
+	switch prod {
+{{- range prod_index, prod := grammar.Prods }}
+	{{- rule := grammar.ProdRule(prod) }}
+	{{- if rule.Generated == not_generated }}
+		{{- method := methods[prod] }}
+			case {{ prod_index }}:
+				return p.{{ method.MethodName}}(
+				{{- range param_index, param := method.Params }}
+					p.sym.Peek({{ len(method.Params) - param_index - 1 }}).({{ go_type(param.Type) }}),
+				{{- end }}
+		    )
+	{{- else if rule.Generated == generated_one_or_more }}
+  case {{ prod_index }}:  // OneOrMore
+
+
+
+	{{- else if rule.Generated == generated_zero_or_one }}
+  case {{ prod_index }}:  // ZeroOrOne
+	{{- end }}
+{{- end }}
+	default:
+		panic("unreachable")
+	}
+}
 `
 
 const parserGenGoName = "parser.gen.go"
@@ -510,6 +536,12 @@ func (s *ParserGenState) Generate2() error {
 	vars.Set("lhs", s.templLHS)
 	vars.Set("term_counts", s.templTermCounts)
 	vars.Set("parser", parserTypeName)
+	vars.Set("grammar", s.Grammar)
+	vars.Set("methods", s.ReduceMap)
+	vars.Set("not_generated", grammar.NotGenerated)
+	vars.Set("generated_zero_or_one", grammar.GeneratedZeroOrOne)
+	vars.Set("generated_one_or_more", grammar.GeneratedOneOrMore)
+	vars.Set("go_type", s.templGoType)
 
 	body := renderTemplate(parserTemplate, vars)
 
@@ -531,6 +563,12 @@ func (s *ParserGenState) terminals() map[int]string {
 		terminals[i] = terminal.Name
 	}
 	return terminals
+}
+
+func (s *ParserGenState) templGoType(t gotypes.Type) string {
+	return gotypes.TypeString(t, func(pkg *gotypes.Package) string {
+		return s.imports.Import(pkg.Path())
+	})
 }
 
 func (s *ParserGenState) templImport(path string) string {
