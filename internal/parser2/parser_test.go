@@ -1,6 +1,9 @@
 package parser2
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 const parserLox = `
 @lexer
@@ -42,5 +45,9 @@ Lcustom  = CUSTOM ID+ SEMICOLON ;
 `
 
 func TestParser(t *testing.T) {
-	Parse("foo.lox", []byte(parserLox))
+	spec, err := Parse("foo.lox", []byte(parserLox))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	fmt.Println(spec)
 }

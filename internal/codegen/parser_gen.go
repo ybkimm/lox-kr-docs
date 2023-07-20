@@ -26,13 +26,23 @@ const parserTypeName = "parser"
 const parserPlaceholderTemplate = `
 package {{package}}
 
+type {{p}}UnexpectedTokenError struct {
+	Token Token
+}
+
+func (e {{p}}UnexpectedTokenError) Error() string {
+	return ""
+}
+
 type {{p}}Lexer interface {
 	NextToken() (int, Token)
 }
 
 type loxParser struct {}
 
-func (p *loxParser) parse(l {{p}}Lexer) {}
+func (p *loxParser) parse(l {{p}}Lexer) error {
+	panic("not-implemented")
+}
 `
 
 const parserTemplate = `
@@ -79,6 +89,14 @@ func {{p}}Find(table []int32, y, x int32) (int32, bool) {
 	return 0, false
 }
 
+type {{p}}UnexpectedTokenError struct {
+	Token Token
+}
+
+func (e {{p}}UnexpectedTokenError) Error() string {
+	return {{ imp("fmt") }}.Sprintf("unexpected token: %v", e.Token)
+}
+
 type {{p}}Lexer interface {
 	NextToken() (int, Token)
 }
@@ -88,7 +106,7 @@ type loxParser struct {
 	sym   {{p}}Stack[any]
 }
 
-func (p *{{parser}}) parse(lex {{p}}Lexer) {
+func (p *{{parser}}) parse(lex {{p}}Lexer) error {
   const accept = {{ accept }}
 
 	p.loxParser.state.Push(0)
@@ -98,11 +116,10 @@ func (p *{{parser}}) parse(lex {{p}}Lexer) {
 		topState := p.loxParser.state.Peek(0)
 		action, ok := {{p}}Find({{p}}Actions, topState, int32(lookahead))
 		if !ok {
-			p.{{p}}Recover(tok, "boom")
-			return
+			return &{{p}}UnexpectedTokenError{Token: tok}
 		}
 		if action == accept {
-    	break
+			break
 		} else if action >= 0 { // shift
 			p.loxParser.state.Push(action)
 			p.loxParser.sym.Push(tok)
@@ -120,6 +137,8 @@ func (p *{{parser}}) parse(lex {{p}}Lexer) {
 			p.loxParser.sym.Push(res)
 		}
 	}
+
+	return nil
 }
 
 func (p *{{parser}}) {{p}}Recover(tok Token, err string) {

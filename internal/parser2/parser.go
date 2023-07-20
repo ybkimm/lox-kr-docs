@@ -13,18 +13,24 @@ type Token = token.Token
 type parser struct {
 	loxParser
 	logger errs.Errs
+	spec   *ast.Spec
 }
 
-func Parse(filename string, data []byte) {
+func Parse(filename string, data []byte) (*ast.Spec, error) {
 	var parser parser
 	lex := newLex(filename, data, &parser.logger)
-	parser.parse(lex)
+	err := parser.parse(lex)
+	if err != nil {
+		return nil, err
+	}
+	return parser.spec, nil
 }
 
-func (p *parser) reduceSpec(s []ast.Section) *ast.Spec {
-	return &ast.Spec{
+func (p *parser) reduceSpec(s []ast.Section) any {
+	p.spec = &ast.Spec{
 		Sections: s,
 	}
+	return nil
 }
 
 func (p *parser) reduceSection(s ast.Section) ast.Section {

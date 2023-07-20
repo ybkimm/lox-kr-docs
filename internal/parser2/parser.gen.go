@@ -86,6 +86,14 @@ func _lxFind(table []int32, y, x int32) (int32, bool) {
 	return 0, false
 }
 
+type _lxUnexpectedTokenError struct {
+	Token Token
+}
+
+func (e _lxUnexpectedTokenError) Error() string {
+	return _i0.Sprintf("unexpected token: %v", e.Token)
+}
+
 type _lxLexer interface {
 	NextToken() (int, Token)
 }
@@ -95,7 +103,7 @@ type loxParser struct {
 	sym   _lxStack[any]
 }
 
-func (p *parser) parse(lex _lxLexer) {
+func (p *parser) parse(lex _lxLexer) error {
   const accept = 2147483647
 
 	p.loxParser.state.Push(0)
@@ -105,11 +113,10 @@ func (p *parser) parse(lex _lxLexer) {
 		topState := p.loxParser.state.Peek(0)
 		action, ok := _lxFind(_lxActions, topState, int32(lookahead))
 		if !ok {
-			p._lxRecover(tok, "boom")
-			return
+			return &_lxUnexpectedTokenError{Token: tok}
 		}
 		if action == accept {
-    	break
+			break
 		} else if action >= 0 { // shift
 			p.loxParser.state.Push(action)
 			p.loxParser.sym.Push(tok)
@@ -127,6 +134,8 @@ func (p *parser) parse(lex _lxLexer) {
 			p.loxParser.sym.Push(res)
 		}
 	}
+
+	return nil
 }
 
 func (p *parser) _lxRecover(tok Token, err string) {
