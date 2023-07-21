@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	gotoken "go/token"
 	"os"
 
 	"github.com/dcaiafa/lox/internal/codegen"
@@ -17,9 +18,6 @@ func main() {
 }
 
 func realMain() error {
-	var (
-		flagTerminals = flag.Bool("terminals", false, "list terminals and quit")
-	)
 	flag.Parse()
 	if flag.NArg() != 1 {
 		flag.Usage()
@@ -27,19 +25,14 @@ func realMain() error {
 	}
 	dir := flag.Arg(0)
 
-	grammar, err := codegen.ParseGrammar(dir)
+	fset := gotoken.NewFileSet()
+
+	grammar, err := codegen.ParseGrammar(fset, dir)
 	if err != nil {
 		return err
 	}
 
 	state := codegen.NewParserGenState(dir, grammar)
-
-	if *flagTerminals {
-		for _, terminal := range state.Grammar.Terminals {
-			fmt.Println(terminal.Name)
-		}
-		return nil
-	}
 
 	state.ConstructParseTables()
 	state.Grammar.Print(os.Stdout)

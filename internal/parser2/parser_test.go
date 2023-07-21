@@ -1,7 +1,9 @@
 package parser2
 
 import (
+	"errors"
 	"fmt"
+	gotoken "go/token"
 	"testing"
 )
 
@@ -45,9 +47,17 @@ Lcustom  = CUSTOM ID+ SEMICOLON ;
 `
 
 func TestParser(t *testing.T) {
-	spec, err := Parse("foo.lox", []byte(parserLox))
+	fset := gotoken.NewFileSet()
+	data := []byte(parserLox)
+	file := fset.AddFile("foo.lox", -1, len(data))
+	spec, err := Parse(file, []byte(parserLox))
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		var unexpectedToken *_lxUnexpectedTokenError
+		if errors.As(err, &unexpectedToken) {
+			t.Fatalf("%v: %v", fset.Position(unexpectedToken.Token.Pos), err)
+		} else {
+			t.Fatalf("unexpected error: %v", err)
+		}
 	}
 	fmt.Println(spec)
 }

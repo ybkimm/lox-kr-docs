@@ -2,16 +2,16 @@ package codegen
 
 import (
 	"fmt"
+	gotoken "go/token"
 	"os"
 	"path/filepath"
 
 	"github.com/dcaiafa/lox/internal/ast"
-	"github.com/dcaiafa/lox/internal/errs"
-	"github.com/dcaiafa/lox/internal/parser"
+	"github.com/dcaiafa/lox/internal/parser2"
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
 )
 
-func ParseGrammar(dir string) (*grammar.AugmentedGrammar, error) {
+func ParseGrammar(fset *gotoken.FileSet, dir string) (*grammar.AugmentedGrammar, error) {
 	loxFiles, err := filepath.Glob(filepath.Join(dir, "*.lox"))
 	if err != nil {
 		return nil, err
@@ -27,11 +27,10 @@ func ParseGrammar(dir string) (*grammar.AugmentedGrammar, error) {
 		if err != nil {
 			return nil, err
 		}
-		errs := errs.New()
-		spec := parser.Parse(loxFile, loxFileData, errs)
-		if errs.HasErrors() {
-			errs.Dump(os.Stderr)
-			return nil, fmt.Errorf("parsing lox files")
+		file := fset.AddFile(loxFile, -1, len(loxFileData))
+		spec, err := parser2.Parse(file, loxFileData)
+		if err != nil {
+			return nil, err
 		}
 		addSpecToGrammar(spec, grammar)
 	}

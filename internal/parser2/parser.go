@@ -1,8 +1,9 @@
 package parser2
 
 import (
+	gotoken "go/token"
+
 	"github.com/dcaiafa/lox/internal/ast"
-	"github.com/dcaiafa/lox/internal/errs"
 	"github.com/dcaiafa/lox/internal/token"
 )
 
@@ -12,13 +13,12 @@ type Token = token.Token
 
 type parser struct {
 	loxParser
-	logger errs.Errs
-	spec   *ast.Spec
+	spec *ast.Spec
 }
 
-func Parse(filename string, data []byte) (*ast.Spec, error) {
+func Parse(file *gotoken.File, data []byte) (*ast.Spec, error) {
 	var parser parser
-	lex := newLex(filename, data, &parser.logger)
+	lex := newLex(file, data)
 	err := parser.parse(lex)
 	if err != nil {
 		return nil, err
@@ -78,11 +78,11 @@ func (p *parser) reducePterm(name Token, q ast.Qualifier) *ast.Term {
 
 func (p *parser) reducePcard(card Token) ast.Qualifier {
 	switch card.Type {
-	case token.ZERO_OR_MANY:
+	case ZERO_OR_MANY:
 		return ast.ZeroOrMore
-	case token.ONE_OR_MANY:
+	case ONE_OR_MANY:
 		return ast.OneOrMore
-	case token.ZERO_OR_ONE:
+	case ZERO_OR_ONE:
 		return ast.ZeroOrOne
 	default:
 		panic("unreachable")

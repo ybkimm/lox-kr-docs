@@ -3,39 +3,29 @@ package parser2
 import (
 	"bytes"
 	"fmt"
+	gotoken "go/token"
+	"io"
 
-	"github.com/dcaiafa/lox/internal/ast"
-	"github.com/dcaiafa/lox/internal/errs"
-	"github.com/dcaiafa/lox/internal/loc"
 	"github.com/dcaiafa/lox/internal/token"
 )
 
-var keywords = map[string]token.Type{
-	"@lexer":  token.LEXER,
-	"@parser": token.PARSER,
-	"@custom": token.CUSTOM,
+var keywords = map[string]int{
+	"@lexer":  LEXER,
+	"@parser": PARSER,
+	"@custom": CUSTOM,
 }
 
 type lex struct {
-	Spec *ast.Spec
-
-	char    rune
-	input   *bytes.Reader
-	errs    *errs.Errs
-	pos     loc.Loc
-	lastPos loc.Loc
-	buf     bytes.Buffer
+	file  *gotoken.File
+	input *bytes.Reader
+	buf   bytes.Buffer
+	char  rune
 }
 
-func newLex(filename string, input []byte, errs *errs.Errs) *lex {
+func newLex(file *gotoken.File, input []byte) *lex {
 	l := &lex{
+		file:  file,
 		input: bytes.NewReader(input),
-		errs:  errs,
-		pos: loc.Loc{
-			Filename: filename,
-			Line:     1,
-			Column:   1,
-		},
 	}
 	l.advance()
 	return l
@@ -44,17 +34,19 @@ func newLex(filename string, input []byte, errs *errs.Errs) *lex {
 func (l *lex) NextToken() (token.Token, error) {
 	var tok token.Token
 	err := l.nextToken(&tok)
-	if tok.Pos.Line != 0 {
-		l.lastPos = tok.Pos
-	}
 	return tok, err
+}
+
+func (l *lex) offset() int {
+	offset, _ := l.input.Seek(0, io.SeekCurrent)
+	return int(offset) - 1
 }
 
 func (l *lex) nextToken(tok *token.Token) error {
 	for {
 		r := l.peek()
 		if r == 0 {
-			tok.Type = token.EOF
+			tok.Type = EOF
 			return nil
 		}
 		if isSpace(r) {
@@ -66,27 +58,27 @@ func (l *lex) nextToken(tok *token.Token) error {
 			continue
 		}
 
-		tok.Pos = l.pos
+		tok.Pos = l.file.Pos(l.offset())
 
 		switch r {
 		case '=':
 			l.advance()
-			tok.Type = token.DEFINE
+			tok.Type = DEFINE
 		case ';':
 			l.advance()
-			tok.Type = token.SEMICOLON
+			tok.Type = SEMICOLON
 		case '|':
 			l.advance()
-			tok.Type = token.OR
+			tok.Type = OR
 		case '*':
 			l.advance()
-			tok.Type = token.ZERO_OR_MANY
+			tok.Type = ZERO_OR_MANY
 		case '+':
 			l.advance()
-			tok.Type = token.ONE_OR_MANY
+			tok.Type = ONE_OR_MANY
 		case '?':
 			l.advance()
-			tok.Type = token.ZERO_OR_ONE
+			tok.Type = ZERO_OR_ONE
 		case '@':
 			err := l.scanKeyword(tok)
 			if err != nil {
@@ -118,7 +110,7 @@ func (l *lex) scanIdentifier(tok *token.Token) {
 		l.advance()
 		l.buf.WriteRune(r)
 	}
-	tok.Type = token.ID
+	tok.Type = ID
 	tok.Str = l.buf.String()
 }
 
@@ -154,10 +146,8 @@ func (l *lex) peek() rune {
 
 func (l *lex) advance() {
 	if l.char == '\n' {
-		l.pos.Column = 1
-		l.pos.Line++
-	} else if l.char != 0 {
-		l.pos.Column++
+		// The line starts at the character after the \n.
+		l.file.AddLine(l.offset() + 1)
 	}
 	r, _, err := l.input.ReadRune()
 	if err != nil {
@@ -165,10 +155,6 @@ func (l *lex) advance() {
 		return
 	}
 	l.char = r
-}
-
-func (l *lex) Error(s string) {
-	l.errs.Errorf(l.lastPos, "%v", s)
 }
 
 func isNumber(r rune) bool {
