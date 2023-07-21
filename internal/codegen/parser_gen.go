@@ -116,7 +116,7 @@ func (p *{{parser}}) parse(lex {{p}}Lexer) error {
 	}
 
 	for {
-		lookahead := int32(tok.ID())
+		lookahead := int32(tok.Type)
 		topState := p.loxParser.state.Peek(0)
 		action, ok := {{p}}Find({{p}}Actions, topState, lookahead)
 		if !ok {
@@ -212,6 +212,7 @@ type ParserGenState struct {
 	ReduceTypes   map[*grammar.Rule]gotypes.Type
 	ReduceMap     map[*grammar.Prod]*ReduceMethod
 	packageName   string
+	packagePath   string
 	imports       *importBuilder
 }
 
@@ -276,6 +277,7 @@ func (s *ParserGenState) ParseGo() error {
 	}
 
 	pkg := pkgs[0]
+	s.packagePath = pkg.PkgPath
 
 	if len(pkg.Errors) != 0 {
 		errs := multierror.MultiError{}
@@ -620,6 +622,9 @@ func (s *ParserGenState) terminals() map[int]string {
 
 func (s *ParserGenState) templGoType(t gotypes.Type) string {
 	return gotypes.TypeString(t, func(pkg *gotypes.Package) string {
+		if pkg.Path() == s.packagePath {
+			return ""
+		}
 		return s.imports.Import(pkg.Path())
 	})
 }

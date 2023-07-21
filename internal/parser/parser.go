@@ -4,10 +4,7 @@ import (
 	gotoken "go/token"
 
 	"github.com/dcaiafa/lox/internal/ast"
-	"github.com/dcaiafa/lox/internal/token"
 )
-
-type Token = token.Token
 
 type parser struct {
 	loxParser

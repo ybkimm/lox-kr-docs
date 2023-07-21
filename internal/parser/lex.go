@@ -5,11 +5,9 @@ import (
 	"fmt"
 	gotoken "go/token"
 	"io"
-
-	"github.com/dcaiafa/lox/internal/token"
 )
 
-var keywords = map[string]int{
+var keywords = map[string]TokenType{
 	"@lexer":  LEXER,
 	"@parser": PARSER,
 	"@token":  TOKEN,
@@ -31,8 +29,8 @@ func newLex(file *gotoken.File, input []byte) *lex {
 	return l
 }
 
-func (l *lex) NextToken() (token.Token, error) {
-	var tok token.Token
+func (l *lex) NextToken() (Token, error) {
+	var tok Token
 	err := l.nextToken(&tok)
 	return tok, err
 }
@@ -42,7 +40,7 @@ func (l *lex) offset() int {
 	return int(offset) - 1
 }
 
-func (l *lex) nextToken(tok *token.Token) error {
+func (l *lex) nextToken(tok *Token) error {
 	for {
 		r := l.peek()
 		if r == 0 {
@@ -112,7 +110,7 @@ func (l *lex) scanComment() error {
 	return nil
 }
 
-func (l *lex) scanIdentifier(tok *token.Token) {
+func (l *lex) scanIdentifier(tok *Token) {
 	l.buf.Reset()
 
 	r := l.peek()
@@ -131,7 +129,7 @@ func (l *lex) scanIdentifier(tok *token.Token) {
 	tok.Str = l.buf.String()
 }
 
-func (l *lex) scanKeyword(tok *token.Token) error {
+func (l *lex) scanKeyword(tok *Token) error {
 	l.buf.Reset()
 
 	r := l.peek()

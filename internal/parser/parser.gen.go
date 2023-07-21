@@ -3,7 +3,6 @@ package parser
 import (
   _i0 "fmt"
   _i2 "github.com/dcaiafa/lox/internal/ast"
-  _i3 "github.com/dcaiafa/lox/internal/token"
   _i1 "os"
 )
 
@@ -113,7 +112,7 @@ func (p *parser) parse(lex _lxLexer) error {
 	}
 
 	for {
-		lookahead := int32(tok.ID())
+		lookahead := int32(tok.Type)
 		topState := p.loxParser.state.Peek(0)
 		action, ok := _lxFind(_lxActions, topState, lookahead)
 		if !ok {
@@ -166,7 +165,7 @@ func (p *parser) _lxAct(prod int32) any {
 		    )
 			case 4:
 				return p.reduceParser(
-					p.sym.Peek(1).(_i3.Token),
+					p.sym.Peek(1).(Token),
 					p.sym.Peek(0).([]_i2.ParserDecl),
 		    )
 			case 5:
@@ -175,15 +174,15 @@ func (p *parser) _lxAct(prod int32) any {
 		    )
 			case 6:
 				return p.reducePrule(
-					p.sym.Peek(3).(_i3.Token),
-					p.sym.Peek(2).(_i3.Token),
+					p.sym.Peek(3).(Token),
+					p.sym.Peek(2).(Token),
 					p.sym.Peek(1).([]*_i2.Prod),
-					p.sym.Peek(0).(_i3.Token),
+					p.sym.Peek(0).(Token),
 		    )
 			case 7:
 				return p.reducePprods(
 					p.sym.Peek(2).([]*_i2.Prod),
-					p.sym.Peek(1).(_i3.Token),
+					p.sym.Peek(1).(Token),
 					p.sym.Peek(0).(*_i2.Prod),
 		    )
 			case 8:
@@ -197,28 +196,28 @@ func (p *parser) _lxAct(prod int32) any {
 		    )
 			case 10:
 				return p.reducePterm(
-					p.sym.Peek(1).(_i3.Token),
+					p.sym.Peek(1).(Token),
 					p.sym.Peek(0).(_i2.Qualifier),
 		    )
 			case 11:
 				return p.reducePcard(
-					p.sym.Peek(0).(_i3.Token),
+					p.sym.Peek(0).(Token),
 		    )
 			case 12:
 				return p.reducePcard(
-					p.sym.Peek(0).(_i3.Token),
+					p.sym.Peek(0).(Token),
 		    )
 			case 13:
 				return p.reducePcard(
-					p.sym.Peek(0).(_i3.Token),
+					p.sym.Peek(0).(Token),
 		    )
 			case 14:
 				return p.reduceLabel(
-					p.sym.Peek(0).(_i3.Token),
+					p.sym.Peek(0).(Token),
 		    )
 			case 15:
 				return p.reduceLexer(
-					p.sym.Peek(1).(_i3.Token),
+					p.sym.Peek(1).(Token),
 					p.sym.Peek(0).([]_i2.LexerDecl),
 		    )
 			case 16:
@@ -227,9 +226,9 @@ func (p *parser) _lxAct(prod int32) any {
 		    )
 			case 17:
 				return p.reduceLtoken(
-					p.sym.Peek(2).(_i3.Token),
-					p.sym.Peek(1).([]_i3.Token),
-					p.sym.Peek(0).(_i3.Token),
+					p.sym.Peek(2).(Token),
+					p.sym.Peek(1).([]Token),
+					p.sym.Peek(0).(Token),
 		    )
   case 18:  // OneOrMore
 			return append(
@@ -279,12 +278,12 @@ func (p *parser) _lxAct(prod int32) any {
 			}
   case 30:  // OneOrMore
 			return append(
-				p.sym.Peek(1).([]_i3.Token),
-				p.sym.Peek(0).(_i3.Token),
+				p.sym.Peek(1).([]Token),
+				p.sym.Peek(0).(Token),
 			)
   case 31:  // OneOrMore
-		  return []_i3.Token{
-				p.sym.Peek(0).(_i3.Token),
+		  return []Token{
+				p.sym.Peek(0).(Token),
 			}
   case 32:  // OneOrMore
 			return append(
