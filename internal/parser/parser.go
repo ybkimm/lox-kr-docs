@@ -7,8 +7,6 @@ import (
 	"github.com/dcaiafa/lox/internal/token"
 )
 
-//go:generate go run ../../cmd/lox .
-
 type Token = token.Token
 
 type parser struct {
@@ -105,7 +103,7 @@ func (p *parser) reduceLdecl(d ast.LexerDecl) ast.LexerDecl {
 	return d
 }
 
-func (p *parser) reduceLcustom(_ Token, names []Token, _ Token) ast.LexerDecl {
+func (p *parser) reduceLtoken(_ Token, names []Token, _ Token) ast.LexerDecl {
 	d := &ast.CustomTokenDecl{
 		CustomTokens: make([]*ast.CustomToken, len(names)),
 	}

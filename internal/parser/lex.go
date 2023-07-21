@@ -12,7 +12,7 @@ import (
 var keywords = map[string]int{
 	"@lexer":  LEXER,
 	"@parser": PARSER,
-	"@custom": CUSTOM,
+	"@token":  TOKEN,
 }
 
 type lex struct {

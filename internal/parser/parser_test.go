@@ -4,53 +4,18 @@ import (
 	"errors"
 	"fmt"
 	gotoken "go/token"
+	"os"
 	"testing"
 )
 
-const parserLox = `
-@lexer
-
-@custom 
-  ID
-  LITERAL
-  LABEL
-
-  ZERO_OR_MANY
-  ONE_OR_MANY
-  ZERO_OR_ONE
-
-  DEFINE
-  OR
-  SEMICOLON
-
-  PARSER
-  LEXER
-  CUSTOM ;
-
-@parser
-
-Spec     = Section+ ;
-Section  = Parser | Lexer;
-Parser   = PARSER Pdecl* ;
-Pdecl    = Prule ;
-Prule    = ID DEFINE Pprods SEMICOLON ;
-Pprods   = Pprods OR Pprod
-         | Pprod ;
-Pprod    = Pterm+ Label? ;
-Pterm    = ID Pcard? ;
-Pcard    = ZERO_OR_MANY | ONE_OR_MANY | ZERO_OR_ONE ; 
-Label    = LABEL ;
-
-Lexer    = LEXER Ldecl* ;
-Ldecl    = Lcustom ;
-Lcustom  = CUSTOM ID+ SEMICOLON ;
-`
-
 func TestParser(t *testing.T) {
 	fset := gotoken.NewFileSet()
-	data := []byte(parserLox)
+	data, err := os.ReadFile("parser.lox")
+	if err != nil {
+		t.Fatal(err)
+	}
 	file := fset.AddFile("foo.lox", -1, len(data))
-	spec, err := Parse(file, []byte(parserLox))
+	spec, err := Parse(file, []byte(data))
 	if err != nil {
 		var unexpectedToken *_lxUnexpectedTokenError
 		if errors.As(err, &unexpectedToken) {

@@ -1,6 +1,6 @@
 @lexer
 
-@custom 
+@token
   ID
   LITERAL
   LABEL
@@ -15,7 +15,7 @@
 
   PARSER
   LEXER
-  CUSTOM ;
+  TOKEN ;
 
 @parser
 
@@ -32,5 +32,5 @@ Pcard    = ZERO_OR_MANY | ONE_OR_MANY | ZERO_OR_ONE ;
 Label    = LABEL ;
 
 Lexer    = LEXER Ldecl* ;
-Ldecl    = Lcustom ;
-Lcustom  = CUSTOM ID+ SEMICOLON ;
+Ldecl    = Ltoken ;
+Ltoken   = TOKEN ID+ SEMICOLON ;
