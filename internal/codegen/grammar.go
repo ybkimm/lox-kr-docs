@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/dcaiafa/lox/internal/ast"
-	"github.com/dcaiafa/lox/internal/parser2"
+	"github.com/dcaiafa/lox/internal/parser"
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
 )
 
@@ -28,7 +28,7 @@ func ParseGrammar(fset *gotoken.FileSet, dir string) (*grammar.AugmentedGrammar,
 			return nil, err
 		}
 		file := fset.AddFile(loxFile, -1, len(loxFileData))
-		spec, err := parser2.Parse(file, loxFileData)
+		spec, err := parser.Parse(file, loxFileData)
 		if err != nil {
 			return nil, err
 		}
