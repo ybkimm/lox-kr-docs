@@ -1,4 +1,5 @@
 @lexer
+// ==========================
 
 @token
   ID
@@ -18,6 +19,7 @@
   TOKEN ;
 
 @parser
+// ==========================
 
 Spec     = Section+ ;
 Section  = Parser | Lexer;

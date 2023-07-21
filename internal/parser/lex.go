@@ -61,6 +61,12 @@ func (l *lex) nextToken(tok *token.Token) error {
 		tok.Pos = l.file.Pos(l.offset())
 
 		switch r {
+		case '/':
+			err := l.scanComment()
+			if err != nil {
+				return err
+			}
+			continue
 		case '=':
 			l.advance()
 			tok.Type = DEFINE
@@ -93,6 +99,17 @@ func (l *lex) nextToken(tok *token.Token) error {
 		}
 		return nil
 	}
+}
+
+func (l *lex) scanComment() error {
+	l.advance()
+	if l.peek() != '/' {
+		return fmt.Errorf("unexpected character: %v", l.peek())
+	}
+	for l.peek() != '\n' {
+		l.advance()
+	}
+	return nil
 }
 
 func (l *lex) scanIdentifier(tok *token.Token) {
