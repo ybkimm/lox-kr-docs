@@ -235,7 +235,7 @@ func (g *AugmentedGrammar) TerminalIndex(terminal *Terminal) int {
 func (g *AugmentedGrammar) normalize() {
 	newRule := func(namePrefix string, generated Generated) *Rule {
 		r := &Rule{
-			Name:      fmt.Sprintf("%s__%d", namePrefix, len(g.Rules)),
+			Name:      fmt.Sprintf("%s$%d", namePrefix, len(g.Rules)),
 			Generated: generated,
 		}
 		g.Rules = append(g.Rules, r)
@@ -295,35 +295,6 @@ func (g *AugmentedGrammar) normalize() {
 		}
 	}
 }
-
-func (g *AugmentedGrammar) constructLALR() {
-	//g.constructLR0Kernels()
-}
-
-/*
-func (g *Grammar) constructLR0Kernels() {
-	initialState := newStateBuilder()
-	initialState.Add(newItem(g.sp.Prods[0].index, 0, 0))
-	g.states = newStateSet()
-	g.states.Add(initialState.Build())
-
-	for g.states.Changed() {
-		g.states.ResetChanged()
-
-		g.states.ForEach(func(s *state) {
-			for _, item := range s.Items {
-				prod := g.prods[item.Prod]
-				if item.Dot == len(prod.Terms) {
-					continue
-				}
-				term := prod.Terms[item.Dot]
-
-
-			}
-		})
-	}
-}
-*/
 
 func (g *AugmentedGrammar) Print(w io.Writer) {
 	fmt.Fprintf(w, "Terminals:\n")

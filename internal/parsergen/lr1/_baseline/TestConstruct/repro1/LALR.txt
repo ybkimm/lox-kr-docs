@@ -1,0 +1,58 @@
+I0:
+  S' -> .StmtsPP, EOF
+  StmtsPP -> .StmtsP SemicolonOpt, EOF
+  StmtsP -> .StmtsP SEMICOLON Stmt, SEMICOLON
+  StmtsP -> .Stmt, SEMICOLON
+  Stmt -> .NUMBER, SEMICOLON
+    on NUMBER: shift I1
+    on Stmt: goto I2
+    on StmtsP: goto I3
+    on StmtsPP: goto I4
+I1:
+  Stmt -> NUMBER., SEMICOLON
+    on SEMICOLON: reduce Stmt
+I2:
+  StmtsP -> Stmt., SEMICOLON
+    on SEMICOLON: reduce StmtsP
+I3:
+  StmtsPP -> StmtsP .SemicolonOpt, EOF
+  SemicolonOpt -> .SEMICOLON, EOF
+  StmtsP -> StmtsP .SEMICOLON Stmt, SEMICOLON
+    on SEMICOLON: shift I5
+    on SemicolonOpt: goto I6
+I4:
+  S' -> StmtsPP., EOF
+    on EOF: accept
+I5:
+  SemicolonOpt -> SEMICOLON., EOF
+  StmtsP -> StmtsP SEMICOLON .Stmt, SEMICOLON
+  Stmt -> .NUMBER, SEMICOLON
+    on EOF: reduce SemicolonOpt
+    on NUMBER: shift I1
+    on Stmt: goto I7
+I6:
+  StmtsPP -> StmtsP SemicolonOpt., EOF
+    on EOF: reduce StmtsPP
+I7:
+  StmtsP -> StmtsP SEMICOLON Stmt., SEMICOLON
+    on SEMICOLON: reduce StmtsP
+
+digraph G {
+  rankdir="LR";
+  I0 [label="I0\nS' -> .StmtsPP, EOF\nStmtsPP -> .StmtsP SemicolonOpt, EOF\nStmtsP -> .StmtsP SEMICOLON Stmt, SEMICOLON\nStmtsP -> .Stmt, SEMICOLON\nStmt -> .NUMBER, SEMICOLON"];
+  I1 [label="I1\nStmt -> NUMBER., SEMICOLON"];
+  I2 [label="I2\nStmtsP -> Stmt., SEMICOLON"];
+  I3 [label="I3\nStmtsPP -> StmtsP .SemicolonOpt, EOF\nSemicolonOpt -> .SEMICOLON, EOF\nStmtsP -> StmtsP .SEMICOLON Stmt, SEMICOLON"];
+  I4 [label="I4\nS' -> StmtsPP., EOF"];
+  I5 [label="I5\nSemicolonOpt -> SEMICOLON., EOF\nStmtsP -> StmtsP SEMICOLON .Stmt, SEMICOLON\nStmt -> .NUMBER, SEMICOLON"];
+  I6 [label="I6\nStmtsPP -> StmtsP SemicolonOpt., EOF"];
+  I7 [label="I7\nStmtsP -> StmtsP SEMICOLON Stmt., SEMICOLON"];
+  I0 -> I1 [label="NUMBER"];
+  I0 -> I2 [label="Stmt"];
+  I0 -> I3 [label="StmtsP"];
+  I0 -> I4 [label="StmtsPP"];
+  I3 -> I5 [label="SEMICOLON"];
+  I3 -> I6 [label="SemicolonOpt"];
+  I5 -> I1 [label="NUMBER"];
+  I5 -> I7 [label="Stmt"];
+}

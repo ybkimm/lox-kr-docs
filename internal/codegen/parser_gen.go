@@ -241,7 +241,7 @@ var reduceMethodNameRegex = regexp.MustCompile(
 	`^reduce([A-Za-z][A-Za-z0-9]*).*$`)
 
 func (s *ParserGenState) ConstructParseTables() {
-	s.ParserTable = lr1.ConstructLR(s.Grammar)
+	s.ParserTable = lr1.ConstructLALR(s.Grammar)
 }
 
 func (s *ParserGenState) ParseGo() error {
