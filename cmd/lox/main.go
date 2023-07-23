@@ -18,6 +18,10 @@ func main() {
 }
 
 func realMain() error {
+	var (
+		flagAnalyze = flag.Bool("analyze", false, "")
+	)
+
 	flag.Parse()
 	if flag.NArg() != 1 {
 		flag.Usage()
@@ -35,7 +39,10 @@ func realMain() error {
 	state := codegen.NewParserGenState(dir, grammar)
 
 	state.ConstructParseTables()
-	state.Grammar.Print(os.Stdout)
+	if *flagAnalyze {
+		state.ParserTable.Print(os.Stdout)
+		return nil
+	}
 
 	lexerState := codegen.NewLexerGenState(dir, grammar)
 	err = lexerState.Generate()

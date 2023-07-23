@@ -7,7 +7,7 @@ import (
 	"github.com/dcaiafa/lox/internal/util/set"
 )
 
-type symActions map[grammar.Symbol]*set.Set[Action]
+type symActions map[grammar.Symbol]ActionSet
 
 type ActionMap struct {
 	states map[*ItemSet]symActions
@@ -23,6 +23,7 @@ func (m *ActionMap) Add(
 	state *ItemSet,
 	sym grammar.Symbol,
 	action Action,
+	prod *grammar.Prod,
 ) {
 	symActs := m.states[state]
 	if symActs == nil {
@@ -31,13 +32,10 @@ func (m *ActionMap) Add(
 	}
 	actionSet := symActs[sym]
 	if actionSet == nil {
-		actionSet = new(set.Set[Action])
+		actionSet = make(ActionSet)
 		symActs[sym] = actionSet
 	}
-	if actionSet.Has(action) {
-		return
-	}
-	actionSet.Add(action)
+	actionSet.Add(action, prod)
 }
 
 func (m *ActionMap) Remove(
@@ -53,13 +51,13 @@ func (m *ActionMap) Remove(
 	if actionSet == nil {
 		panic("invalid symbol")
 	}
-	actionSet.Remove(action)
+	delete(actionSet, action)
 }
 
 func (m *ActionMap) ForEachActionSet(
 	g *grammar.AugmentedGrammar,
 	state *ItemSet,
-	fn func(grammar.Symbol, []Action)) {
+	fn func(grammar.Symbol, ActionSet)) {
 	symActs := m.states[state]
 	if len(symActs) == 0 {
 		panic("state has no actions")
@@ -72,17 +70,37 @@ func (m *ActionMap) ForEachActionSet(
 		return syms[i].SymName() < syms[j].SymName()
 	})
 	for _, sym := range syms {
-		actions := symActs[sym].Elements()
-		sort.Slice(actions, func(i, j int) bool {
-			switch {
-			case actions[i].Type < actions[j].Type:
-				return true
-			case actions[i].Type > actions[j].Type:
-				return false
-			default:
-				return g.ProdIndex(actions[i].Prod) < g.ProdIndex(actions[j].Prod)
-			}
-		})
-		fn(sym, actions)
+		fn(sym, symActs[sym])
 	}
+}
+
+type ActionSet map[Action]*set.Set[*grammar.Prod]
+
+func (s ActionSet) Add(a Action, p *grammar.Prod) {
+	prodSet := s[a]
+	if prodSet == nil {
+		prodSet = new(set.Set[*grammar.Prod])
+		s[a] = prodSet
+	}
+	prodSet.Add(p)
+}
+
+func (s ActionSet) Actions() []Action {
+	actions := make([]Action, 0, len(s))
+	for action := range s {
+		actions = append(actions, action)
+	}
+	sort.Slice(actions, func(i, j int) bool {
+		return actions[i].actionRank() < actions[j].actionRank()
+	})
+	return actions
+}
+
+func (s ActionSet) SingleProd(a Action) *grammar.Prod {
+	prodSet := s[a]
+	prods := prodSet.Elements()
+	if len(prods) > 1 {
+		return nil
+	}
+	return prods[0]
 }

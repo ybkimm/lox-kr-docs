@@ -32,6 +32,7 @@ func ConstructLR(g *grammar.AugmentedGrammar) *ParserTable {
 	}
 
 	createActions(pt)
+	resolveConflicts(pt)
 
 	return pt
 }
@@ -79,15 +80,14 @@ func createActions(pt *ParserTable) {
 			prod := g.Prods[item.Prod]
 			if item.Dot == uint32(len(prod.Terms)) {
 				rule := g.ProdRule(prod)
-				act := Action{
-					Type: ActionReduce,
+				var act Action = ActionReduce{
 					Prod: prod,
 				}
 				if rule == g.Sprime {
-					act = Action{Type: ActionAccept}
+					act = ActionAccept{}
 				}
 				terminal := g.Terminals[item.Lookahead]
-				pt.Actions.Add(s, terminal, act)
+				pt.Actions.Add(s, terminal, act, prod)
 				continue
 			}
 			terminal, ok := g.TermSymbol(prod.Terms[item.Dot]).(*grammar.Terminal)
@@ -95,12 +95,10 @@ func createActions(pt *ParserTable) {
 				continue
 			}
 			shiftState := pt.Transitions.Get(s, terminal)
-			shiftAction := Action{
-				Type:  ActionShift,
-				Shift: shiftState,
-				Prod:  prod,
+			shiftAction := ActionShift{
+				State: shiftState,
 			}
-			pt.Actions.Add(s, terminal, shiftAction)
+			pt.Actions.Add(s, terminal, shiftAction, prod)
 		}
 	})
 }
@@ -110,35 +108,40 @@ func resolveConflicts(pt *ParserTable) {
 		func(state *ItemSet) {
 			pt.Actions.ForEachActionSet(
 				pt.Grammar, state,
-				func(sym grammar.Symbol, actions []Action) {
+				func(sym grammar.Symbol, actionSet ActionSet) {
+					actions := actionSet.Actions()
 					// We can only resolve shift/reduce conflicts.
 					if len(actions) != 2 {
 						return
 					}
-					shift, reduce := actions[0], actions[1]
-					if shift.Type == ActionReduce {
-						shift, reduce = reduce, shift
+
+					shift, reduce, ok := ShiftReduce(actions[0], actions[1])
+					if !ok {
+						shift, reduce, ok = ShiftReduce(actions[1], actions[0])
+						if !ok {
+							return
+						}
 					}
-					if shift.Type != ActionShift || reduce.Type != ActionReduce {
-						return
-					}
+
+					shiftProd := actionSet.SingleProd(shift)
+					reduceProd := actionSet.SingleProd(reduce)
 
 					// Both Prods involved must belong to the same Rule, and must have
 					// explicit precedences.
 					haveCommonRule :=
-						pt.Grammar.ProdRule(shift.Prod) == pt.Grammar.ProdRule(reduce.Prod)
+						pt.Grammar.ProdRule(shiftProd) == pt.Grammar.ProdRule(reduceProd)
 					if !haveCommonRule ||
-						shift.Prod.Precence <= 0 ||
-						reduce.Prod.Precence <= 0 {
+						shiftProd.Precence <= 0 ||
+						reduceProd.Precence <= 0 {
 						return
 					}
 
 					switch {
-					case shift.Prod.Precence < reduce.Prod.Precence:
+					case shiftProd.Precence < reduceProd.Precence:
 						pt.Actions.Remove(state, sym, shift)
-					case shift.Prod.Precence > reduce.Prod.Precence:
+					case shiftProd.Precence > reduceProd.Precence:
 						pt.Actions.Remove(state, sym, reduce)
-					case shift.Prod == reduce.Prod && shift.Prod.Associativity == grammar.Right:
+					case shiftProd == reduce.Prod && shiftProd.Associativity == grammar.Right:
 						pt.Actions.Remove(state, sym, reduce)
 					default:
 						pt.Actions.Remove(state, sym, shift)

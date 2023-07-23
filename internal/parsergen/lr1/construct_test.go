@@ -145,4 +145,43 @@ func TestConstruct(t *testing.T) {
 			},
 		},
 	)
+
+	runAllConstructTest(t, "repro1",
+		// StmtsPP = StmtsP SEMICOLON? ;
+		// StmtsP = StmtsP SEMICOLON Stmt | Stmt ;
+		// Stmt = NUMBER ;
+		&grammar.Grammar{
+			Terminals: []*grammar.Terminal{
+				{Name: "NUMBER"},
+				{Name: "SEMICOLON"},
+			},
+			Rules: []*grammar.Rule{
+				{
+					Name: "StmtsPP",
+					Prods: []*grammar.Prod{
+						{Terms: []*grammar.Term{term("StmtsP"), term("SemicolonOpt")}},
+					},
+				},
+				{
+					Name: "SemicolonOpt",
+					Prods: []*grammar.Prod{
+						{Terms: []*grammar.Term{term("SEMICOLON")}},
+					},
+				},
+				{
+					Name: "StmtsP",
+					Prods: []*grammar.Prod{
+						{Terms: []*grammar.Term{term("StmtsP"), term("SEMICOLON"), term("Stmt")}},
+						{Terms: []*grammar.Term{term("Stmt")}},
+					},
+				},
+				{
+					Name: "Stmt",
+					Prods: []*grammar.Prod{
+						{Terms: []*grammar.Term{term("NUMBER")}},
+					},
+				},
+			},
+		},
+	)
 }

@@ -131,12 +131,9 @@ I6:
   E -> E * E., +
   E -> E * E., -
   E -> E * E., *
-    on *: shift I3 <== CONFLICT
-    on *: reduce E <== CONFLICT
-    on +: shift I4 <== CONFLICT
-    on +: reduce E <== CONFLICT
-    on -: shift I5 <== CONFLICT
-    on -: reduce E <== CONFLICT
+    on *: reduce E
+    on +: reduce E
+    on -: reduce E
     on EOF: reduce E
 I7:
   E -> E .+ E, EOF
@@ -155,12 +152,9 @@ I7:
   E -> E .* E, +
   E -> E .* E, -
   E -> E .* E, *
-    on *: shift I3 <== CONFLICT
-    on *: reduce E <== CONFLICT
-    on +: shift I4 <== CONFLICT
-    on +: reduce E <== CONFLICT
-    on -: shift I5 <== CONFLICT
-    on -: reduce E <== CONFLICT
+    on *: shift I3
+    on +: reduce E
+    on -: reduce E
     on EOF: reduce E
 I8:
   E -> E .+ E, EOF
@@ -179,12 +173,9 @@ I8:
   E -> E .* E, +
   E -> E .* E, -
   E -> E .* E, *
-    on *: shift I3 <== CONFLICT
-    on *: reduce E <== CONFLICT
-    on +: shift I4 <== CONFLICT
-    on +: reduce E <== CONFLICT
-    on -: shift I5 <== CONFLICT
-    on -: reduce E <== CONFLICT
+    on *: shift I3
+    on +: reduce E
+    on -: reduce E
     on EOF: reduce E
 
 digraph G {

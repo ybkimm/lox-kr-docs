@@ -34,7 +34,8 @@ func (t *ParserTable) Print(w io.Writer) {
 		l = l.WithIndent()
 		t.Actions.ForEachActionSet(
 			t.Grammar, s,
-			func(sym grammar.Symbol, actions []Action) {
+			func(sym grammar.Symbol, actionSet ActionSet) {
+				actions := actionSet.Actions()
 				conflict := ""
 				if len(actions) > 1 {
 					conflict = " <== CONFLICT"
@@ -42,7 +43,7 @@ func (t *ParserTable) Print(w io.Writer) {
 				for _, action := range actions {
 					l.Logf(
 						"on %v: %v%v",
-						sym.SymName(), action.ToString(t.Grammar), conflict)
+						sym.SymName(), ActionString(action, t.Grammar), conflict)
 				}
 			})
 		t.Transitions.ForEach(s, func(sym grammar.Symbol, to *ItemSet) {

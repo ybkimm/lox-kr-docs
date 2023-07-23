@@ -661,15 +661,15 @@ func (s *ParserGenState) templActions() []int32 {
 	for _, state := range s.ParserTable.States.States() {
 		var row []int32
 		s.ParserTable.Actions.ForEachActionSet(s.Grammar, state,
-			func(sym grammar.Symbol, actions []lr1.Action) {
-				action := actions[0]
+			func(sym grammar.Symbol, actionSet lr1.ActionSet) {
+				action := actionSet.Actions()[0]
 				terminal := sym.(*grammar.Terminal)
 				terminalIndex := s.Grammar.TerminalIndex(terminal)
 				row = append(row, int32(terminalIndex))
 
-				switch action.Type {
+				switch action := action.(type) {
 				case lr1.ActionShift:
-					row = append(row, int32(action.Shift.Index))
+					row = append(row, int32(action.State.Index))
 				case lr1.ActionReduce:
 					row = append(row, int32(s.Grammar.ProdIndex(action.Prod)*-1))
 				case lr1.ActionAccept:
