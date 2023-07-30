@@ -14,7 +14,7 @@ type parser struct {
 
 func Parse(file *gotoken.File, data []byte, errLogger _lxErrorLogger) (*ast.Spec, bool) {
 	var parser parser
-	lex := newLex(file, data)
+	lex := newLex(file, data, errLogger)
 	ok := parser.parse(lex, errLogger)
 	return parser.spec, ok
 }

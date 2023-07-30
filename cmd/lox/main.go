@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/dcaiafa/lox/internal/codegen"
+	"github.com/dcaiafa/lox/internal/parser"
 )
 
 func main() {
@@ -31,7 +32,11 @@ func realMain() error {
 
 	fset := gotoken.NewFileSet()
 
-	grammar, err := codegen.ParseGrammar(fset, dir)
+	errLogger := &parser.ErrLogger{
+		Fset: fset,
+	}
+
+	grammar, err := codegen.ParseGrammar(fset, dir, errLogger)
 	if err != nil {
 		return err
 	}

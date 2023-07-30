@@ -11,7 +11,7 @@ import (
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
 )
 
-func ParseGrammar(fset *gotoken.FileSet, dir string) (*grammar.AugmentedGrammar, error) {
+func ParseGrammar(fset *gotoken.FileSet, dir string, errLogger *parser.ErrLogger) (*grammar.AugmentedGrammar, error) {
 	loxFiles, err := filepath.Glob(filepath.Join(dir, "*.lox"))
 	if err != nil {
 		return nil, err
@@ -28,9 +28,9 @@ func ParseGrammar(fset *gotoken.FileSet, dir string) (*grammar.AugmentedGrammar,
 			return nil, err
 		}
 		file := fset.AddFile(loxFile, -1, len(loxFileData))
-		spec, err := parser.Parse(file, loxFileData)
-		if err != nil {
-			return nil, err
+		spec, ok := parser.Parse(file, loxFileData, errLogger)
+		if !ok {
+			return nil, fmt.Errorf("failed to parse grammar")
 		}
 		err = addSpecToGrammar(spec, grammar)
 		if err != nil {

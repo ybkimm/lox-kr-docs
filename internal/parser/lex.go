@@ -16,16 +16,18 @@ var keywords = map[string]TokenType{
 }
 
 type lex struct {
-	file  *gotoken.File
-	input *bytes.Reader
-	buf   bytes.Buffer
-	char  rune
+	file      *gotoken.File
+	input     *bytes.Reader
+	errLogger _lxErrorLogger
+	buf       bytes.Buffer
+	char      rune
 }
 
-func newLex(file *gotoken.File, input []byte) *lex {
+func newLex(file *gotoken.File, input []byte, errLogger _lxErrorLogger) *lex {
 	l := &lex{
-		file:  file,
-		input: bytes.NewReader(input),
+		file:      file,
+		input:     bytes.NewReader(input),
+		errLogger: errLogger,
 	}
 	l.advance()
 	return l
@@ -59,7 +61,7 @@ func (l *lex) nextToken(tok *Token) {
 			continue
 		}
 
-		tok.Pos = l.file.Pos(l.offset())
+		tok.Pos = l.pos()
 
 		switch r {
 		case '/':
@@ -96,17 +98,21 @@ func (l *lex) nextToken(tok *Token) {
 			} else if isNumber(r) {
 				l.scanNum(tok)
 			} else {
-				fmt.Printf("unexpected character: %v\n", r)
+				l.errLogger.Error(l.pos(), fmt.Errorf("unexpected character: %v", r))
 				tok.Type = ERROR
 			}
 		}
 	}
 }
 
+func (l *lex) pos() gotoken.Pos {
+	return l.file.Pos(l.offset())
+}
+
 func (l *lex) scanComment(tok *Token) {
 	l.advance()
 	if l.peek() != '/' {
-		fmt.Errorf("unexpected character: %v", l.peek())
+		l.errLogger.Error(l.pos(), fmt.Errorf("unexpected character: %v", l.peek()))
 		tok.Type = ERROR
 		return
 	}
@@ -165,7 +171,7 @@ func (l *lex) scanKeyword(tok *Token) {
 	tokStr := l.buf.String()
 	keyword, ok := keywords[tokStr]
 	if !ok {
-		fmt.Printf("invalid keyword %v\n", tokStr)
+		l.errLogger.Error(tok.Pos, fmt.Errorf("invalid keyword %v", tokStr))
 		tok.Type = ERROR
 		return
 	}
@@ -179,7 +185,7 @@ func (l *lex) peek() rune {
 
 func (l *lex) advance() {
 	if l.char == '\n' {
-		// The line starts at the character after the \n.
+		// Line starts at the character after the \n.
 		l.file.AddLine(l.offset() + 1)
 	}
 	r, _, err := l.input.ReadRune()
