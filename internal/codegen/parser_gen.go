@@ -402,7 +402,7 @@ func (s *ParserGenState) MapReduceActions() error {
 		ruleReduceType := s.ReduceTypes[rule]
 		if ruleReduceType == nil {
 			return fmt.Errorf(
-				"rule %v does not have a ruduce method",
+				"rule %v does not have a reduce method",
 				rule.Name)
 		}
 	}

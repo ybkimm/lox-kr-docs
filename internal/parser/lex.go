@@ -15,6 +15,18 @@ var keywords = map[string]TokenType{
 	"@right":  RIGHT,
 }
 
+func isNumber(r rune) bool {
+	return r >= '0' && r <= '9'
+}
+
+func isLetter(r rune) bool {
+	return (r >= 'A' && r <= 'Z') || (r >= 'a' && r <= 'z')
+}
+
+func isSpace(r rune) bool {
+	return r == ' ' || r == '\t' || r == '\r'
+}
+
 type lex struct {
 	file      *gotoken.File
 	input     *bytes.Reader
@@ -39,9 +51,30 @@ func (l *lex) NextToken() Token {
 	return tok
 }
 
+func (l *lex) advance() {
+	if l.char == '\n' {
+		// Line starts at the character after the \n.
+		l.file.AddLine(l.offset() + 1)
+	}
+	r, _, err := l.input.ReadRune()
+	if err != nil {
+		l.char = 0
+		return
+	}
+	l.char = r
+}
+
 func (l *lex) offset() int {
 	offset, _ := l.input.Seek(0, io.SeekCurrent)
 	return int(offset) - 1
+}
+
+func (l *lex) pos() gotoken.Pos {
+	return l.file.Pos(l.offset())
+}
+
+func (l *lex) peek() rune {
+	return l.char
 }
 
 func (l *lex) nextToken(tok *Token) {
@@ -103,10 +136,6 @@ func (l *lex) nextToken(tok *Token) {
 			}
 		}
 	}
-}
-
-func (l *lex) pos() gotoken.Pos {
-	return l.file.Pos(l.offset())
 }
 
 func (l *lex) scanComment(tok *Token) {
@@ -177,33 +206,4 @@ func (l *lex) scanKeyword(tok *Token) {
 	}
 	tok.Type = keyword
 	tok.Str = l.buf.String()
-}
-
-func (l *lex) peek() rune {
-	return l.char
-}
-
-func (l *lex) advance() {
-	if l.char == '\n' {
-		// Line starts at the character after the \n.
-		l.file.AddLine(l.offset() + 1)
-	}
-	r, _, err := l.input.ReadRune()
-	if err != nil {
-		l.char = 0
-		return
-	}
-	l.char = r
-}
-
-func isNumber(r rune) bool {
-	return r >= '0' && r <= '9'
-}
-
-func isLetter(r rune) bool {
-	return (r >= 'A' && r <= 'Z') || (r >= 'a' && r <= 'z')
-}
-
-func isSpace(r rune) bool {
-	return r == ' ' || r == '\t' || r == '\r'
 }

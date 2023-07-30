@@ -1,0 +1,28 @@
+@lexer 
+
+@token 
+  NUM
+  PLUS
+  MINUS
+  MUL
+  DIV
+  REM
+  POW
+  O_PAREN
+  C_PAREN ;
+
+@parser
+
+S = Expr ;
+
+Expr = Expr PLUS Expr   @left(1)
+     | Expr MINUS Expr  @left(1)
+     | Expr MUL Expr    @left(2)
+     | Expr DIV Expr    @left(2)
+     | Expr REM Expr    @left(2)
+     | Expr POW Expr    @right(3)
+     | O_PAREN Expr C_PAREN
+     | Num ;
+
+Num = NUM
+    | MINUS NUM ;
