@@ -1,6 +1,7 @@
 package parser
 
 import (
+  _i1 "fmt"
   _i0 "go/token"
 )
 
@@ -8,28 +9,31 @@ type TokenType int
 
 const (
 	EOF TokenType = 0
-	ID TokenType = 1
-	LITERAL TokenType = 2
-	NUM TokenType = 3
-	ZERO_OR_MANY TokenType = 4
-	ONE_OR_MANY TokenType = 5
-	ZERO_OR_ONE TokenType = 6
-	DEFINE TokenType = 7
-	OR TokenType = 8
-	SEMICOLON TokenType = 9
-	OPAREN TokenType = 10
-	CPAREN TokenType = 11
-	PARSER TokenType = 12
-	LEXER TokenType = 13
-	TOKEN TokenType = 14
-	LEFT TokenType = 15
-	RIGHT TokenType = 16
+	ERROR TokenType = 1
+	ID TokenType = 2
+	LITERAL TokenType = 3
+	NUM TokenType = 4
+	ZERO_OR_MANY TokenType = 5
+	ONE_OR_MANY TokenType = 6
+	ZERO_OR_ONE TokenType = 7
+	DEFINE TokenType = 8
+	OR TokenType = 9
+	SEMICOLON TokenType = 10
+	OPAREN TokenType = 11
+	CPAREN TokenType = 12
+	PARSER TokenType = 13
+	LEXER TokenType = 14
+	TOKEN TokenType = 15
+	LEFT TokenType = 16
+	RIGHT TokenType = 17
 )
 
 func (t TokenType) String() string {
 	switch t {
 	case EOF: 
 		return "EOF"
+	case ERROR: 
+		return "ERROR"
 	case ID: 
 		return "ID"
 	case LITERAL: 
@@ -71,4 +75,20 @@ type Token struct {
 	Pos  _i0.Pos
 	Type TokenType
 	Str  string
+}
+
+type _lxErrorLogger interface {
+	Error(pos _i0.Pos, err error)
+}
+
+type _lxUnexpectedTokenError struct {
+	Token Token
+}
+
+func (e _lxUnexpectedTokenError) Error() string {
+	return _i1.Sprintf("unexpected token: %v", e.Token)
+}
+
+type _lxLexer interface {
+	NextToken() Token
 }

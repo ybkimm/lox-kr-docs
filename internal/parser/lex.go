@@ -31,10 +31,10 @@ func newLex(file *gotoken.File, input []byte) *lex {
 	return l
 }
 
-func (l *lex) NextToken() (Token, error) {
+func (l *lex) NextToken() Token {
 	var tok Token
-	err := l.nextToken(&tok)
-	return tok, err
+	l.nextToken(&tok)
+	return tok
 }
 
 func (l *lex) offset() int {
@@ -42,12 +42,13 @@ func (l *lex) offset() int {
 	return int(offset) - 1
 }
 
-func (l *lex) nextToken(tok *Token) error {
-	for {
+func (l *lex) nextToken(tok *Token) {
+	tok.Type = -1
+	for tok.Type == -1 {
 		r := l.peek()
 		if r == 0 {
 			tok.Type = EOF
-			return nil
+			return
 		}
 		if isSpace(r) {
 			l.advance()
@@ -62,11 +63,7 @@ func (l *lex) nextToken(tok *Token) error {
 
 		switch r {
 		case '/':
-			err := l.scanComment()
-			if err != nil {
-				return err
-			}
-			continue
+			l.scanComment(tok)
 		case '=':
 			l.advance()
 			tok.Type = DEFINE
@@ -92,32 +89,30 @@ func (l *lex) nextToken(tok *Token) error {
 			l.advance()
 			tok.Type = CPAREN
 		case '@':
-			err := l.scanKeyword(tok)
-			if err != nil {
-				return err
-			}
+			l.scanKeyword(tok)
 		default:
 			if isLetter(r) || r == '_' {
 				l.scanIdentifier(tok)
 			} else if isNumber(r) {
 				l.scanNum(tok)
 			} else {
-				return fmt.Errorf("unexpected character: %v", r)
+				fmt.Printf("unexpected character: %v\n", r)
+				tok.Type = ERROR
 			}
 		}
-		return nil
 	}
 }
 
-func (l *lex) scanComment() error {
+func (l *lex) scanComment(tok *Token) {
 	l.advance()
 	if l.peek() != '/' {
-		return fmt.Errorf("unexpected character: %v", l.peek())
+		fmt.Errorf("unexpected character: %v", l.peek())
+		tok.Type = ERROR
+		return
 	}
 	for l.peek() != '\n' {
 		l.advance()
 	}
-	return nil
 }
 
 func (l *lex) scanIdentifier(tok *Token) {
@@ -151,7 +146,7 @@ func (l *lex) scanNum(tok *Token) {
 	tok.Str = l.buf.String()
 }
 
-func (l *lex) scanKeyword(tok *Token) error {
+func (l *lex) scanKeyword(tok *Token) {
 	l.buf.Reset()
 
 	r := l.peek()
@@ -170,11 +165,12 @@ func (l *lex) scanKeyword(tok *Token) error {
 	tokStr := l.buf.String()
 	keyword, ok := keywords[tokStr]
 	if !ok {
-		return fmt.Errorf("invalid keyword %v", tokStr)
+		fmt.Printf("invalid keyword %v\n", tokStr)
+		tok.Type = ERROR
+		return
 	}
 	tok.Type = keyword
 	tok.Str = l.buf.String()
-	return nil
 }
 
 func (l *lex) peek() rune {

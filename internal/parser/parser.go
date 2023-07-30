@@ -12,14 +12,11 @@ type parser struct {
 	spec *ast.Spec
 }
 
-func Parse(file *gotoken.File, data []byte) (*ast.Spec, error) {
+func Parse(file *gotoken.File, data []byte, errLogger _lxErrorLogger) (*ast.Spec, bool) {
 	var parser parser
 	lex := newLex(file, data)
-	err := parser.parse(lex)
-	if err != nil {
-		return nil, err
-	}
-	return parser.spec, nil
+	ok := parser.parse(lex, errLogger)
+	return parser.spec, ok
 }
 
 func (p *parser) reduceSpec(s []ast.Section) any {

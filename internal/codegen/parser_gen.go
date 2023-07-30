@@ -26,21 +26,9 @@ const parserTypeName = "parser"
 const parserPlaceholderTemplate = `
 package {{package}}
 
-type {{p}}UnexpectedTokenError struct {
-	Token Token
-}
-
-func (e {{p}}UnexpectedTokenError) Error() string {
-	return ""
-}
-
-type {{p}}Lexer interface {
-	NextToken() (Token, error)
-}
-
 type loxParser struct {}
 
-func (p *loxParser) parse(l {{p}}Lexer) error {
+func (p *loxParser) parse(l {{p}}Lexer, errLogger {{p}}ErrorLogger) bool {
 	panic("not-implemented")
 }
 `
@@ -89,48 +77,31 @@ func {{p}}Find(table []int32, y, x int32) (int32, bool) {
 	return 0, false
 }
 
-type {{p}}UnexpectedTokenError struct {
-	Token Token
-}
-
-func (e {{p}}UnexpectedTokenError) Error() string {
-	return {{ imp("fmt") }}.Sprintf("unexpected token: %v", e.Token)
-}
-
-type {{p}}Lexer interface {
-	NextToken() (Token, error)
-}
-
 type loxParser struct {
 	state {{p}}Stack[int32]
 	sym   {{p}}Stack[any]
 }
 
-func (p *{{parser}}) parse(lex {{p}}Lexer) error {
+func (p *{{parser}}) parse(lex {{p}}Lexer, errLogger {{p}}ErrorLogger) bool {
   const accept = {{ accept }}
 
 	p.loxParser.state.Push(0)
-	tok, err := lex.NextToken()
-	if err != nil {
-		return err
-	}
+	tok := lex.NextToken()
 
 	for {
 		lookahead := int32(tok.Type)
 		topState := p.loxParser.state.Peek(0)
 		action, ok := {{p}}Find({{p}}Actions, topState, lookahead)
 		if !ok {
-			return &{{p}}UnexpectedTokenError{Token: tok}
+			errLogger.Error(tok.Pos, &{{p}}UnexpectedTokenError{Token: tok})
+			return false
 		}
 		if action == accept {
 			break
 		} else if action >= 0 { // shift
 			p.loxParser.state.Push(action)
 			p.loxParser.sym.Push(tok)
-			tok, err = lex.NextToken()
-			if err != nil {
-				return err
-			}
+			tok = lex.NextToken()
 		} else { // reduce
 			prod := -action
 			termCount := {{p}}TermCounts[int(prod)]
@@ -145,12 +116,7 @@ func (p *{{parser}}) parse(lex {{p}}Lexer) error {
 		}
 	}
 
-	return nil
-}
-
-func (p *{{parser}}) {{p}}Recover(tok Token, err string) {
-	{{ imp("fmt") }}.Println("ERROR:", err)
-	{{ imp("os") }}.Exit(1)
+	return true
 }
 
 func (p *{{parser}}) {{p}}Act(prod int32) any {

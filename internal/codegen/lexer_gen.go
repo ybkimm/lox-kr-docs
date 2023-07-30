@@ -37,6 +37,22 @@ type Token struct {
 	Type TokenType
 	Str  string
 }
+
+type {{p}}ErrorLogger interface {
+	Error(pos {{i("go/token")}}.Pos, err error)
+}
+
+type {{p}}UnexpectedTokenError struct {
+	Token Token
+}
+
+func (e {{p}}UnexpectedTokenError) Error() string {
+	return {{ i("fmt") }}.Sprintf("unexpected token: %v", e.Token)
+}
+
+type {{p}}Lexer interface {
+	NextToken() Token
+}
 `
 
 type LexerGenState struct {

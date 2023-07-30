@@ -1,8 +1,6 @@
 package parser
 
 import (
-	"errors"
-	"fmt"
 	gotoken "go/token"
 	"os"
 	"testing"
@@ -15,14 +13,14 @@ func TestParser(t *testing.T) {
 		t.Fatal(err)
 	}
 	file := fset.AddFile("foo.lox", -1, len(data))
-	spec, err := Parse(file, []byte(data))
-	if err != nil {
-		var unexpectedToken *_lxUnexpectedTokenError
-		if errors.As(err, &unexpectedToken) {
-			t.Fatalf("%v: %v", fset.Position(unexpectedToken.Token.Pos), err)
-		} else {
-			t.Fatalf("unexpected error: %v", err)
-		}
+	errLogger := &ErrLogger{
+		Fset: fset,
 	}
-	fmt.Println(spec)
+	spec, ok := Parse(file, []byte(data), errLogger)
+	if !ok {
+		t.Fatal("Parse failed")
+	}
+	if spec == nil {
+		t.Fatal("spec is nil")
+	}
 }

@@ -14,6 +14,7 @@ type AugmentedGrammar struct {
 	Grammar
 	Prods  []*Prod
 	EOF    *Terminal
+	Error  *Terminal
 	Sprime *Rule
 
 	nameToSymbol    map[string]Symbol
@@ -37,8 +38,9 @@ func (g *Grammar) ToAugmentedGrammar() (*AugmentedGrammar, error) {
 	}
 
 	ag.EOF = &Terminal{Name: "EOF"}
+	ag.Error = &Terminal{Name: "ERROR"}
 	ag.Terminals = append(
-		[]*Terminal{ag.EOF},
+		[]*Terminal{ag.EOF, ag.Error},
 		g.Terminals...)
 
 	ag.Sprime = &Rule{
