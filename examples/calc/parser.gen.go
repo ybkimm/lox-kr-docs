@@ -53,6 +53,10 @@ func (s _lxStack[T]) Peek(n int) T {
 	return s[len(s)-n-1]
 }
 
+func (s _lxStack[T]) Slice(n int) []T {
+	return s[len(s)-n:]
+}
+
 func _lxFind(table []int32, y, x int32) (int32, bool) {
 	i := int(table[int(y)])
 	count := int(table[i])

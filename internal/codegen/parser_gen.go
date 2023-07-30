@@ -64,6 +64,10 @@ func (s {{p}}Stack[T]) Peek(n int) T {
 	return s[len(s)-n-1]
 }
 
+func (s {{p}}Stack[T]) Slice(n int) []T {
+	return s[len(s)-n:]
+}
+
 func {{p}}Find(table []int32, y, x int32) (int32, bool) {
 	i := int(table[int(y)])
 	count := int(table[i])
@@ -107,6 +111,9 @@ func (p *{{parser}}) parse(lex {{p}}Lexer, errLogger {{p}}ErrorLogger) bool {
 			termCount := {{p}}TermCounts[int(prod)]
 			rule := {{p}}LHS[int(prod)]
 			res := p.{{p}}Act(prod)
+			{{- if has_on_reduce }}
+			p.onReduce(res, p.loxParser.sym.Slice(int(termCount)))
+			{{- end }}
 			p.loxParser.state.Pop(int(termCount))
 			p.loxParser.sym.Pop(int(termCount))
 			topState = p.loxParser.state.Peek(0)
@@ -180,6 +187,7 @@ type ParserGenState struct {
 	packageName   string
 	packagePath   string
 	imports       *importBuilder
+	hasOnReduce   bool
 }
 
 type ReduceMethod struct {
@@ -269,6 +277,10 @@ func (s *ParserGenState) ParseGo() error {
 	parserNamed := parserObj.Type().(*gotypes.Named)
 	for i := 0; i < parserNamed.NumMethods(); i++ {
 		method := parserNamed.Method(i)
+		if method.Name() == "onReduce" {
+			s.hasOnReduce = true
+			continue
+		}
 		matches := reduceMethodNameRegex.FindStringSubmatch(method.Name())
 		if matches == nil {
 			continue
@@ -563,6 +575,7 @@ func (s *ParserGenState) Generate2() error {
 	vars.Set("go_type", s.templGoType)
 	vars.Set("term_reduce_type", s.termReduceType)
 	vars.Set("rule_reduce_type", s.ReduceTypes)
+	vars.Set("has_on_reduce", s.hasOnReduce)
 
 	body := renderTemplate(parserTemplate, vars)
 
