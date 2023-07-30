@@ -32,7 +32,10 @@ func ParseGrammar(fset *gotoken.FileSet, dir string) (*grammar.AugmentedGrammar,
 		if err != nil {
 			return nil, err
 		}
-		addSpecToGrammar(spec, grammar)
+		err = addSpecToGrammar(spec, grammar)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	agrammar, err := grammar.ToAugmentedGrammar()
@@ -43,7 +46,7 @@ func ParseGrammar(fset *gotoken.FileSet, dir string) (*grammar.AugmentedGrammar,
 	return agrammar, nil
 }
 
-func addSpecToGrammar(spec *ast.Spec, g *grammar.Grammar) {
+func addSpecToGrammar(spec *ast.Spec, g *grammar.Grammar) error {
 	for _, section := range spec.Sections {
 		switch section := section.(type) {
 		case *ast.Lexer:
@@ -87,6 +90,18 @@ func addSpecToGrammar(spec *ast.Spec, g *grammar.Grammar) {
 							}
 							prod.Terms = append(prod.Terms, term)
 						}
+						if astProd.Qualifier != nil {
+							switch astProd.Qualifier.Associativity {
+							case ast.Left:
+								prod.Associativity = grammar.Left
+							case ast.Right:
+								prod.Associativity = grammar.Right
+							default:
+								panic("not-reached")
+							}
+							prod.Precence = astProd.Qualifier.Precedence
+						}
+
 						rule.Prods = append(rule.Prods, prod)
 					}
 					g.Rules = append(g.Rules, rule)
@@ -99,4 +114,5 @@ func addSpecToGrammar(spec *ast.Spec, g *grammar.Grammar) {
 			panic("not-reached")
 		}
 	}
+	return nil
 }

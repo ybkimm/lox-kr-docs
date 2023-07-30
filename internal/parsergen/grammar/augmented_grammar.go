@@ -70,11 +70,7 @@ func (g *Grammar) ToAugmentedGrammar() (*AugmentedGrammar, error) {
 }
 
 func (g *AugmentedGrammar) GetSymbol(name string) Symbol {
-	sym := g.nameToSymbol[name]
-	if sym == nil {
-		panic("invalid symbol")
-	}
-	return sym
+	return g.nameToSymbol[name]
 }
 
 func (g *AugmentedGrammar) ProdRule(prod *Prod) *Rule {

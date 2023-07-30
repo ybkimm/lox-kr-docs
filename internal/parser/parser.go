@@ -2,6 +2,7 @@ package parser
 
 import (
 	gotoken "go/token"
+	"strconv"
 
 	"github.com/dcaiafa/lox/internal/ast"
 )
@@ -57,10 +58,10 @@ func (p *parser) reducePprods_1(prod *ast.Prod) []*ast.Prod {
 	return []*ast.Prod{prod}
 }
 
-func (p *parser) reducePprod(terms []*ast.Term, label *ast.Label) *ast.Prod {
+func (p *parser) reducePprod(terms []*ast.Term, qualif *ast.ProdQualifier) *ast.Prod {
 	return &ast.Prod{
-		Terms: terms,
-		Label: label,
+		Terms:     terms,
+		Qualifier: qualif,
 	}
 }
 
@@ -84,12 +85,6 @@ func (p *parser) reducePcard(card Token) ast.Qualifier {
 	}
 }
 
-func (p *parser) reduceLabel(l Token) *ast.Label {
-	return &ast.Label{
-		Label: l.Str,
-	}
-}
-
 func (p *parser) reduceLexer(_ Token, decls []ast.LexerDecl) *ast.Lexer {
 	return &ast.Lexer{
 		Decls: decls,
@@ -98,6 +93,30 @@ func (p *parser) reduceLexer(_ Token, decls []ast.LexerDecl) *ast.Lexer {
 
 func (p *parser) reduceLdecl(d ast.LexerDecl) ast.LexerDecl {
 	return d
+}
+
+func (p *parser) reducePqualif(assoc Token, _ Token, prec Token, _ Token) *ast.ProdQualifier {
+	q := &ast.ProdQualifier{}
+
+	switch assoc.Type {
+	case LEFT:
+		q.Associativity = ast.Left
+	case RIGHT:
+		q.Associativity = ast.Right
+	default:
+		panic("not-reached")
+	}
+
+	var err error
+	q.Precedence, err = strconv.Atoi(prec.Str)
+	if err != nil {
+		panic(err)
+	}
+	if q.Precedence <= 0 {
+		panic("not-reached")
+	}
+
+	return q
 }
 
 func (p *parser) reduceLtoken(_ Token, names []Token, _ Token) ast.LexerDecl {

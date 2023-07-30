@@ -11,6 +11,8 @@ var keywords = map[string]TokenType{
 	"@lexer":  LEXER,
 	"@parser": PARSER,
 	"@token":  TOKEN,
+	"@left":   LEFT,
+	"@right":  RIGHT,
 }
 
 type lex struct {
@@ -83,6 +85,12 @@ func (l *lex) nextToken(tok *Token) error {
 		case '?':
 			l.advance()
 			tok.Type = ZERO_OR_ONE
+		case '(':
+			l.advance()
+			tok.Type = OPAREN
+		case ')':
+			l.advance()
+			tok.Type = CPAREN
 		case '@':
 			err := l.scanKeyword(tok)
 			if err != nil {
@@ -91,6 +99,8 @@ func (l *lex) nextToken(tok *Token) error {
 		default:
 			if isLetter(r) || r == '_' {
 				l.scanIdentifier(tok)
+			} else if isNumber(r) {
+				l.scanNum(tok)
 			} else {
 				return fmt.Errorf("unexpected character: %v", r)
 			}
@@ -126,6 +136,18 @@ func (l *lex) scanIdentifier(tok *Token) {
 		l.buf.WriteRune(r)
 	}
 	tok.Type = ID
+	tok.Str = l.buf.String()
+}
+
+func (l *lex) scanNum(tok *Token) {
+	l.buf.Reset()
+
+	for isNumber(l.peek()) {
+		l.buf.WriteRune(l.peek())
+		l.advance()
+	}
+
+	tok.Type = NUM
 	tok.Str = l.buf.String()
 }
 

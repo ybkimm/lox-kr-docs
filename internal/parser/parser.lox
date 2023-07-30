@@ -1,10 +1,9 @@
 @lexer
-// ==========================
 
 @token
   ID
   LITERAL
-  LABEL
+  NUM
 
   ZERO_OR_MANY
   ONE_OR_MANY
@@ -13,13 +12,16 @@
   DEFINE
   OR
   SEMICOLON
+  OPAREN
+  CPAREN
 
   PARSER
   LEXER
-  TOKEN ;
+  TOKEN
+  LEFT
+  RIGHT ;
 
 @parser
-// ==========================
 
 Spec     = Section+ ;
 Section  = Parser | Lexer;
@@ -28,11 +30,11 @@ Pdecl    = Prule ;
 Prule    = ID DEFINE Pprods SEMICOLON ;
 Pprods   = Pprods OR Pprod
          | Pprod ;
-Pprod    = Pterm+ Label? ;
+Pprod    = Pterm+ Pqualif? ;
 Pterm    = ID Pcard? ;
 Pcard    = ZERO_OR_MANY | ONE_OR_MANY | ZERO_OR_ONE ; 
-Label    = LABEL ;
-
+Pqualif  = LEFT OPAREN NUM CPAREN
+         | RIGHT OPAREN NUM CPAREN ;
 Lexer    = LEXER Ldecl* ;
 Ldecl    = Ltoken ;
 Ltoken   = TOKEN ID+ SEMICOLON ;

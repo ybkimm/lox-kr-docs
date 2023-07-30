@@ -40,18 +40,26 @@ type Rule struct {
 	Prods []*Prod
 }
 
+type Associativity int
+
+const (
+	Left  Associativity = 0
+	Right Associativity = 1
+)
+
+type ProdQualifier struct {
+	Precedence    int
+	Associativity Associativity
+}
+
 type Prod struct {
-	Terms []*Term
-	Label *Label
+	Terms     []*Term
+	Qualifier *ProdQualifier
 }
 
 type Term struct {
 	Name      string
 	Qualifier Qualifier
-}
-
-type Label struct {
-	Label string
 }
 
 type Lexer struct {
