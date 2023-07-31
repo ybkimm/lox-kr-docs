@@ -127,3 +127,7 @@ func (p *parser) reduceLtoken(_ Token, names []Token, _ Token) ast.LexerDecl {
 	}
 	return d
 }
+
+func (p *parser) onReduce(r any, e []any) {
+	// TODO: how to handle slices???
+}

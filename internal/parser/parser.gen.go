@@ -75,6 +75,10 @@ func (s _lxStack[T]) Peek(n int) T {
 	return s[len(s)-n-1]
 }
 
+func (s _lxStack[T]) Slice(n int) []T {
+	return s[len(s)-n:]
+}
+
 func _lxFind(table []int32, y, x int32) (int32, bool) {
 	i := int(table[int(y)])
 	count := int(table[i])
@@ -118,6 +122,7 @@ func (p *parser) parse(lex _lxLexer, errLogger _lxErrorLogger) bool {
 			termCount := _lxTermCounts[int(prod)]
 			rule := _lxLHS[int(prod)]
 			res := p._lxAct(prod)
+			p.onReduce(res, p.loxParser.sym.Slice(int(termCount)))
 			p.loxParser.state.Pop(int(termCount))
 			p.loxParser.sym.Pop(int(termCount))
 			topState = p.loxParser.state.Peek(0)
