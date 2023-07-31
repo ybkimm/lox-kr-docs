@@ -23,7 +23,7 @@ func (p *parser) reduceSpec(s []ast.Section) any {
 	p.spec = &ast.Spec{
 		Sections: s,
 	}
-	return nil
+	return p.spec
 }
 
 func (p *parser) reduceSection(s ast.Section) ast.Section {
@@ -128,6 +128,13 @@ func (p *parser) reduceLtoken(_ Token, names []Token, _ Token) ast.LexerDecl {
 	return d
 }
 
-func (p *parser) onReduce(r any, e []any) {
-	// TODO: how to handle slices???
+func (p *parser) onReduce(r any, bounds Bounds) {
+	rAST, ok := r.(ast.AST)
+	if !ok {
+		return
+	}
+	rAST.SetBounds(ast.Bounds{
+		Begin: bounds.Begin,
+		End:   bounds.End,
+	})
 }

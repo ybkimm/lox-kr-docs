@@ -38,6 +38,11 @@ type Token struct {
 	Str  string
 }
 
+type Bounds struct {
+	Begin {{i("go/token")}}.Pos 
+	End   {{i("go/token")}}.Pos 
+}
+
 type {{p}}ErrorLogger interface {
 	Error(pos {{i("go/token")}}.Pos, err error)
 }

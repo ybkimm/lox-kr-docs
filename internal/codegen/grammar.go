@@ -32,6 +32,7 @@ func ParseGrammar(fset *gotoken.FileSet, dir string, errLogger *parser.ErrLogger
 		if !ok {
 			return nil, fmt.Errorf("failed to parse grammar")
 		}
+
 		err = addSpecToGrammar(spec, grammar)
 		if err != nil {
 			return nil, err
