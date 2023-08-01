@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/dcaiafa/lox/internal/util/multierror"
+	"github.com/dcaiafa/lox/internal/errlogger"
 	"github.com/dcaiafa/lox/internal/util/set"
 )
 
@@ -26,7 +26,7 @@ type AugmentedGrammar struct {
 	firstSets       map[*Rule]*set.Set[*Terminal]
 }
 
-func (g *Grammar) ToAugmentedGrammar() (*AugmentedGrammar, error) {
+func (g *Grammar) ToAugmentedGrammar(errs *errlogger.ErrLogger) *AugmentedGrammar {
 	ag := &AugmentedGrammar{
 		nameToSymbol:    make(map[string]Symbol),
 		termToSymbol:    make(map[*Term]Symbol),
@@ -52,23 +52,23 @@ func (g *Grammar) ToAugmentedGrammar() (*AugmentedGrammar, error) {
 
 	// Resolve references before calling normalize() to detect reference errors
 	// before altering the grammar.
-	err := ag.resolveReferences()
-	if err != nil {
-		return nil, err
+	ag.resolveReferences(errs)
+	if errs.HasError() {
+		return nil
 	}
 
 	ag.normalize()
 
 	// We have to resolve references again because normalize() might have changed
 	// the grammar. This is guaranteed to succeed, though.
-	err = ag.resolveReferences()
-	if err != nil {
-		panic(err)
+	ag.resolveReferences(errs)
+	if errs.HasError() {
+		panic("unreachable")
 	}
 
 	ag.assignIndex()
 
-	return ag, nil
+	return ag
 }
 
 func (g *AugmentedGrammar) GetSymbol(name string) Symbol {
@@ -83,22 +83,20 @@ func (g *AugmentedGrammar) ProdRule(prod *Prod) *Rule {
 	return rule
 }
 
-func (g *AugmentedGrammar) resolveReferences() error {
-	var errs multierror.MultiError
-
+func (g *AugmentedGrammar) resolveReferences(errs *errlogger.ErrLogger) {
 	g.nameToSymbol = make(map[string]Symbol)
 	g.termToSymbol = make(map[*Term]Symbol)
 
 	for _, terminal := range g.Terminals {
 		if other := g.nameToSymbol[terminal.SymName()]; other != nil {
-			errs.Add(&RedeclaredError{Sym: terminal, Other: other})
+			errs.Error(0, &RedeclaredError{Sym: terminal, Other: other})
 			continue
 		}
 		g.nameToSymbol[terminal.SymName()] = terminal
 	}
 	for _, rule := range g.Rules {
 		if other := g.nameToSymbol[rule.SymName()]; other != nil {
-			errs.Add(&RedeclaredError{Sym: rule, Other: other})
+			errs.Error(0, &RedeclaredError{Sym: rule, Other: other})
 			continue
 		}
 		g.nameToSymbol[rule.SymName()] = rule
@@ -109,14 +107,13 @@ func (g *AugmentedGrammar) resolveReferences() error {
 			for _, term := range prod.Terms {
 				sym := g.nameToSymbol[term.Name]
 				if sym == nil {
-					errs.Add(&UndefinedError{Term: term, Prod: prod, Rule: rule})
+					errs.Error(0, &UndefinedError{Term: term, Prod: prod, Rule: rule})
 					continue
 				}
 				g.termToSymbol[term] = sym
 			}
 		}
 	}
-	return errs.ToError()
 }
 
 func (g *AugmentedGrammar) assignIndex() {

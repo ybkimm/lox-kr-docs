@@ -13,9 +13,9 @@ import (
 
 	"github.com/CloudyKit/jet/v6"
 	"github.com/dcaiafa/lox/internal/codegen/table"
+	"github.com/dcaiafa/lox/internal/errlogger"
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
 	"github.com/dcaiafa/lox/internal/parsergen/lr1"
-	"github.com/dcaiafa/lox/internal/util/multierror"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -195,6 +195,7 @@ const parserStateTypeName = "loxParser"
 type ParserGenState struct {
 	ImplDir       string
 	Grammar       *grammar.AugmentedGrammar
+	errs          *errlogger.ErrLogger
 	Fset          *gotoken.FileSet
 	Parser        gotypes.Object
 	Token         gotypes.Object
@@ -222,10 +223,12 @@ type ReduceParam struct {
 func NewParserGenState(
 	implDir string,
 	g *grammar.AugmentedGrammar,
+	errs *errlogger.ErrLogger,
 ) *ParserGenState {
 	return &ParserGenState{
 		ImplDir: implDir,
 		Grammar: g,
+		errs:    errs,
 	}
 }
 
@@ -236,11 +239,12 @@ func (s *ParserGenState) ConstructParseTables() {
 	s.ParserTable = lr1.ConstructLALR(s.Grammar)
 }
 
-func (s *ParserGenState) ParseGo() error {
+func (s *ParserGenState) ParseGo() {
 	var err error
 	s.packageName, err = computePackageName(s.ImplDir)
 	if err != nil {
-		return err
+		s.errs.Error(0, err)
+		return
 	}
 
 	vars := make(jet.VarMap)
@@ -250,7 +254,8 @@ func (s *ParserGenState) ParseGo() error {
 	loxGenGoPath, err := filepath.Abs(
 		filepath.Join(s.ImplDir, parserGenGoName))
 	if err != nil {
-		return fmt.Errorf("filepath.Abs failed: %w", err)
+		s.errs.Error(0, fmt.Errorf("filepath.Abs failed: %w", err))
+		return
 	}
 
 	fset := gotoken.NewFileSet()
@@ -265,24 +270,25 @@ func (s *ParserGenState) ParseGo() error {
 
 	pkgs, err := packages.Load(cfg, ".")
 	if err != nil {
-		return err
+		s.errs.Error(0, err)
+		return
 	}
 
 	pkg := pkgs[0]
 	s.packagePath = pkg.PkgPath
 
 	if len(pkg.Errors) != 0 {
-		errs := multierror.MultiError{}
 		for _, err := range pkg.Errors {
-			errs.Add(err)
+			s.errs.Error(0, err)
 		}
-		return errs
+		return
 	}
 
 	scope := pkg.Types.Scope()
 	parserObj, err := getParserObj(scope)
 	if err != nil {
-		return err
+		s.errs.Error(0, err)
+		return
 	}
 
 	tokenObj := scope.Lookup("Token")
@@ -308,9 +314,10 @@ func (s *ParserGenState) ParseGo() error {
 
 		sig := method.Type().(*gotypes.Signature)
 		if sig.Results().Len() != 1 {
-			return fmt.Errorf(
+			s.errs.Error(0, fmt.Errorf(
 				"%v: reduce method must return exactly one result",
-				method.Name())
+				method.Name()))
+			return
 		}
 
 		reduceMethod := &ReduceMethod{
@@ -331,8 +338,6 @@ func (s *ParserGenState) ParseGo() error {
 		s.ReduceMethods[ruleName] =
 			append(s.ReduceMethods[ruleName], reduceMethod)
 	}
-
-	return nil
 }
 
 func getParserObj(scope *gotypes.Scope) (gotypes.Object, error) {

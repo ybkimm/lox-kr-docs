@@ -17,6 +17,10 @@ func New(fset *gotoken.FileSet) *ErrLogger {
 	}
 }
 
+func (l *ErrLogger) HasError() bool {
+	return l.hasErrors
+}
+
 func (l *ErrLogger) Error(pos gotoken.Pos, err error) {
 	l.hasErrors = true
 	position := l.fset.Position(pos)

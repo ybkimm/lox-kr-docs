@@ -34,12 +34,12 @@ func realMain() error {
 
 	errLogger := errlogger.New(fset)
 
-	grammar, err := codegen.ParseGrammar(fset, dir, errLogger)
-	if err != nil {
-		return err
+	grammar := codegen.ParseGrammar(fset, dir, errLogger)
+	if errLogger.HasError() {
+		return fmt.Errorf("failed to parse grammar")
 	}
 
-	state := codegen.NewParserGenState(dir, grammar)
+	state := codegen.NewParserGenState(dir, grammar, errLogger)
 
 	state.ConstructParseTables()
 	if *flagAnalyze {
@@ -48,14 +48,14 @@ func realMain() error {
 	}
 
 	lexerState := codegen.NewLexerGenState(dir, grammar)
-	err = lexerState.Generate()
+	err := lexerState.Generate()
 	if err != nil {
 		return err
 	}
 
-	err = state.ParseGo()
-	if err != nil {
-		return err
+	state.ParseGo()
+	if errLogger.HasError() {
+		return fmt.Errorf("failed to parse Go package")
 	}
 
 	state.ParserTable.Print(os.Stdout)
@@ -64,6 +64,7 @@ func realMain() error {
 	if err != nil {
 		return err
 	}
+
 	err = state.Generate2()
 	if err != nil {
 		return err

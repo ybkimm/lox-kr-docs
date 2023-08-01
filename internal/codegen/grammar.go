@@ -12,43 +12,43 @@ import (
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
 )
 
-func ParseGrammar(fset *gotoken.FileSet, dir string, errLogger *errlogger.ErrLogger) (*grammar.AugmentedGrammar, error) {
+func ParseGrammar(fset *gotoken.FileSet, dir string, errs *errlogger.ErrLogger) *grammar.AugmentedGrammar {
 	loxFiles, err := filepath.Glob(filepath.Join(dir, "*.lox"))
 	if err != nil {
-		return nil, err
+		errs.Error(0, err)
+		return nil
 	}
 
 	if len(loxFiles) == 0 {
-		return nil, fmt.Errorf("%v contains no .lox files", dir)
+		errs.Error(0, fmt.Errorf("%v contains no .lox files", dir))
+		return nil
 	}
 
 	grammar := new(grammar.Grammar)
 	for _, loxFile := range loxFiles {
 		loxFileData, err := os.ReadFile(loxFile)
 		if err != nil {
-			return nil, err
+			errs.Error(0, err)
+			return nil
 		}
 		file := fset.AddFile(loxFile, -1, len(loxFileData))
-		spec, ok := parser.Parse(file, loxFileData, errLogger)
+		spec, ok := parser.Parse(file, loxFileData, errs)
 		if !ok {
-			return nil, fmt.Errorf("failed to parse grammar")
+			return nil
 		}
 
-		err = addSpecToGrammar(spec, grammar)
-		if err != nil {
-			return nil, err
-		}
+		addSpecToGrammar(spec, grammar)
 	}
 
-	agrammar, err := grammar.ToAugmentedGrammar()
-	if err != nil {
-		return nil, err
+	agrammar := grammar.ToAugmentedGrammar(errs)
+	if errs.HasError() {
+		return nil
 	}
 
-	return agrammar, nil
+	return agrammar
 }
 
-func addSpecToGrammar(spec *ast.Spec, g *grammar.Grammar) error {
+func addSpecToGrammar(spec *ast.Spec, g *grammar.Grammar) {
 	for _, section := range spec.Sections {
 		switch section := section.(type) {
 		case *ast.Lexer:
@@ -120,5 +120,4 @@ func addSpecToGrammar(spec *ast.Spec, g *grammar.Grammar) error {
 			panic("not-reached")
 		}
 	}
-	return nil
 }

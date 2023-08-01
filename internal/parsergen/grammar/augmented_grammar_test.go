@@ -1,8 +1,10 @@
 package grammar
 
 import (
+	gotoken "go/token"
 	"testing"
 
+	"github.com/dcaiafa/lox/internal/errlogger"
 	"github.com/dcaiafa/lox/internal/util/set"
 )
 
@@ -58,9 +60,11 @@ func TestFirst(t *testing.T) {
 		},
 	}
 
-	g, err := sg.ToAugmentedGrammar()
-	if err != nil {
-		t.Fatalf("ToAugmentedGrammar failed: %v", err)
+	errs := errlogger.New(gotoken.NewFileSet())
+
+	g := sg.ToAugmentedGrammar(errs)
+	if errs.HasError() {
+		t.Fatalf("ToAugmentedGrammar failed")
 	}
 
 	assertTerminalSetEq := func(t *testing.T, symSet *set.Set[*Terminal], symNames ...string) {

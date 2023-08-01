@@ -2,9 +2,11 @@ package lr1
 
 import (
 	"fmt"
+	gotoken "go/token"
 	"strings"
 	"testing"
 
+	"github.com/dcaiafa/lox/internal/errlogger"
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
 	"github.com/dcaiafa/lox/internal/util/baseline"
 )
@@ -23,9 +25,11 @@ func runConstructTest(
 	g *grammar.Grammar,
 ) {
 	t.Run(name, func(t *testing.T) {
-		ag, err := g.ToAugmentedGrammar()
-		if err != nil {
-			t.Fatalf("ToAugmentedGrammar failed: %v", err)
+		errs := errlogger.New(gotoken.NewFileSet())
+
+		ag := g.ToAugmentedGrammar(errs)
+		if errs.HasError() {
+			t.Fatalf("ToAugmentedGrammar failed")
 		}
 
 		pt := constructFunc(ag)
