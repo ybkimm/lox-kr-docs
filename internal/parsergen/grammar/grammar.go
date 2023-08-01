@@ -3,6 +3,8 @@ package grammar
 import (
 	"fmt"
 	"io"
+
+	gotoken "go/token"
 )
 
 type Generated int
@@ -24,10 +26,10 @@ type Symbol interface {
 }
 
 type Rule struct {
-	Name  string
-	Prods []*Prod
-
+	Name      string
+	Prods     []*Prod
 	Generated Generated
+	Pos       gotoken.Pos
 }
 
 func (r *Rule) SymName() string {
@@ -74,6 +76,7 @@ type Prod struct {
 	Terms         []*Term
 	Precence      int
 	Associativity Associativity
+	Pos           gotoken.Pos
 }
 
 func NewProd(terms ...*Term) *Prod {
@@ -94,6 +97,7 @@ const (
 type Term struct {
 	Name        string
 	Cardinality Cardinality
+	Pos         gotoken.Pos
 }
 
 func NewTerm(symName string, q ...Cardinality) *Term {

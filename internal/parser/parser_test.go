@@ -4,6 +4,8 @@ import (
 	gotoken "go/token"
 	"os"
 	"testing"
+
+	"github.com/dcaiafa/lox/internal/errlogger"
 )
 
 func TestParser(t *testing.T) {
@@ -13,9 +15,7 @@ func TestParser(t *testing.T) {
 		t.Fatal(err)
 	}
 	file := fset.AddFile("foo.lox", -1, len(data))
-	errLogger := &ErrLogger{
-		Fset: fset,
-	}
+	errLogger := errlogger.New(fset)
 	spec, ok := Parse(file, []byte(data), errLogger)
 	if !ok {
 		t.Fatal("Parse failed")

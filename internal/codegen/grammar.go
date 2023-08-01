@@ -7,11 +7,12 @@ import (
 	"path/filepath"
 
 	"github.com/dcaiafa/lox/internal/ast"
+	"github.com/dcaiafa/lox/internal/errlogger"
 	"github.com/dcaiafa/lox/internal/parser"
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
 )
 
-func ParseGrammar(fset *gotoken.FileSet, dir string, errLogger *parser.ErrLogger) (*grammar.AugmentedGrammar, error) {
+func ParseGrammar(fset *gotoken.FileSet, dir string, errLogger *errlogger.ErrLogger) (*grammar.AugmentedGrammar, error) {
 	loxFiles, err := filepath.Glob(filepath.Join(dir, "*.lox"))
 	if err != nil {
 		return nil, err
@@ -70,12 +71,16 @@ func addSpecToGrammar(spec *ast.Spec, g *grammar.Grammar) error {
 				case *ast.Rule:
 					rule := &grammar.Rule{
 						Name: decl.Name,
+						Pos:  decl.Bounds().Begin,
 					}
 					for _, astProd := range decl.Prods {
-						prod := &grammar.Prod{}
+						prod := &grammar.Prod{
+							Pos: astProd.Bounds().Begin,
+						}
 						for _, astTerm := range astProd.Terms {
 							term := &grammar.Term{
 								Name: astTerm.Name,
+								Pos:  astTerm.Bounds().Begin,
 							}
 							switch astTerm.Qualifier {
 							case ast.NoQualifier:

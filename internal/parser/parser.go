@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/dcaiafa/lox/internal/ast"
+	"github.com/dcaiafa/lox/internal/errlogger"
 )
 
 type parser struct {
@@ -12,7 +13,7 @@ type parser struct {
 	spec *ast.Spec
 }
 
-func Parse(file *gotoken.File, data []byte, errLogger _lxErrorLogger) (*ast.Spec, bool) {
+func Parse(file *gotoken.File, data []byte, errLogger *errlogger.ErrLogger) (*ast.Spec, bool) {
 	var parser parser
 	lex := newLex(file, data, errLogger)
 	ok := parser.parse(lex, errLogger)

@@ -56,6 +56,11 @@ type Token struct {
 	Str  string
 }
 
+type Bounds struct {
+	Begin _i0.Pos 
+	End   _i0.Pos 
+}
+
 type _lxErrorLogger interface {
 	Error(pos _i0.Pos, err error)
 }
