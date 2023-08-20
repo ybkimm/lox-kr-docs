@@ -23,10 +23,10 @@ func (e *errLogger) ParserError(err error) {
 
 type parser struct {
 	loxParser
-	spec *ast.Spec
+	parserAST *ast.Parser
 }
 
-func Parse(file *gotoken.File, data []byte, errs *errlogger.ErrLogger) (*ast.Spec, bool) {
+func Parse(file *gotoken.File, data []byte, errs *errlogger.ErrLogger) (*ast.Parser, bool) {
 	errLogger := &errLogger{
 		ErrLogger: errs,
 		File:      file,
@@ -34,27 +34,17 @@ func Parse(file *gotoken.File, data []byte, errs *errlogger.ErrLogger) (*ast.Spe
 	var parser parser
 	lex := newLex(file, data, errs)
 	ok := parser.parse(lex, errLogger)
-	return parser.spec, ok
+	return parser.parserAST, ok
 }
 
-func (p *parser) reduceSpec(s []ast.Section) any {
-	p.spec = &ast.Spec{
-		Sections: s,
-	}
-	return p.spec
-}
-
-func (p *parser) reduceSection(s ast.Section) ast.Section {
-	return s
-}
-
-func (p *parser) reduceParser(_ Token, decls []ast.ParserDecl) ast.Section {
-	return &ast.Parser{
+func (p *parser) reduceParser(decls []ast.ParserDecl) *ast.Parser {
+	p.parserAST = &ast.Parser{
 		Decls: decls,
 	}
+	return p.parserAST
 }
 
-func (p *parser) reducePdecl(r *ast.Rule) ast.ParserDecl {
+func (p *parser) reducePdecl(r ast.ParserDecl) ast.ParserDecl {
 	return r
 }
 
@@ -100,16 +90,6 @@ func (p *parser) reducePcard(card Token) ast.Qualifier {
 	}
 }
 
-func (p *parser) reduceLexer(_ Token, decls []ast.LexerDecl) *ast.Lexer {
-	return &ast.Lexer{
-		Decls: decls,
-	}
-}
-
-func (p *parser) reduceLdecl(d ast.LexerDecl) ast.LexerDecl {
-	return d
-}
-
 func (p *parser) reducePqualif(assoc Token, _ Token, prec Token, _ Token) *ast.ProdQualifier {
 	q := &ast.ProdQualifier{}
 
@@ -134,7 +114,7 @@ func (p *parser) reducePqualif(assoc Token, _ Token, prec Token, _ Token) *ast.P
 	return q
 }
 
-func (p *parser) reduceLtoken(_ Token, names []Token, _ Token) ast.LexerDecl {
+func (p *parser) reduceLtoken(_ Token, names []Token, _ Token) *ast.CustomTokenDecl {
 	d := &ast.CustomTokenDecl{
 		CustomTokens: make([]*ast.CustomToken, len(names)),
 	}

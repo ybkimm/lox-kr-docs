@@ -5,60 +5,47 @@ import (
 )
 
 var _lxLHS = []int32 {
-	0, 1, 2, 2, 3, 4, 5, 6, 6, 7, 8, 9, 9, 9, 
-10, 10, 11, 12, 13, 14, 14, 15, 15, 16, 16, 17, 17, 18, 
-18, 19, 19, 20, 20, 21, 21, 22, 22, 
+	0, 1, 2, 2, 3, 4, 4, 5, 6, 7, 7, 7, 8, 8, 
+9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15, 
 }
 
 var _lxTermCounts = []int32 {
-	1, 1, 1, 1, 2, 1, 4, 3, 1, 2, 2, 1, 1, 1, 
-4, 4, 2, 1, 3, 2, 1, 1, 0, 2, 1, 1, 0, 1, 
-0, 1, 0, 2, 1, 2, 1, 2, 1, 	
+	1, 1, 1, 1, 4, 3, 1, 2, 2, 1, 1, 1, 4, 4, 
+3, 1, 0, 2, 1, 1, 0, 1, 0, 2, 1, 2, 1, 	
 }
 
 var _lxActions = []int32 {
-	50, 55, 64, 71, 80, 87, 94, 97, 104, 113, 120, 129, 138, 141, 
-144, 151, 160, 169, 178, 185, 194, 199, 204, 207, 216, 221, 230, 247, 
-252, 263, 268, 279, 290, 301, 312, 323, 334, 337, 342, 347, 358, 204, 
-361, 370, 373, 376, 381, 384, 387, 392, 4, 14, 1, 13, 3, 8, 
-0, -30, 14, -30, 13, -30, 15, 12, 6, 0, -3, 14, -3, 13, 
--3, 8, 0, -22, 2, 13, 14, -22, 13, -22, 6, 0, -2, 14, 
--2, 13, -2, 6, 0, -20, 14, -20, 13, -20, 2, 0, 2147483647, 6, 
-0, -1, 14, 1, 13, 3, 8, 0, -36, 14, -36, 13, -36, 15, 
--36, 6, 0, -16, 14, -16, 13, -16, 8, 0, -29, 14, -29, 13, 
--29, 15, 12, 8, 0, -17, 14, -17, 13, -17, 15, -17, 2, 2, 
-20, 2, 8, 22, 6, 0, -4, 14, -4, 13, -4, 8, 0, -21, 
-2, 13, 14, -21, 13, -21, 8, 0, -34, 2, -34, 14, -34, 13, 
--34, 8, 0, -5, 2, -5, 14, -5, 13, -5, 6, 0, -19, 14, 
--19, 13, -19, 8, 0, -35, 14, -35, 13, -35, 15, -35, 4, 2, 
--32, 10, -32, 4, 2, 24, 10, 25, 2, 2, 26, 8, 0, -33, 
-2, -33, 14, -33, 13, -33, 4, 2, -31, 10, -31, 8, 0, -18, 
-14, -18, 13, -18, 15, -18, 16, 2, -28, 16, -28, 6, 31, 9, 
--28, 17, -28, 10, -28, 5, 34, 7, 35, 4, 9, -8, 10, -8, 
-10, 2, 26, 16, 36, 9, -26, 17, 40, 10, -26, 4, 9, 41, 
-10, 42, 10, 2, -24, 16, -24, 9, -24, 17, -24, 10, -24, 10, 
-2, -12, 16, -12, 9, -12, 17, -12, 10, -12, 10, 2, -27, 16, 
--27, 9, -27, 17, -27, 10, -27, 10, 2, -10, 16, -10, 9, -10, 
-17, -10, 10, -10, 10, 2, -11, 16, -11, 9, -11, 17, -11, 10, 
--11, 10, 2, -13, 16, -13, 9, -13, 17, -13, 10, -13, 2, 11, 
-43, 4, 9, -9, 10, -9, 4, 9, -25, 10, -25, 10, 2, -23, 
-16, -23, 9, -23, 17, -23, 10, -23, 2, 11, 44, 8, 0, -6, 
-2, -6, 14, -6, 13, -6, 2, 4, 46, 2, 4, 47, 4, 9, 
--7, 10, -7, 2, 12, 48, 2, 12, 49, 4, 9, -14, 10, -14, 
-4, 9, -15, 10, -15, 
+	39, 46, 49, 56, 59, 62, 69, 76, 83, 86, 89, 96, 101, 106, 
+123, 128, 139, 144, 155, 160, 167, 178, 189, 200, 211, 222, 225, 230, 
+235, 246, 86, 249, 256, 259, 262, 267, 270, 273, 278, 6, 0, -16, 
+2, 1, 13, 8, 2, 8, 9, 6, 0, -3, 2, -3, 13, -3, 
+2, 0, 2147483647, 2, 0, -1, 6, 0, -15, 2, 1, 13, 8, 6, 
+0, -26, 2, -26, 13, -26, 6, 0, -2, 2, -2, 13, -2, 2, 
+2, 11, 2, 2, 13, 6, 0, -25, 2, -25, 13, -25, 4, 2, 
+-24, 10, -24, 4, 2, 18, 10, 19, 16, 2, -22, 14, -22, 6, 
+20, 9, -22, 15, -22, 10, -22, 5, 23, 7, 24, 4, 9, -6, 
+10, -6, 10, 2, 13, 14, 25, 9, -20, 15, 29, 10, -20, 4, 
+9, 30, 10, 31, 10, 2, -18, 14, -18, 9, -18, 15, -18, 10, 
+-18, 4, 2, -23, 10, -23, 6, 0, -14, 2, -14, 13, -14, 10, 
+2, -10, 14, -10, 9, -10, 15, -10, 10, -10, 10, 2, -21, 14, 
+-21, 9, -21, 15, -21, 10, -21, 10, 2, -8, 14, -8, 9, -8, 
+15, -8, 10, -8, 10, 2, -9, 14, -9, 9, -9, 15, -9, 10, 
+-9, 10, 2, -11, 14, -11, 9, -11, 15, -11, 10, -11, 2, 11, 
+32, 4, 9, -7, 10, -7, 4, 9, -19, 10, -19, 10, 2, -17, 
+14, -17, 9, -17, 15, -17, 10, -17, 2, 11, 33, 6, 0, -4, 
+2, -4, 13, -4, 2, 4, 35, 2, 4, 36, 4, 9, -5, 10, 
+-5, 2, 12, 37, 2, 12, 38, 4, 9, -12, 10, -12, 4, 9, 
+-13, 10, -13, 
 }
 
 var _lxGoto = []int32 {
-	50, 61, 70, 71, 70, 70, 70, 80, 70, 70, 87, 70, 92, 70, 
-70, 95, 70, 70, 70, 70, 70, 70, 100, 70, 70, 70, 109, 70, 
-114, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 121, 
-70, 70, 70, 70, 70, 70, 70, 70, 10, 11, 2, 3, 4, 2, 
-5, 1, 6, 14, 7, 8, 12, 8, 19, 9, 22, 10, 13, 11, 
-0, 8, 15, 14, 21, 15, 4, 16, 5, 17, 6, 11, 2, 3, 
-4, 2, 18, 4, 12, 19, 13, 11, 2, 20, 21, 4, 4, 23, 
-5, 17, 8, 7, 27, 16, 28, 6, 29, 8, 30, 4, 9, 32, 
-18, 33, 6, 17, 37, 10, 38, 8, 39, 6, 7, 45, 16, 28, 
-8, 30, 
+	39, 52, 52, 52, 52, 53, 52, 52, 60, 63, 52, 52, 52, 72, 
+52, 77, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 
+52, 52, 84, 52, 52, 52, 52, 52, 52, 52, 52, 12, 9, 2, 
+1, 3, 10, 4, 15, 5, 2, 6, 3, 7, 0, 6, 9, 2, 
+2, 10, 3, 7, 2, 14, 12, 8, 5, 14, 11, 15, 4, 16, 
+6, 17, 4, 7, 21, 13, 22, 6, 12, 26, 8, 27, 6, 28, 
+6, 5, 34, 11, 15, 6, 17, 
 }
 
 type _lxStack[T any] []T
@@ -136,166 +123,123 @@ func (p *parser) parse(lex _lxLexer, errLogger _lxErrorLogger) bool {
 func (p *parser) _lxAct(prod int32) any {
 	switch prod {
 			case 1:
-				return p.reduceSpec(
-					p.sym.Peek(0).([]_i0.Section),
-		    )
-			case 2:
-				return p.reduceSection(
-					p.sym.Peek(0).(_i0.Section),
-		    )
-			case 3:
-				return p.reduceSection(
-					p.sym.Peek(0).(_i0.Section),
-		    )
-			case 4:
 				return p.reduceParser(
-					p.sym.Peek(1).(Token),
 					p.sym.Peek(0).([]_i0.ParserDecl),
 		    )
-			case 5:
+			case 2:
 				return p.reducePdecl(
-					p.sym.Peek(0).(*_i0.Rule),
+					p.sym.Peek(0).(_i0.ParserDecl),
 		    )
-			case 6:
+			case 3:
+				return p.reducePdecl(
+					p.sym.Peek(0).(_i0.ParserDecl),
+		    )
+			case 4:
 				return p.reducePrule(
 					p.sym.Peek(3).(Token),
 					p.sym.Peek(2).(Token),
 					p.sym.Peek(1).([]*_i0.Prod),
 					p.sym.Peek(0).(Token),
 		    )
-			case 7:
+			case 5:
 				return p.reducePprods(
 					p.sym.Peek(2).([]*_i0.Prod),
 					p.sym.Peek(1).(Token),
 					p.sym.Peek(0).(*_i0.Prod),
 		    )
-			case 8:
+			case 6:
 				return p.reducePprods_1(
 					p.sym.Peek(0).(*_i0.Prod),
 		    )
-			case 9:
+			case 7:
 				return p.reducePprod(
 					p.sym.Peek(1).([]*_i0.Term),
 					p.sym.Peek(0).(*_i0.ProdQualifier),
 		    )
-			case 10:
+			case 8:
 				return p.reducePterm(
 					p.sym.Peek(1).(Token),
 					p.sym.Peek(0).(_i0.Qualifier),
+		    )
+			case 9:
+				return p.reducePcard(
+					p.sym.Peek(0).(Token),
+		    )
+			case 10:
+				return p.reducePcard(
+					p.sym.Peek(0).(Token),
 		    )
 			case 11:
 				return p.reducePcard(
 					p.sym.Peek(0).(Token),
 		    )
 			case 12:
-				return p.reducePcard(
+				return p.reducePqualif(
+					p.sym.Peek(3).(Token),
+					p.sym.Peek(2).(Token),
+					p.sym.Peek(1).(Token),
 					p.sym.Peek(0).(Token),
 		    )
 			case 13:
-				return p.reducePcard(
+				return p.reducePqualif(
+					p.sym.Peek(3).(Token),
+					p.sym.Peek(2).(Token),
+					p.sym.Peek(1).(Token),
 					p.sym.Peek(0).(Token),
 		    )
 			case 14:
-				return p.reducePqualif(
-					p.sym.Peek(3).(Token),
-					p.sym.Peek(2).(Token),
-					p.sym.Peek(1).(Token),
-					p.sym.Peek(0).(Token),
-		    )
-			case 15:
-				return p.reducePqualif(
-					p.sym.Peek(3).(Token),
-					p.sym.Peek(2).(Token),
-					p.sym.Peek(1).(Token),
-					p.sym.Peek(0).(Token),
-		    )
-			case 16:
-				return p.reduceLexer(
-					p.sym.Peek(1).(Token),
-					p.sym.Peek(0).([]_i0.LexerDecl),
-		    )
-			case 17:
-				return p.reduceLdecl(
-					p.sym.Peek(0).(_i0.LexerDecl),
-		    )
-			case 18:
 				return p.reduceLtoken(
 					p.sym.Peek(2).(Token),
 					p.sym.Peek(1).([]Token),
 					p.sym.Peek(0).(Token),
 		    )
-  case 19:  // OneOrMore
-			return append(
-				p.sym.Peek(1).([]_i0.Section),
-				p.sym.Peek(0).(_i0.Section),
-			)
-  case 20:  // OneOrMore
-		  return []_i0.Section{
-				p.sym.Peek(0).(_i0.Section),
-			}
-  case 21:  // ZeroOrOne
+  case 15:  // ZeroOrOne
 			return p.sym.Peek(0).([]_i0.ParserDecl)
-  case 22:  // ZeroOrOne
+  case 16:  // ZeroOrOne
 			{
 				var zero []_i0.ParserDecl
 				return zero
 			}
-  case 23:  // OneOrMore
+  case 17:  // OneOrMore
 			return append(
 				p.sym.Peek(1).([]*_i0.Term),
 				p.sym.Peek(0).(*_i0.Term),
 			)
-  case 24:  // OneOrMore
+  case 18:  // OneOrMore
 		  return []*_i0.Term{
 				p.sym.Peek(0).(*_i0.Term),
 			}
-  case 25:  // ZeroOrOne
+  case 19:  // ZeroOrOne
 			return p.sym.Peek(0).(*_i0.ProdQualifier)
-  case 26:  // ZeroOrOne
+  case 20:  // ZeroOrOne
 			{
 				var zero *_i0.ProdQualifier
 				return zero
 			}
-  case 27:  // ZeroOrOne
+  case 21:  // ZeroOrOne
 			return p.sym.Peek(0).(_i0.Qualifier)
-  case 28:  // ZeroOrOne
+  case 22:  // ZeroOrOne
 			{
 				var zero _i0.Qualifier
 				return zero
 			}
-  case 29:  // ZeroOrOne
-			return p.sym.Peek(0).([]_i0.LexerDecl)
-  case 30:  // ZeroOrOne
-			{
-				var zero []_i0.LexerDecl
-				return zero
-			}
-  case 31:  // OneOrMore
+  case 23:  // OneOrMore
 			return append(
 				p.sym.Peek(1).([]Token),
 				p.sym.Peek(0).(Token),
 			)
-  case 32:  // OneOrMore
+  case 24:  // OneOrMore
 		  return []Token{
 				p.sym.Peek(0).(Token),
 			}
-  case 33:  // OneOrMore
+  case 25:  // OneOrMore
 			return append(
 				p.sym.Peek(1).([]_i0.ParserDecl),
 				p.sym.Peek(0).(_i0.ParserDecl),
 			)
-  case 34:  // OneOrMore
+  case 26:  // OneOrMore
 		  return []_i0.ParserDecl{
 				p.sym.Peek(0).(_i0.ParserDecl),
-			}
-  case 35:  // OneOrMore
-			return append(
-				p.sym.Peek(1).([]_i0.LexerDecl),
-				p.sym.Peek(0).(_i0.LexerDecl),
-			)
-  case 36:  // OneOrMore
-		  return []_i0.LexerDecl{
-				p.sym.Peek(0).(_i0.LexerDecl),
 			}
 	default:
 		panic("unreachable")

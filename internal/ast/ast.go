@@ -35,23 +35,8 @@ const (
 	ZeroOrOne             // ?
 )
 
-type Section interface {
-	AST
-	isSection()
-}
-
-type section struct{}
-
-func (s *section) isSection() {}
-
-type Spec struct {
-	baseAST
-	Sections []Section
-}
-
 type Parser struct {
 	baseAST
-	section
 	Decls []ParserDecl
 }
 
@@ -96,24 +81,9 @@ type Term struct {
 	Qualifier Qualifier
 }
 
-type Lexer struct {
-	baseAST
-	section
-	Decls []LexerDecl
-}
-
-type LexerDecl interface {
-	AST
-	isLexerDecl()
-}
-
-type lexerDecl struct{}
-
-func (d *lexerDecl) isLexerDecl() {}
-
 type CustomTokenDecl struct {
 	baseAST
-	lexerDecl
+	parserDecl
 	CustomTokens []*CustomToken
 }
 

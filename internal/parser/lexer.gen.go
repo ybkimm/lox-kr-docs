@@ -20,11 +20,9 @@ const (
 	SEMICOLON TokenType = 10
 	OPAREN TokenType = 11
 	CPAREN TokenType = 12
-	PARSER TokenType = 13
-	LEXER TokenType = 14
-	TOKEN TokenType = 15
-	LEFT TokenType = 16
-	RIGHT TokenType = 17
+	TOKEN TokenType = 13
+	LEFT TokenType = 14
+	RIGHT TokenType = 15
 )
 
 func (t TokenType) String() string {
@@ -55,10 +53,6 @@ func (t TokenType) String() string {
 		return "OPAREN"
 	case CPAREN: 
 		return "CPAREN"
-	case PARSER: 
-		return "PARSER"
-	case LEXER: 
-		return "LEXER"
 	case TOKEN: 
 		return "TOKEN"
 	case LEFT: 

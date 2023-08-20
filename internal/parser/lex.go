@@ -16,11 +16,9 @@ type Token struct {
 }
 
 var keywords = map[string]TokenType{
-	"@lexer":  LEXER,
-	"@parser": PARSER,
-	"@token":  TOKEN,
-	"@left":   LEFT,
-	"@right":  RIGHT,
+	"@token": TOKEN,
+	"@left":  LEFT,
+	"@right": RIGHT,
 }
 
 func isNumber(r rune) bool {

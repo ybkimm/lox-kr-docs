@@ -1,5 +1,3 @@
-@lexer 
-
 @token 
   NUM
   PLUS
@@ -10,8 +8,6 @@
   POW
   O_PAREN
   C_PAREN ;
-
-@parser
 
 S = Expr ;
 
