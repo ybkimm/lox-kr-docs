@@ -82,6 +82,7 @@ func _lxFind(table []int32, y, x int32) (int32, bool) {
 type loxParser struct {
 	state _lxStack[int32]
 	sym   _lxStack[any]
+	bounds _lxStack[_lxBounds]
 }
 
 func (p *parser) parse(lex _lxLexer, errLogger _lxErrorLogger) bool {
@@ -102,12 +103,26 @@ func (p *parser) parse(lex _lxLexer, errLogger _lxErrorLogger) bool {
 		} else if action >= 0 { // shift
 			p.loxParser.state.Push(action)
 			p.loxParser.sym.Push(tok)
+			p.loxParser.bounds.Push(_lxBounds{Begin: tok, End: tok})
 			tok, tokType = lex.NextToken()
 		} else { // reduce
 			prod := -action
 			termCount := _lxTermCounts[int(prod)]
 			rule := _lxLHS[int(prod)]
 			res := p._lxAct(prod)
+			if termCount > 0 {
+				bounds := _lxBounds{
+					Begin: p.loxParser.bounds.Peek(int(termCount-1)).Begin,
+					End: p.loxParser.bounds.Peek(0).End,
+				}
+				p.onReduce(res, bounds.Begin, bounds.End)
+				p.loxParser.bounds.Pop(int(termCount))
+				p.loxParser.bounds.Push(bounds)
+			} else {
+				bounds := p.loxParser.bounds.Peek(0)
+				bounds.Begin = bounds.End
+				p.loxParser.bounds.Push(bounds)
+			}
 			p.loxParser.state.Pop(int(termCount))
 			p.loxParser.sym.Pop(int(termCount))
 			topState = p.loxParser.state.Peek(0)

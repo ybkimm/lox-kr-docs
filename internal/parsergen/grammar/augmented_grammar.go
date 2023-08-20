@@ -90,7 +90,7 @@ func (g *AugmentedGrammar) resolveReferences(errs *errlogger.ErrLogger) {
 	for _, terminal := range g.Terminals {
 		if other := g.nameToSymbol[terminal.SymName()]; other != nil {
 			errs.Errorf(terminal.Pos, "%q redeclared", terminal.Name)
-			errs.Infof(other.Position(), "%other %q declared here", terminal.Name)
+			errs.Infof(other.Position(), "other %q declared here", terminal.Name)
 			continue
 		}
 		g.nameToSymbol[terminal.SymName()] = terminal
@@ -98,7 +98,7 @@ func (g *AugmentedGrammar) resolveReferences(errs *errlogger.ErrLogger) {
 	for _, rule := range g.Rules {
 		if other := g.nameToSymbol[rule.SymName()]; other != nil {
 			errs.Errorf(rule.Pos, "%q redeclared", rule.Name)
-			errs.Infof(other.Position(), "%other %q declared here", rule.Name)
+			errs.Infof(other.Position(), "other %q declared here", rule.Name)
 			continue
 		}
 		g.nameToSymbol[rule.SymName()] = rule

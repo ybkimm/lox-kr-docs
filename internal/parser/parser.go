@@ -126,15 +126,13 @@ func (p *parser) reduceLtoken(_ Token, names []Token, _ Token) *ast.CustomTokenD
 	return d
 }
 
-/*
-func (p *parser) onReduce(r any, bounds Bounds) {
+func (p *parser) onReduce(r any, begin, end Token) {
 	rAST, ok := r.(ast.AST)
 	if !ok {
 		return
 	}
 	rAST.SetBounds(ast.Bounds{
-		Begin: bounds.Begin,
-		End:   bounds.End,
+		Begin: begin.Pos,
+		End:   end.Pos,
 	})
 }
-*/

@@ -32,6 +32,11 @@ func (t TokenType) String() string {
 	}
 }
 
+type {{p}}Bounds struct {
+	Begin Token
+	End   Token
+}
+
 type {{p}}ErrorLogger interface {
 	ParserError(err error)
 }

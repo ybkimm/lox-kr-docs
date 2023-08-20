@@ -85,7 +85,7 @@ type loxParser struct {
 	state {{p}}Stack[int32]
 	sym   {{p}}Stack[any]
 	{{- if has_on_reduce }}
-	bounds {{p}}Stack[Bounds]
+	bounds {{p}}Stack[{{p}}Bounds]
 	{{- end }}
 }
 
@@ -108,7 +108,7 @@ func (p *{{parser}}) parse(lex {{p}}Lexer, errLogger {{p}}ErrorLogger) bool {
 			p.loxParser.state.Push(action)
 			p.loxParser.sym.Push(tok)
 			{{- if has_on_reduce }}
-			p.loxParser.bounds.Push(Bounds{Begin: tok.Pos, End: tok.Pos})
+			p.loxParser.bounds.Push({{p}}Bounds{Begin: tok, End: tok})
 			{{- end }}
 			tok, tokType = lex.NextToken()
 		} else { // reduce
@@ -118,11 +118,11 @@ func (p *{{parser}}) parse(lex {{p}}Lexer, errLogger {{p}}ErrorLogger) bool {
 			res := p.{{p}}Act(prod)
 			{{- if has_on_reduce }}
 			if termCount > 0 {
-				bounds := Bounds{
+				bounds := {{p}}Bounds{
 					Begin: p.loxParser.bounds.Peek(int(termCount-1)).Begin,
 					End: p.loxParser.bounds.Peek(0).End,
 				}
-				p.onReduce(res, bounds)
+				p.onReduce(res, bounds.Begin, bounds.End)
 				p.loxParser.bounds.Pop(int(termCount))
 				p.loxParser.bounds.Push(bounds)
 			} else {
