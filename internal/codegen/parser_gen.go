@@ -93,14 +93,13 @@ func (p *{{parser}}) parse(lex {{p}}Lexer, errLogger {{p}}ErrorLogger) bool {
   const accept = {{ accept }}
 
 	p.loxParser.state.Push(0)
-	tok := lex.NextToken()
+	tok, tokType := lex.NextToken()
 
 	for {
-		lookahead := int32(tok.Type)
 		topState := p.loxParser.state.Peek(0)
-		action, ok := {{p}}Find({{p}}Actions, topState, lookahead)
+		action, ok := {{p}}Find({{p}}Actions, topState, int32(tokType))
 		if !ok {
-			errLogger.Error(tok.Pos, &{{p}}UnexpectedTokenError{Token: tok})
+			errLogger.ParserError(&{{p}}UnexpectedTokenError{Token: tok})
 			return false
 		}
 		if action == accept {
@@ -111,7 +110,7 @@ func (p *{{parser}}) parse(lex {{p}}Lexer, errLogger {{p}}ErrorLogger) bool {
 			{{- if has_on_reduce }}
 			p.loxParser.bounds.Push(Bounds{Begin: tok.Pos, End: tok.Pos})
 			{{- end }}
-			tok = lex.NextToken()
+			tok, tokType = lex.NextToken()
 		} else { // reduce
 			prod := -action
 			termCount := {{p}}TermCounts[int(prod)]
@@ -410,7 +409,7 @@ func (s *ParserGenState) MapReduceActions() error {
 	}
 
 	// Determine the Go type of the reduce-artifact of each rule.
-	// Process generated rules this time.
+	// Process synthetic rules at this time.
 	changed := true
 	for changed {
 		changed = false
@@ -443,7 +442,7 @@ func (s *ParserGenState) MapReduceActions() error {
 	}
 
 	// Assign each method to a production.
-	// Only non-generated methods at this time.
+	// Only non-synthetic methods at this time.
 	for prodIndex, prod := range s.Grammar.Prods {
 		rule := s.Grammar.ProdRule(prod)
 		if rule.Generated != grammar.NotGenerated {

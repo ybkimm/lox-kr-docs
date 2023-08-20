@@ -8,14 +8,31 @@ import (
 	"github.com/dcaiafa/lox/internal/errlogger"
 )
 
+type errLogger struct {
+	*errlogger.ErrLogger
+	File *gotoken.File
+}
+
+func (e *errLogger) ParserError(err error) {
+	var pos gotoken.Position
+	if err, ok := err.(interface{ Pos() Token }); ok {
+		pos = e.File.Position(err.Pos().Pos)
+	}
+	e.Errorf(pos, "%v", err)
+}
+
 type parser struct {
 	loxParser
 	spec *ast.Spec
 }
 
-func Parse(file *gotoken.File, data []byte, errLogger *errlogger.ErrLogger) (*ast.Spec, bool) {
+func Parse(file *gotoken.File, data []byte, errs *errlogger.ErrLogger) (*ast.Spec, bool) {
+	errLogger := &errLogger{
+		ErrLogger: errs,
+		File:      file,
+	}
 	var parser parser
-	lex := newLex(file, data, errLogger)
+	lex := newLex(file, data, errs)
 	ok := parser.parse(lex, errLogger)
 	return parser.spec, ok
 }
@@ -129,6 +146,7 @@ func (p *parser) reduceLtoken(_ Token, names []Token, _ Token) ast.LexerDecl {
 	return d
 }
 
+/*
 func (p *parser) onReduce(r any, bounds Bounds) {
 	rAST, ok := r.(ast.AST)
 	if !ok {
@@ -139,3 +157,4 @@ func (p *parser) onReduce(r any, bounds Bounds) {
 		End:   bounds.End,
 	})
 }
+*/

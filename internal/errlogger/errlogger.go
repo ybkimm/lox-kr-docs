@@ -7,27 +7,29 @@ import (
 )
 
 type ErrLogger struct {
-	fset      *gotoken.FileSet
 	hasErrors bool
 }
 
-func New(fset *gotoken.FileSet) *ErrLogger {
-	return &ErrLogger{
-		fset: fset,
-	}
+func New() *ErrLogger {
+	return &ErrLogger{}
 }
 
 func (l *ErrLogger) HasError() bool {
 	return l.hasErrors
 }
 
-func (l *ErrLogger) Error(pos gotoken.Pos, err error) {
+func (l *ErrLogger) Errorf(pos gotoken.Position, msg string, args ...any) {
 	l.hasErrors = true
-	position := l.fset.Position(pos)
-	fmt.Fprintf(os.Stderr, "%v: %v\n", position.String(), err.Error())
+	msg = fmt.Sprintf(msg, args...)
+	fmt.Fprintf(os.Stderr, "%v: %v\n", pos.String(), msg)
 }
 
-func (l *ErrLogger) Info(pos gotoken.Pos, err error) {
-	position := l.fset.Position(pos)
-	fmt.Fprintf(os.Stderr, "%v: %v\n", position.String(), err.Error())
+func (l *ErrLogger) Infof(pos gotoken.Position, msg string, args ...any) {
+	msg = fmt.Sprintf(msg, args...)
+	fmt.Fprintf(os.Stderr, "%v: %v\n", pos.String(), msg)
+}
+
+func (l *ErrLogger) Error(pos gotoken.Pos, err error) {
+	l.hasErrors = true
+	fmt.Fprintf(os.Stderr, "%v\n", err.Error())
 }

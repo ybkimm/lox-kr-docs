@@ -1,7 +1,6 @@
 package grammar
 
 import (
-	gotoken "go/token"
 	"testing"
 
 	"github.com/dcaiafa/lox/internal/errlogger"
@@ -60,7 +59,7 @@ func TestFirst(t *testing.T) {
 		},
 	}
 
-	errs := errlogger.New(gotoken.NewFileSet())
+	errs := errlogger.New()
 
 	g := sg.ToAugmentedGrammar(errs)
 	if errs.HasError() {

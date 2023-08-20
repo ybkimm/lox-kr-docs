@@ -5,7 +5,15 @@ import (
 	"fmt"
 	gotoken "go/token"
 	"io"
+
+	"github.com/dcaiafa/lox/internal/errlogger"
 )
+
+type Token struct {
+	Type TokenType
+	Str  string
+	Pos  gotoken.Pos
+}
 
 var keywords = map[string]TokenType{
 	"@lexer":  LEXER,
@@ -30,12 +38,12 @@ func isSpace(r rune) bool {
 type lex struct {
 	file      *gotoken.File
 	input     *bytes.Reader
-	errLogger _lxErrorLogger
+	errLogger *errlogger.ErrLogger
 	buf       bytes.Buffer
 	char      rune
 }
 
-func newLex(file *gotoken.File, input []byte, errLogger _lxErrorLogger) *lex {
+func newLex(file *gotoken.File, input []byte, errLogger *errlogger.ErrLogger) *lex {
 	l := &lex{
 		file:      file,
 		input:     bytes.NewReader(input),
@@ -45,10 +53,10 @@ func newLex(file *gotoken.File, input []byte, errLogger _lxErrorLogger) *lex {
 	return l
 }
 
-func (l *lex) NextToken() Token {
+func (l *lex) NextToken() (Token, TokenType) {
 	var tok Token
 	l.nextToken(&tok)
-	return tok
+	return tok, tok.Type
 }
 
 func (l *lex) advance() {

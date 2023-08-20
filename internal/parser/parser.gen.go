@@ -95,21 +95,19 @@ func _lxFind(table []int32, y, x int32) (int32, bool) {
 type loxParser struct {
 	state _lxStack[int32]
 	sym   _lxStack[any]
-	bounds _lxStack[Bounds]
 }
 
 func (p *parser) parse(lex _lxLexer, errLogger _lxErrorLogger) bool {
   const accept = 2147483647
 
 	p.loxParser.state.Push(0)
-	tok := lex.NextToken()
+	tok, tokType := lex.NextToken()
 
 	for {
-		lookahead := int32(tok.Type)
 		topState := p.loxParser.state.Peek(0)
-		action, ok := _lxFind(_lxActions, topState, lookahead)
+		action, ok := _lxFind(_lxActions, topState, int32(tokType))
 		if !ok {
-			errLogger.Error(tok.Pos, &_lxUnexpectedTokenError{Token: tok})
+			errLogger.ParserError(&_lxUnexpectedTokenError{Token: tok})
 			return false
 		}
 		if action == accept {
@@ -117,26 +115,12 @@ func (p *parser) parse(lex _lxLexer, errLogger _lxErrorLogger) bool {
 		} else if action >= 0 { // shift
 			p.loxParser.state.Push(action)
 			p.loxParser.sym.Push(tok)
-			p.loxParser.bounds.Push(Bounds{Begin: tok.Pos, End: tok.Pos})
-			tok = lex.NextToken()
+			tok, tokType = lex.NextToken()
 		} else { // reduce
 			prod := -action
 			termCount := _lxTermCounts[int(prod)]
 			rule := _lxLHS[int(prod)]
 			res := p._lxAct(prod)
-			if termCount > 0 {
-				bounds := Bounds{
-					Begin: p.loxParser.bounds.Peek(int(termCount-1)).Begin,
-					End: p.loxParser.bounds.Peek(0).End,
-				}
-				p.onReduce(res, bounds)
-				p.loxParser.bounds.Pop(int(termCount))
-				p.loxParser.bounds.Push(bounds)
-			} else {
-				bounds := p.loxParser.bounds.Peek(0)
-				bounds.Begin = bounds.End
-				p.loxParser.bounds.Push(bounds)
-			}
 			p.loxParser.state.Pop(int(termCount))
 			p.loxParser.sym.Pop(int(termCount))
 			topState = p.loxParser.state.Peek(0)

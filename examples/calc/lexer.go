@@ -2,10 +2,15 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	gotoken "go/token"
 	"io"
 )
+
+type Token struct {
+	Type TokenType
+	Str  string
+	Pos  gotoken.Pos
+}
 
 func isNumber(r rune) bool {
 	return r >= '0' && r <= '9'
@@ -22,12 +27,12 @@ func isSpace(r rune) bool {
 type lex struct {
 	file      *gotoken.File
 	input     *bytes.Reader
-	errLogger _lxErrorLogger
+	errLogger *ErrLogger
 	buf       bytes.Buffer
 	char      rune
 }
 
-func newLex(file *gotoken.File, input []byte, errLogger _lxErrorLogger) *lex {
+func newLex(file *gotoken.File, input []byte, errLogger *ErrLogger) *lex {
 	l := &lex{
 		file:      file,
 		input:     bytes.NewReader(input),
@@ -37,10 +42,10 @@ func newLex(file *gotoken.File, input []byte, errLogger _lxErrorLogger) *lex {
 	return l
 }
 
-func (l *lex) NextToken() Token {
+func (l *lex) NextToken() (Token, TokenType) {
 	var tok Token
 	l.nextToken(&tok)
-	return tok
+	return tok, tok.Type
 }
 
 func (l *lex) offset() int {
@@ -118,9 +123,9 @@ func (l *lex) nextToken(tok *Token) {
 			if isNumber(r) {
 				l.scanNum(tok)
 			} else {
-				l.errLogger.Error(
+				l.errLogger.Errorf(
 					l.pos(),
-					fmt.Errorf("unexpected character: %c", r))
+					"unexpected character: %c", r)
 				tok.Type = ERROR
 			}
 		}

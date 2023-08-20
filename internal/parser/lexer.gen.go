@@ -1,8 +1,7 @@
 package parser
 
 import (
-  _i1 "fmt"
-  _i0 "go/token"
+  _i0 "fmt"
 )
 
 type TokenType int
@@ -71,19 +70,8 @@ func (t TokenType) String() string {
 	}
 }
 
-type Token struct {
-	Pos  _i0.Pos
-	Type TokenType
-	Str  string
-}
-
-type Bounds struct {
-	Begin _i0.Pos 
-	End   _i0.Pos 
-}
-
 type _lxErrorLogger interface {
-	Error(pos _i0.Pos, err error)
+	ParserError(err error)
 }
 
 type _lxUnexpectedTokenError struct {
@@ -91,9 +79,13 @@ type _lxUnexpectedTokenError struct {
 }
 
 func (e _lxUnexpectedTokenError) Error() string {
-	return _i1.Sprintf("unexpected token: %v", e.Token)
+	return _i0.Sprintf("unexpected token: %v", e.Token)
+}
+
+func (e _lxUnexpectedTokenError) Pos() Token {
+	return e.Token
 }
 
 type _lxLexer interface {
-	NextToken() Token
+	NextToken() (Token, TokenType)
 }

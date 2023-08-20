@@ -2,7 +2,6 @@ package lr1
 
 import (
 	"fmt"
-	gotoken "go/token"
 	"strings"
 	"testing"
 
@@ -25,7 +24,7 @@ func runConstructTest(
 	g *grammar.Grammar,
 ) {
 	t.Run(name, func(t *testing.T) {
-		errs := errlogger.New(gotoken.NewFileSet())
+		errs := errlogger.New()
 
 		ag := g.ToAugmentedGrammar(errs)
 		if errs.HasError() {

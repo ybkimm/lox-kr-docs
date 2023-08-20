@@ -32,19 +32,8 @@ func (t TokenType) String() string {
 	}
 }
 
-type Token struct {
-	Pos  {{i("go/token")}}.Pos
-	Type TokenType
-	Str  string
-}
-
-type Bounds struct {
-	Begin {{i("go/token")}}.Pos 
-	End   {{i("go/token")}}.Pos 
-}
-
 type {{p}}ErrorLogger interface {
-	Error(pos {{i("go/token")}}.Pos, err error)
+	ParserError(err error)
 }
 
 type {{p}}UnexpectedTokenError struct {
@@ -55,8 +44,12 @@ func (e {{p}}UnexpectedTokenError) Error() string {
 	return {{ i("fmt") }}.Sprintf("unexpected token: %v", e.Token)
 }
 
+func (e {{p}}UnexpectedTokenError) Pos() Token {
+	return e.Token
+}
+
 type {{p}}Lexer interface {
-	NextToken() Token
+	NextToken() (Token, TokenType)
 }
 `
 

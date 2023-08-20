@@ -79,14 +79,13 @@ func (p *parser) parse(lex _lxLexer, errLogger _lxErrorLogger) bool {
   const accept = 2147483647
 
 	p.loxParser.state.Push(0)
-	tok := lex.NextToken()
+	tok, tokType := lex.NextToken()
 
 	for {
-		lookahead := int32(tok.Type)
 		topState := p.loxParser.state.Peek(0)
-		action, ok := _lxFind(_lxActions, topState, lookahead)
+		action, ok := _lxFind(_lxActions, topState, int32(tokType))
 		if !ok {
-			errLogger.Error(tok.Pos, &_lxUnexpectedTokenError{Token: tok})
+			errLogger.ParserError(&_lxUnexpectedTokenError{Token: tok})
 			return false
 		}
 		if action == accept {
@@ -94,7 +93,7 @@ func (p *parser) parse(lex _lxLexer, errLogger _lxErrorLogger) bool {
 		} else if action >= 0 { // shift
 			p.loxParser.state.Push(action)
 			p.loxParser.sym.Push(tok)
-			tok = lex.NextToken()
+			tok, tokType = lex.NextToken()
 		} else { // reduce
 			prod := -action
 			termCount := _lxTermCounts[int(prod)]

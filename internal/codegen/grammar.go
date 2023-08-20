@@ -37,7 +37,7 @@ func ParseGrammar(fset *gotoken.FileSet, dir string, errs *errlogger.ErrLogger) 
 			return nil
 		}
 
-		addSpecToGrammar(spec, grammar)
+		addSpecToGrammar(fset, spec, grammar)
 	}
 
 	agrammar := grammar.ToAugmentedGrammar(errs)
@@ -48,7 +48,7 @@ func ParseGrammar(fset *gotoken.FileSet, dir string, errs *errlogger.ErrLogger) 
 	return agrammar
 }
 
-func addSpecToGrammar(spec *ast.Spec, g *grammar.Grammar) {
+func addSpecToGrammar(fset *gotoken.FileSet, spec *ast.Spec, g *grammar.Grammar) {
 	for _, section := range spec.Sections {
 		switch section := section.(type) {
 		case *ast.Lexer:
@@ -58,6 +58,7 @@ func addSpecToGrammar(spec *ast.Spec, g *grammar.Grammar) {
 					for _, token := range decl.CustomTokens {
 						terminal := &grammar.Terminal{
 							Name: token.Name,
+							Pos:  fset.Position(token.Bounds().Begin),
 						}
 						g.Terminals = append(g.Terminals, terminal)
 					}
@@ -71,16 +72,16 @@ func addSpecToGrammar(spec *ast.Spec, g *grammar.Grammar) {
 				case *ast.Rule:
 					rule := &grammar.Rule{
 						Name: decl.Name,
-						Pos:  decl.Bounds().Begin,
+						Pos:  fset.Position(decl.Bounds().Begin),
 					}
 					for _, astProd := range decl.Prods {
 						prod := &grammar.Prod{
-							Pos: astProd.Bounds().Begin,
+							Pos: fset.Position(astProd.Bounds().Begin),
 						}
 						for _, astTerm := range astProd.Terms {
 							term := &grammar.Term{
 								Name: astTerm.Name,
-								Pos:  astTerm.Bounds().Begin,
+								Pos:  fset.Position(astTerm.Bounds().Begin),
 							}
 							switch astTerm.Qualifier {
 							case ast.NoQualifier:

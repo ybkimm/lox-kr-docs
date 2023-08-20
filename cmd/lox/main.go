@@ -32,7 +32,7 @@ func realMain() error {
 
 	fset := gotoken.NewFileSet()
 
-	errLogger := errlogger.New(fset)
+	errLogger := errlogger.New()
 
 	grammar := codegen.ParseGrammar(fset, dir, errLogger)
 	if errLogger.HasError() {

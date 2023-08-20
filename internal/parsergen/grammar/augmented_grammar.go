@@ -89,14 +89,16 @@ func (g *AugmentedGrammar) resolveReferences(errs *errlogger.ErrLogger) {
 
 	for _, terminal := range g.Terminals {
 		if other := g.nameToSymbol[terminal.SymName()]; other != nil {
-			errs.Error(0, &RedeclaredError{Sym: terminal, Other: other})
+			errs.Errorf(terminal.Pos, "%q redeclared", terminal.Name)
+			errs.Infof(other.Position(), "%other %q declared here", terminal.Name)
 			continue
 		}
 		g.nameToSymbol[terminal.SymName()] = terminal
 	}
 	for _, rule := range g.Rules {
 		if other := g.nameToSymbol[rule.SymName()]; other != nil {
-			errs.Error(0, &RedeclaredError{Sym: rule, Other: other})
+			errs.Errorf(rule.Pos, "%q redeclared", rule.Name)
+			errs.Infof(other.Position(), "%other %q declared here", rule.Name)
 			continue
 		}
 		g.nameToSymbol[rule.SymName()] = rule
@@ -107,7 +109,7 @@ func (g *AugmentedGrammar) resolveReferences(errs *errlogger.ErrLogger) {
 			for _, term := range prod.Terms {
 				sym := g.nameToSymbol[term.Name]
 				if sym == nil {
-					errs.Error(0, &UndefinedError{Term: term, Prod: prod, Rule: rule})
+					errs.Errorf(term.Pos, "%q undefined", term.Name)
 					continue
 				}
 				g.termToSymbol[term] = sym

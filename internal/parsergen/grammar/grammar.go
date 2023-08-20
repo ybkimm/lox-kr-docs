@@ -23,17 +23,22 @@ type Grammar struct {
 
 type Symbol interface {
 	SymName() string
+	Position() gotoken.Position
 }
 
 type Rule struct {
 	Name      string
 	Prods     []*Prod
 	Generated Generated
-	Pos       gotoken.Pos
+	Pos       gotoken.Position
 }
 
 func (r *Rule) SymName() string {
 	return r.Name
+}
+
+func (r *Rule) Position() gotoken.Position {
+	return r.Pos
 }
 
 func (r *Rule) Print(w io.Writer) {
@@ -76,7 +81,7 @@ type Prod struct {
 	Terms         []*Term
 	Precence      int
 	Associativity Associativity
-	Pos           gotoken.Pos
+	Pos           gotoken.Position
 }
 
 func NewProd(terms ...*Term) *Prod {
@@ -97,7 +102,7 @@ const (
 type Term struct {
 	Name        string
 	Cardinality Cardinality
-	Pos         gotoken.Pos
+	Pos         gotoken.Position
 }
 
 func NewTerm(symName string, q ...Cardinality) *Term {
@@ -116,8 +121,13 @@ func NewTermS(sym Symbol, q ...Cardinality) *Term {
 
 type Terminal struct {
 	Name string
+	Pos  gotoken.Position
 }
 
 func (t *Terminal) SymName() string {
 	return t.Name
+}
+
+func (t *Terminal) Position() gotoken.Position {
+	return t.Pos
 }

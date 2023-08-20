@@ -1,8 +1,6 @@
 package main
 
 import (
-	"errors"
-	"fmt"
 	gotoken "go/token"
 	"math"
 	"strconv"
@@ -18,16 +16,13 @@ func Eval(expr string) (float64, error) {
 	var parser parser
 	parser.errLogger = errLogger
 	lex := newLex(file, []byte(expr), errLogger)
-	ok := parser.parse(lex, errLogger)
-	if !ok {
-		errLogger.Error(0, errors.New("failed to parse"))
-	}
+	_ = parser.parse(lex, errLogger)
 	return parser.result, errLogger.Err()
 }
 
 type parser struct {
 	loxParser
-	errLogger _lxErrorLogger
+	errLogger *ErrLogger
 	result    float64
 }
 
@@ -66,7 +61,7 @@ func (p *parser) reduceExpr_num(e float64) float64 {
 func (p *parser) reduceNum(num Token) float64 {
 	v, err := strconv.ParseFloat(num.Str, 64)
 	if err != nil {
-		p.errLogger.Error(num.Pos, fmt.Errorf("invalid float: %v", err))
+		p.errLogger.Errorf(num.Pos, "invalid float: %v", err)
 		return 0
 	}
 	return v
@@ -75,7 +70,7 @@ func (p *parser) reduceNum(num Token) float64 {
 func (p *parser) reduceNum_minus(_ Token, num Token) float64 {
 	v, err := strconv.ParseFloat(num.Str, 64)
 	if err != nil {
-		p.errLogger.Error(num.Pos, fmt.Errorf("invalid float: %v", err))
+		p.errLogger.Errorf(num.Pos, "invalid float: %v", err)
 		return 0
 	}
 	return -v

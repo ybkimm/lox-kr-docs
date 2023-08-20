@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	gotoken "go/token"
 	"os"
 	"testing"
@@ -15,7 +16,7 @@ func TestParser(t *testing.T) {
 		t.Fatal(err)
 	}
 	file := fset.AddFile("foo.lox", -1, len(data))
-	errLogger := errlogger.New(fset)
+	errLogger := errlogger.New()
 	spec, ok := Parse(file, []byte(data), errLogger)
 	if !ok {
 		t.Fatal("Parse failed")
@@ -23,4 +24,5 @@ func TestParser(t *testing.T) {
 	if spec == nil {
 		t.Fatal("spec is nil")
 	}
+	fmt.Printf("%+v\n", spec)
 }

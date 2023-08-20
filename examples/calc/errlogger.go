@@ -12,15 +12,23 @@ type ErrLogger struct {
 	str  strings.Builder
 }
 
-func (l *ErrLogger) Error(pos gotoken.Pos, err error) {
+func (l *ErrLogger) Errorf(pos gotoken.Pos, msg string, args ...any) {
 	if l.str.Len() > 0 {
 		l.str.WriteString("\n")
 	}
-	position := l.Fset.Position(pos)
-	if position.IsValid() {
-		fmt.Fprintf(&l.str, "%v:%v: ", position.Line, position.Column)
+	if pos.IsValid() {
+		position := l.Fset.Position(pos)
+		fmt.Fprint(&l.str, position.String()+": ")
 	}
-	l.str.WriteString(err.Error())
+	fmt.Fprintf(&l.str, msg, args...)
+}
+
+func (l *ErrLogger) ParserError(err error) {
+	var pos gotoken.Pos
+	if err, ok := err.(interface{ Pos() Token }); ok {
+		pos = err.Pos().Pos
+	}
+	l.Errorf(pos, "%v", err)
 }
 
 func (l *ErrLogger) Err() error {
