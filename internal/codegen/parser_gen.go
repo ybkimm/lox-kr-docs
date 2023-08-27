@@ -389,15 +389,16 @@ func (s *ParserGenState) assignActions() {
 			if !gotypes.Identical(method.ReturnType, reduceMethod.ReturnType) {
 				s.errs.Errorf(
 					s.fset.Position(method.Method.Pos()),
-					"reduce method %v returns %v but another reduce "+
-						"method for the same rule %v returns %v",
-					method.MethodName, method.ReturnType, ruleName,
-					reduceMethod.ReturnType)
+					"%v returns %v but %v returns %v",
+					method.MethodName, method.ReturnType,
+					reduceMethod.MethodName, reduceMethod.ReturnType)
+				s.errs.Infof(
+					s.fset.Position(method.Method.Pos()),
+					"all actions for the same rule must return the same type")
 				s.errs.Infof(
 					s.fset.Position(reduceMethod.Method.Pos()),
-					"method %v is the method that returns %v for rule %v",
-					reduceMethod.MethodName, reduceMethod.ReturnType,
-					ruleName)
+					"%v is defined here",
+					reduceMethod.MethodName)
 			}
 		}
 		assert(reduceMethod != nil && reduceMethod.ReturnType != nil)
@@ -466,8 +467,8 @@ func (s *ParserGenState) assignActions() {
 		if method == nil {
 			s.errs.Errorf(
 				prod.Pos,
-				"no matching reduce method for production of rule %v",
-				rule.Name)
+				"this production does not have an action method")
+			continue
 		}
 		reduceType := method.ReturnType
 		if existing := s.reduceTypes[rule]; existing == nil {
@@ -479,6 +480,10 @@ func (s *ParserGenState) assignActions() {
 				rule.Name, existing, reduceType))
 		}
 		s.reduceMap[prod] = method
+	}
+
+	if s.errs.HasError() {
+		return
 	}
 }
 
