@@ -7,11 +7,12 @@
   ONE_OR_MANY
   ZERO_OR_ONE
 
+  COMMA
+  CPAREN
   DEFINE
+  OPAREN
   OR
   SEMICOLON
-  OPAREN
-  CPAREN
 
   TOKEN
   LEFT
@@ -25,7 +26,8 @@ prods     = prods OR prod
           | prod ;
 prod      = term_card+ qualif? ;
 term_card = term card? ;
-term      = ID ;
+term      = ID | list ;
+list      = LIST OPAREN term COMMA term ;
 card      = ZERO_OR_MANY | ONE_OR_MANY | ZERO_OR_ONE ;
 qualif    = LEFT OPAREN NUM CPAREN
           | RIGHT OPAREN NUM CPAREN ;

@@ -76,10 +76,18 @@ func (p *parser) on_term_card(term *ast.Term, q ast.Qualifier) *ast.Term {
 	return term
 }
 
-func (p *parser) on_term(name Token) *ast.Term {
+func (p *parser) on_term__id(name Token) *ast.Term {
 	return &ast.Term{
 		Name: name.Str,
 	}
+}
+
+func (p *parser) on_term__list(listTerm *ast.Term) *ast.Term {
+	return listTerm
+}
+
+func (p *parser) on_list(_, _ Token, elem *ast.Term, _ Token, sep *ast.Term) *ast.Term {
+	return elem
 }
 
 func (p *parser) on_card(card Token) ast.Qualifier {

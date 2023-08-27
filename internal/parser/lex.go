@@ -16,9 +16,10 @@ type Token struct {
 }
 
 var keywords = map[string]TokenType{
-	"@token": TOKEN,
 	"@left":  LEFT,
+	"@list":  LIST,
 	"@right": RIGHT,
+	"@token": TOKEN,
 }
 
 func isNumber(r rune) bool {
@@ -129,6 +130,9 @@ func (l *lex) nextToken(tok *Token) {
 		case ')':
 			l.advance()
 			tok.Type = CPAREN
+		case ',':
+			l.advance()
+			tok.Type = COMMA
 		case '@':
 			l.scanKeyword(tok)
 		default:

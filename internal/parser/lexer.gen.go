@@ -15,15 +15,16 @@ const (
 	ZERO_OR_MANY TokenType = 5
 	ONE_OR_MANY TokenType = 6
 	ZERO_OR_ONE TokenType = 7
-	DEFINE TokenType = 8
-	OR TokenType = 9
-	SEMICOLON TokenType = 10
+	COMMA TokenType = 8
+	CPAREN TokenType = 9
+	DEFINE TokenType = 10
 	OPAREN TokenType = 11
-	CPAREN TokenType = 12
-	TOKEN TokenType = 13
-	LEFT TokenType = 14
-	RIGHT TokenType = 15
-	LIST TokenType = 16
+	OR TokenType = 12
+	SEMICOLON TokenType = 13
+	TOKEN TokenType = 14
+	LEFT TokenType = 15
+	RIGHT TokenType = 16
+	LIST TokenType = 17
 )
 
 func (t TokenType) String() string {
@@ -44,16 +45,18 @@ func (t TokenType) String() string {
 		return "ONE_OR_MANY"
 	case ZERO_OR_ONE: 
 		return "ZERO_OR_ONE"
+	case COMMA: 
+		return "COMMA"
+	case CPAREN: 
+		return "CPAREN"
 	case DEFINE: 
 		return "DEFINE"
+	case OPAREN: 
+		return "OPAREN"
 	case OR: 
 		return "OR"
 	case SEMICOLON: 
 		return "SEMICOLON"
-	case OPAREN: 
-		return "OPAREN"
-	case CPAREN: 
-		return "CPAREN"
 	case TOKEN: 
 		return "TOKEN"
 	case LEFT: 
