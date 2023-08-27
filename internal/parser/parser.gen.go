@@ -185,7 +185,7 @@ func (p *parser) _lxAct(prod int32) any {
 			case 8:
 				return p.on_term_card(
 					p.sym.Peek(1).(*_i0.Term),
-					p.sym.Peek(0).(_i0.Qualifier),
+					p.sym.Peek(0).(_i0.Cardinality),
 		    )
 			case 9:
 				return p.on_term__id(
@@ -259,10 +259,10 @@ func (p *parser) _lxAct(prod int32) any {
 				return zero
 			}
   case 24:  // ZeroOrOne
-			return p.sym.Peek(0).(_i0.Qualifier)
+			return p.sym.Peek(0).(_i0.Cardinality)
   case 25:  // ZeroOrOne
 			{
-				var zero _i0.Qualifier
+				var zero _i0.Cardinality
 				return zero
 			}
   case 26:  // OneOrMore

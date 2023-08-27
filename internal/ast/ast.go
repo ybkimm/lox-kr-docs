@@ -26,13 +26,13 @@ func (a *baseAST) Bounds() Bounds {
 	return a.bounds
 }
 
-type Qualifier int
+type Cardinality int
 
 const (
-	NoQualifier Qualifier = iota
-	ZeroOrMore            // *
-	OneOrMore             // +
-	ZeroOrOne             // ?
+	One        Cardinality = iota
+	ZeroOrMore             // *
+	OneOrMore              // +
+	ZeroOrOne              // ?
 )
 
 type Parser struct {
@@ -77,8 +77,8 @@ type Prod struct {
 
 type Term struct {
 	baseAST
-	Name      string
-	Qualifier Qualifier
+	Name        string
+	Cardinality Cardinality
 }
 
 type CustomTokenDecl struct {

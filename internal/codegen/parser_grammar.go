@@ -73,8 +73,8 @@ func addParserToGrammar(fset *gotoken.FileSet, parser *ast.Parser, g *grammar.Gr
 						Name: astTerm.Name,
 						Pos:  fset.Position(astTerm.Bounds().Begin),
 					}
-					switch astTerm.Qualifier {
-					case ast.NoQualifier:
+					switch astTerm.Cardinality {
+					case ast.One:
 						term.Cardinality = grammar.One
 					case ast.ZeroOrMore:
 						term.Cardinality = grammar.ZeroOrMore
