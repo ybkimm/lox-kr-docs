@@ -114,61 +114,61 @@ func (p *parser) parse(lex _lxLexer, errLogger _lxErrorLogger) bool {
 func (p *parser) _lxAct(prod int32) any {
 	switch prod {
 			case 1:
-				return p.reduceS(
+				return p.on_S(
 					p.sym.Peek(0).(float64),
 		    )
 			case 2:
-				return p.reduceExpr_binary(
+				return p.on_Expr__binary(
 					p.sym.Peek(2).(float64),
 					p.sym.Peek(1).(Token),
 					p.sym.Peek(0).(float64),
 		    )
 			case 3:
-				return p.reduceExpr_binary(
+				return p.on_Expr__binary(
 					p.sym.Peek(2).(float64),
 					p.sym.Peek(1).(Token),
 					p.sym.Peek(0).(float64),
 		    )
 			case 4:
-				return p.reduceExpr_binary(
+				return p.on_Expr__binary(
 					p.sym.Peek(2).(float64),
 					p.sym.Peek(1).(Token),
 					p.sym.Peek(0).(float64),
 		    )
 			case 5:
-				return p.reduceExpr_binary(
+				return p.on_Expr__binary(
 					p.sym.Peek(2).(float64),
 					p.sym.Peek(1).(Token),
 					p.sym.Peek(0).(float64),
 		    )
 			case 6:
-				return p.reduceExpr_binary(
+				return p.on_Expr__binary(
 					p.sym.Peek(2).(float64),
 					p.sym.Peek(1).(Token),
 					p.sym.Peek(0).(float64),
 		    )
 			case 7:
-				return p.reduceExpr_binary(
+				return p.on_Expr__binary(
 					p.sym.Peek(2).(float64),
 					p.sym.Peek(1).(Token),
 					p.sym.Peek(0).(float64),
 		    )
 			case 8:
-				return p.reduceExpr_paren(
+				return p.on_Expr__paren(
 					p.sym.Peek(2).(Token),
 					p.sym.Peek(1).(float64),
 					p.sym.Peek(0).(Token),
 		    )
 			case 9:
-				return p.reduceExpr_num(
+				return p.on_Expr__num(
 					p.sym.Peek(0).(float64),
 		    )
 			case 10:
-				return p.reduceNum(
+				return p.on_Num(
 					p.sym.Peek(0).(Token),
 		    )
 			case 11:
-				return p.reduceNum_minus(
+				return p.on_Num__minus(
 					p.sym.Peek(1).(Token),
 					p.sym.Peek(0).(Token),
 		    )

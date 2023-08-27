@@ -30,7 +30,7 @@ func Generate(cfg *Config) {
 	}
 
 	if cfg.AnalysisWriter != nil {
-		pgen.ParserTable.Print(cfg.AnalysisWriter)
+		pgen.parserTable.Print(cfg.AnalysisWriter)
 	}
 
 	if cfg.AnalysisOnly {
@@ -50,7 +50,7 @@ func Generate(cfg *Config) {
 		return
 	}
 
-	pgen.MapReduceActions()
+	pgen.assignActions()
 	if cfg.Errs.HasError() {
 		return
 	}

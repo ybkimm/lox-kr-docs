@@ -26,12 +26,12 @@ type parser struct {
 	result    float64
 }
 
-func (p *parser) reduceS(e float64) any {
+func (p *parser) on_S(e float64) any {
 	p.result = e
 	return nil
 }
 
-func (p *parser) reduceExpr_binary(left float64, op Token, right float64) float64 {
+func (p *parser) on_Expr__binary(left float64, op Token, right float64) float64 {
 	switch op.Type {
 	case PLUS:
 		return left + right
@@ -50,15 +50,15 @@ func (p *parser) reduceExpr_binary(left float64, op Token, right float64) float6
 	}
 }
 
-func (p *parser) reduceExpr_paren(_ Token, e float64, _ Token) float64 {
+func (p *parser) on_Expr__paren(_ Token, e float64, _ Token) float64 {
 	return e
 }
 
-func (p *parser) reduceExpr_num(e float64) float64 {
+func (p *parser) on_Expr__num(e float64) float64 {
 	return e
 }
 
-func (p *parser) reduceNum(num Token) float64 {
+func (p *parser) on_Num(num Token) float64 {
 	v, err := strconv.ParseFloat(num.Str, 64)
 	if err != nil {
 		p.errLogger.Errorf(num.Pos, "invalid float: %v", err)
@@ -67,7 +67,7 @@ func (p *parser) reduceNum(num Token) float64 {
 	return v
 }
 
-func (p *parser) reduceNum_minus(_ Token, num Token) float64 {
+func (p *parser) on_Num__minus(_ Token, num Token) float64 {
 	v, err := strconv.ParseFloat(num.Str, 64)
 	if err != nil {
 		p.errLogger.Errorf(num.Pos, "invalid float: %v", err)

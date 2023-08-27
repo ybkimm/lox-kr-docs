@@ -138,72 +138,72 @@ func (p *parser) parse(lex _lxLexer, errLogger _lxErrorLogger) bool {
 func (p *parser) _lxAct(prod int32) any {
 	switch prod {
 			case 1:
-				return p.reduceParser(
+				return p.on_Parser(
 					p.sym.Peek(0).([]_i0.ParserDecl),
 		    )
 			case 2:
-				return p.reducePdecl(
+				return p.on_Pdecl(
 					p.sym.Peek(0).(_i0.ParserDecl),
 		    )
 			case 3:
-				return p.reducePdecl(
+				return p.on_Pdecl(
 					p.sym.Peek(0).(_i0.ParserDecl),
 		    )
 			case 4:
-				return p.reducePrule(
+				return p.on_Prule(
 					p.sym.Peek(3).(Token),
 					p.sym.Peek(2).(Token),
 					p.sym.Peek(1).([]*_i0.Prod),
 					p.sym.Peek(0).(Token),
 		    )
 			case 5:
-				return p.reducePprods(
+				return p.on_Pprods(
 					p.sym.Peek(2).([]*_i0.Prod),
 					p.sym.Peek(1).(Token),
 					p.sym.Peek(0).(*_i0.Prod),
 		    )
 			case 6:
-				return p.reducePprods_1(
+				return p.on_Pprods__1(
 					p.sym.Peek(0).(*_i0.Prod),
 		    )
 			case 7:
-				return p.reducePprod(
+				return p.on_Pprod(
 					p.sym.Peek(1).([]*_i0.Term),
 					p.sym.Peek(0).(*_i0.ProdQualifier),
 		    )
 			case 8:
-				return p.reducePterm(
+				return p.on_Pterm(
 					p.sym.Peek(1).(Token),
 					p.sym.Peek(0).(_i0.Qualifier),
 		    )
 			case 9:
-				return p.reducePcard(
+				return p.on_Pcard(
 					p.sym.Peek(0).(Token),
 		    )
 			case 10:
-				return p.reducePcard(
+				return p.on_Pcard(
 					p.sym.Peek(0).(Token),
 		    )
 			case 11:
-				return p.reducePcard(
+				return p.on_Pcard(
 					p.sym.Peek(0).(Token),
 		    )
 			case 12:
-				return p.reducePqualif(
+				return p.on_Pqualif(
 					p.sym.Peek(3).(Token),
 					p.sym.Peek(2).(Token),
 					p.sym.Peek(1).(Token),
 					p.sym.Peek(0).(Token),
 		    )
 			case 13:
-				return p.reducePqualif(
+				return p.on_Pqualif(
 					p.sym.Peek(3).(Token),
 					p.sym.Peek(2).(Token),
 					p.sym.Peek(1).(Token),
 					p.sym.Peek(0).(Token),
 		    )
 			case 14:
-				return p.reduceLtoken(
+				return p.on_Ltoken(
 					p.sym.Peek(2).(Token),
 					p.sym.Peek(1).([]Token),
 					p.sym.Peek(0).(Token),
