@@ -378,7 +378,7 @@ func getParserObj(scope *gotypes.Scope) (gotypes.Object, error) {
 	return obj, nil
 }
 
-func (s *ParserGenState) MapReduceActions() error {
+func (s *ParserGenState) MapReduceActions() {
 	s.ReduceMap = make(map[*grammar.Prod]*ReduceMethod)
 	s.ReduceTypes = make(map[*grammar.Rule]gotypes.Type)
 
@@ -392,24 +392,36 @@ func (s *ParserGenState) MapReduceActions() error {
 				continue
 			}
 			if !gotypes.Identical(method.ReturnType, reduceMethod.ReturnType) {
-				return fmt.Errorf(
-					"reduce methods %v and %v differ return types",
-					method.MethodName, reduceMethod.MethodName)
+				s.errs.Errorf(
+					s.Fset.Position(method.Method.Pos()),
+					"reduce method %v returns %v but another reduce "+
+						"method for the same rule %v returns %v",
+					method.MethodName, method.ReturnType, ruleName,
+					reduceMethod.ReturnType)
+				s.errs.Infof(
+					s.Fset.Position(reduceMethod.Method.Pos()),
+					"method %v is the method that returns %v for rule %v",
+					reduceMethod.MethodName, reduceMethod.ReturnType,
+					ruleName)
 			}
 		}
 		assert(reduceMethod != nil && reduceMethod.ReturnType != nil)
 		rule, ok := s.Grammar.GetSymbol(ruleName).(*grammar.Rule)
 		if !ok {
-			return fmt.Errorf(
+			s.errs.Errorf(
+				s.Fset.Position(reduceMethod.Method.Pos()),
 				"method %v has no corresponding rule",
 				reduceMethod.MethodName)
 		}
 		s.ReduceTypes[rule] = reduceMethod.ReturnType
-		fmt.Println(rule.Name, reduceMethod.ReturnType)
 	}
 
-	// Determine the Go type of the reduce-artifact of each rule.
-	// Process synthetic rules at this time.
+	if s.errs.HasError() {
+		return
+	}
+
+	// Determine the reduce-artifact's Go-type for each rule.
+	// Synthetic rules first.
 	changed := true
 	for changed {
 		changed = false
@@ -429,66 +441,50 @@ func (s *ParserGenState) MapReduceActions() error {
 		}
 	}
 
+	// User rules next.
 	for _, rule := range s.Grammar.Rules {
 		if rule.Generated == grammar.GeneratedSPrime {
 			continue
 		}
 		ruleReduceType := s.ReduceTypes[rule]
 		if ruleReduceType == nil {
-			return fmt.Errorf(
+			s.errs.Errorf(
+				rule.Pos,
 				"rule %v does not have a reduce method",
 				rule.Name)
 		}
 	}
 
+	if s.errs.HasError() {
+		return
+	}
+
 	// Assign each method to a production.
-	// Only non-synthetic methods at this time.
-	for prodIndex, prod := range s.Grammar.Prods {
+	for _, prod := range s.Grammar.Prods {
 		rule := s.Grammar.ProdRule(prod)
 		if rule.Generated != grammar.NotGenerated {
+			// Only user (non-synthetic) rules. The action for generated rules will
+			// also be generated.
 			continue
 		}
 		method := s.findMethodForProd(prod, s.ReduceMethods[rule.Name])
 		if method == nil {
-			return fmt.Errorf(
-				"there is no reduce method for %v prod #%v",
-				rule.Name, prodIndex+1)
+			s.errs.Errorf(
+				prod.Pos,
+				"no matching reduce method for production of rule %v",
+				rule.Name)
 		}
 		reduceType := method.ReturnType
 		if existing := s.ReduceTypes[rule]; existing == nil {
 			s.ReduceTypes[rule] = reduceType
 		} else if !gotypes.Identical(existing, reduceType) {
-			return fmt.Errorf(
+			// We should have already caught this by now.
+			panic(fmt.Errorf(
 				"conflicting reduce types for %v: %v and %v",
-				rule.Name, existing, reduceType)
+				rule.Name, existing, reduceType))
 		}
 		s.ReduceMap[prod] = method
 	}
-
-	for prod, method := range s.ReduceMap {
-		if len(method.Params) != len(prod.Terms) {
-			return fmt.Errorf(
-				"%v: prod has %v terms but reduce method has %v parameters",
-				method.MethodName,
-				len(prod.Terms),
-				len(method.Params))
-		}
-		for i, param := range method.Params {
-			term := prod.Terms[i]
-			termReduceType := s.termReduceType(term)
-			if !gotypes.AssignableTo(termReduceType, param.Type) {
-				return fmt.Errorf(
-					"%v: param %v has type %v but term symbol %v has reduce type %v",
-					method.MethodName,
-					i,
-					param.Type,
-					term.Name,
-					termReduceType.String())
-			}
-		}
-	}
-
-	return nil
 }
 
 func (s *ParserGenState) termReduceType(term *grammar.Term) gotypes.Type {
@@ -576,7 +572,7 @@ func (s *ParserGenState) getReduceTypeForGeneratedRule(
 	}
 }
 
-func (s *ParserGenState) Generate2() error {
+func (s *ParserGenState) Generate() error {
 	s.imports = newImportBuilder()
 
 	vars := jet.VarMap{}

@@ -49,6 +49,11 @@ func (t TokenType) String() string {
 	}
 }
 
+type _lxBounds struct {
+	Begin Token
+	End   Token
+}
+
 type _lxErrorLogger interface {
 	ParserError(err error)
 }

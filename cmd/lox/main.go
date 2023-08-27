@@ -39,35 +39,21 @@ func realMain() error {
 		return fmt.Errorf("failed to parse grammar")
 	}
 
-	state := codegen.NewParserGenState(dir, grammar, errLogger)
+	cfg := &codegen.Config{
+		Errs:    errLogger,
+		ImplDir: dir,
+		Grammar: grammar,
+	}
 
-	state.ConstructParseTables()
 	if *flagAnalyze {
-		state.ParserTable.Print(os.Stdout)
-		return nil
+		cfg.AnalysisWriter = os.Stdout
+		cfg.AnalysisOnly = true
 	}
 
-	lexerState := codegen.NewLexerGenState(dir, grammar)
-	err := lexerState.Generate()
-	if err != nil {
-		return err
-	}
+	codegen.Generate(cfg)
 
-	state.ParseGo()
-	if errLogger.HasError() {
-		return fmt.Errorf("failed to parse Go package")
-	}
-
-	state.ParserTable.Print(os.Stdout)
-
-	err = state.MapReduceActions()
-	if err != nil {
-		return err
-	}
-
-	err = state.Generate2()
-	if err != nil {
-		return err
+	if cfg.Errs.HasError() {
+		return fmt.Errorf("errors ocurred")
 	}
 
 	return nil
