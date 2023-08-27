@@ -23,6 +23,7 @@ const (
 	TOKEN TokenType = 13
 	LEFT TokenType = 14
 	RIGHT TokenType = 15
+	LIST TokenType = 16
 )
 
 func (t TokenType) String() string {
@@ -59,6 +60,8 @@ func (t TokenType) String() string {
 		return "LEFT"
 	case RIGHT: 
 		return "RIGHT"
+	case LIST: 
+		return "LIST"
 	default:
 		return "???"
 	}

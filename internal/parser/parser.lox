@@ -15,16 +15,18 @@
 
   TOKEN
   LEFT
-  RIGHT ;
+  RIGHT
+  LIST ;
 
-parser  = decl* ;
-decl    = rule | token;
-rule    = ID DEFINE prods SEMICOLON ;
-prods   = prods OR prod
-        | prod ;
-prod    = term+ qualif? ;
-term    = ID card? ;
-card    = ZERO_OR_MANY | ONE_OR_MANY | ZERO_OR_ONE ; 
-qualif  = LEFT OPAREN NUM CPAREN
-        | RIGHT OPAREN NUM CPAREN ;
-token   = TOKEN ID+ SEMICOLON ;
+parser    = decl* ;
+decl      = rule | token;
+rule      = ID DEFINE prods SEMICOLON ;
+prods     = prods OR prod
+          | prod ;
+prod      = term_card+ qualif? ;
+term_card = term card? ;
+term      = ID ;
+card      = ZERO_OR_MANY | ONE_OR_MANY | ZERO_OR_ONE ;
+qualif    = LEFT OPAREN NUM CPAREN
+          | RIGHT OPAREN NUM CPAREN ;
+token     = TOKEN ID+ SEMICOLON ;

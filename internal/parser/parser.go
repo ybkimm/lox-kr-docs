@@ -71,10 +71,14 @@ func (p *parser) on_prod(terms []*ast.Term, qualif *ast.ProdQualifier) *ast.Prod
 	}
 }
 
-func (p *parser) on_term(name Token, q ast.Qualifier) *ast.Term {
+func (p *parser) on_term_card(term *ast.Term, q ast.Qualifier) *ast.Term {
+	term.Qualifier = q
+	return term
+}
+
+func (p *parser) on_term(name Token) *ast.Term {
 	return &ast.Term{
-		Name:      name.Str,
-		Qualifier: q,
+		Name: name.Str,
 	}
 }
 
