@@ -38,47 +38,47 @@ func Parse(file *gotoken.File, data []byte, errs *errlogger.ErrLogger) (*ast.Par
 	return parser.parserAST, ok
 }
 
-func (p *parser) on_Parser(decls []ast.ParserDecl) *ast.Parser {
+func (p *parser) on_parser(decls []ast.ParserDecl) *ast.Parser {
 	p.parserAST = &ast.Parser{
 		Decls: decls,
 	}
 	return p.parserAST
 }
 
-func (p *parser) on_Pdecl(r ast.ParserDecl) ast.ParserDecl {
+func (p *parser) on_decl(r ast.ParserDecl) ast.ParserDecl {
 	return r
 }
 
-func (p *parser) on_Prule(name Token, _ Token, prods []*ast.Prod, _ Token) *ast.Rule {
+func (p *parser) on_rule(name Token, _ Token, prods []*ast.Prod, _ Token) *ast.Rule {
 	return &ast.Rule{
 		Name:  name.Str,
 		Prods: prods,
 	}
 }
 
-func (p *parser) on_Pprods(prods []*ast.Prod, _ Token, prod *ast.Prod) []*ast.Prod {
+func (p *parser) on_prods(prods []*ast.Prod, _ Token, prod *ast.Prod) []*ast.Prod {
 	return append(prods, prod)
 }
 
-func (p *parser) on_Pprods__1(prod *ast.Prod) []*ast.Prod {
+func (p *parser) on_prods__1(prod *ast.Prod) []*ast.Prod {
 	return []*ast.Prod{prod}
 }
 
-func (p *parser) on_Pprod(terms []*ast.Term, qualif *ast.ProdQualifier) *ast.Prod {
+func (p *parser) on_prod(terms []*ast.Term, qualif *ast.ProdQualifier) *ast.Prod {
 	return &ast.Prod{
 		Terms:     terms,
 		Qualifier: qualif,
 	}
 }
 
-func (p *parser) on_Pterm(name Token, q ast.Qualifier) *ast.Term {
+func (p *parser) on_term(name Token, q ast.Qualifier) *ast.Term {
 	return &ast.Term{
 		Name:      name.Str,
 		Qualifier: q,
 	}
 }
 
-func (p *parser) on_Pcard(card Token) ast.Qualifier {
+func (p *parser) on_card(card Token) ast.Qualifier {
 	switch card.Type {
 	case ZERO_OR_MANY:
 		return ast.ZeroOrMore
@@ -91,7 +91,7 @@ func (p *parser) on_Pcard(card Token) ast.Qualifier {
 	}
 }
 
-func (p *parser) on_Pqualif(assoc Token, _ Token, prec Token, _ Token) *ast.ProdQualifier {
+func (p *parser) on_qualif(assoc Token, _ Token, prec Token, _ Token) *ast.ProdQualifier {
 	q := &ast.ProdQualifier{}
 
 	switch assoc.Type {
@@ -115,7 +115,7 @@ func (p *parser) on_Pqualif(assoc Token, _ Token, prec Token, _ Token) *ast.Prod
 	return q
 }
 
-func (p *parser) on_Ltoken(_ Token, names []Token, _ Token) *ast.CustomTokenDecl {
+func (p *parser) on_token(_ Token, names []Token, _ Token) *ast.CustomTokenDecl {
 	d := &ast.CustomTokenDecl{
 		CustomTokens: make([]*ast.CustomToken, len(names)),
 	}

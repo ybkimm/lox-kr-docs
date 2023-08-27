@@ -9,16 +9,16 @@
   O_PAREN
   C_PAREN ;
 
-S = Expr ;
+S = expr ;
 
-Expr = Expr PLUS Expr   @left(1)
-     | Expr MINUS Expr  @left(1)
-     | Expr MUL Expr    @left(2)
-     | Expr DIV Expr    @left(2)
-     | Expr REM Expr    @left(2)
-     | Expr POW Expr    @right(3)
-     | O_PAREN Expr C_PAREN
-     | Num ;
+expr = expr PLUS expr   @left(1)
+     | expr MINUS expr  @left(1)
+     | expr MUL expr    @left(2)
+     | expr DIV expr    @left(2)
+     | expr REM expr    @left(2)
+     | expr POW expr    @right(3)
+     | O_PAREN expr C_PAREN
+     | num ;
 
-Num = NUM
+num = NUM
     | MINUS NUM ;

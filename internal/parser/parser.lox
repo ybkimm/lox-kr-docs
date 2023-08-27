@@ -17,14 +17,14 @@
   LEFT
   RIGHT ;
 
-Parser   = Pdecl* ;
-Pdecl    = Prule | Ltoken;
-Prule    = ID DEFINE Pprods SEMICOLON ;
-Pprods   = Pprods OR Pprod
-         | Pprod ;
-Pprod    = Pterm+ Pqualif? ;
-Pterm    = ID Pcard? ;
-Pcard    = ZERO_OR_MANY | ONE_OR_MANY | ZERO_OR_ONE ; 
-Pqualif  = LEFT OPAREN NUM CPAREN
-         | RIGHT OPAREN NUM CPAREN ;
-Ltoken   = TOKEN ID+ SEMICOLON ;
+parser  = decl* ;
+decl    = rule | token;
+rule    = ID DEFINE prods SEMICOLON ;
+prods   = prods OR prod
+        | prod ;
+prod    = term+ qualif? ;
+term    = ID card? ;
+card    = ZERO_OR_MANY | ONE_OR_MANY | ZERO_OR_ONE ; 
+qualif  = LEFT OPAREN NUM CPAREN
+        | RIGHT OPAREN NUM CPAREN ;
+token   = TOKEN ID+ SEMICOLON ;

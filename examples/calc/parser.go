@@ -31,7 +31,7 @@ func (p *parser) on_S(e float64) any {
 	return nil
 }
 
-func (p *parser) on_Expr__binary(left float64, op Token, right float64) float64 {
+func (p *parser) on_expr__binary(left float64, op Token, right float64) float64 {
 	switch op.Type {
 	case PLUS:
 		return left + right
@@ -50,15 +50,15 @@ func (p *parser) on_Expr__binary(left float64, op Token, right float64) float64 
 	}
 }
 
-func (p *parser) on_Expr__paren(_ Token, e float64, _ Token) float64 {
+func (p *parser) on_expr__paren(_ Token, e float64, _ Token) float64 {
 	return e
 }
 
-func (p *parser) on_Expr__num(e float64) float64 {
+func (p *parser) on_expr__num(e float64) float64 {
 	return e
 }
 
-func (p *parser) on_Num(num Token) float64 {
+func (p *parser) on_num(num Token) float64 {
 	v, err := strconv.ParseFloat(num.Str, 64)
 	if err != nil {
 		p.errLogger.Errorf(num.Pos, "invalid float: %v", err)
@@ -67,7 +67,7 @@ func (p *parser) on_Num(num Token) float64 {
 	return v
 }
 
-func (p *parser) on_Num__minus(_ Token, num Token) float64 {
+func (p *parser) on_num__minus(_ Token, num Token) float64 {
 	v, err := strconv.ParseFloat(num.Str, 64)
 	if err != nil {
 		p.errLogger.Errorf(num.Pos, "invalid float: %v", err)
