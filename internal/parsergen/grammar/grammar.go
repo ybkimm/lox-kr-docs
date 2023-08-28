@@ -97,12 +97,14 @@ const (
 	ZeroOrMore             // *
 	OneOrMore              // +
 	ZeroOrOne              // ?
+	List                   // @list(term, sep)
 )
 
 type Term struct {
 	Name        string
 	Cardinality Cardinality
 	Pos         gotoken.Position
+	Separator   *Term
 }
 
 func NewTerm(symName string, q ...Cardinality) *Term {

@@ -107,14 +107,21 @@ func (g *AugmentedGrammar) resolveReferences(errs *errlogger.ErrLogger) {
 	for _, rule := range g.Rules {
 		for _, prod := range rule.Prods {
 			for _, term := range prod.Terms {
-				sym := g.nameToSymbol[term.Name]
-				if sym == nil {
-					errs.Errorf(term.Pos, "%q undefined", term.Name)
-					continue
-				}
-				g.termToSymbol[term] = sym
+				g.resolveTerm(term, errs)
 			}
 		}
+	}
+}
+
+func (g *AugmentedGrammar) resolveTerm(term *Term, errs *errlogger.ErrLogger) {
+	sym := g.nameToSymbol[term.Name]
+	if sym == nil {
+		errs.Errorf(term.Pos, "%q undefined", term.Name)
+		return
+	}
+	g.termToSymbol[term] = sym
+	if term.Separator != nil {
+		g.resolveTerm(term.Separator, errs)
 	}
 }
 
