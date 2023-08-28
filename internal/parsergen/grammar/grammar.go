@@ -14,6 +14,7 @@ const (
 	GeneratedSPrime
 	GeneratedZeroOrOne
 	GeneratedOneOrMore
+	GeneratedList
 )
 
 type Grammar struct {

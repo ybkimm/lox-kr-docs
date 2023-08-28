@@ -242,12 +242,12 @@ func (p *parser) _lxAct(prod int32) any {
 				var zero []_i0.ParserDecl
 				return zero
 			}
-  case 20:  // OneOrMore
+	case 20:  // OneOrMore
 			return append(
 				p.sym.Peek(1).([]*_i0.Term),
 				p.sym.Peek(0).(*_i0.Term),
 			)
-  case 21:  // OneOrMore
+	case 21:  // OneOrMore
 		  return []*_i0.Term{
 				p.sym.Peek(0).(*_i0.Term),
 			}
@@ -265,21 +265,21 @@ func (p *parser) _lxAct(prod int32) any {
 				var zero _i0.Cardinality
 				return zero
 			}
-  case 26:  // OneOrMore
+	case 26:  // OneOrMore
 			return append(
 				p.sym.Peek(1).([]Token),
 				p.sym.Peek(0).(Token),
 			)
-  case 27:  // OneOrMore
+	case 27:  // OneOrMore
 		  return []Token{
 				p.sym.Peek(0).(Token),
 			}
-  case 28:  // OneOrMore
+	case 28:  // OneOrMore
 			return append(
 				p.sym.Peek(1).([]_i0.ParserDecl),
 				p.sym.Peek(0).(_i0.ParserDecl),
 			)
-  case 29:  // OneOrMore
+	case 29:  // OneOrMore
 		  return []_i0.ParserDecl{
 				p.sym.Peek(0).(_i0.ParserDecl),
 			}

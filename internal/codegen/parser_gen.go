@@ -154,8 +154,8 @@ func (p *{{parser}}) {{p}}Act(prod int32) any {
 					p.sym.Peek({{ len(method.Params) - param_index - 1 }}).({{ go_type(param.Type) }}),
 				{{- end }}
 		    )
-	{{- else if rule.Generated == generated_one_or_more }}
-  case {{ prod_index }}:  // OneOrMore
+	{{- else if rule.Generated == generated_one_or_more or rule.Generated == generated_list }}
+	case {{ prod_index }}:  // {{ rule.Generated == generated_one_or_more ? "OneOrMore" : "List" }}
 		{{- if len(prod.Terms) == 1 }}
 			{{- term_go_type := go_type(term_reduce_type(prod.Terms[0])) }}
 		  return []{{ term_go_type }}{
@@ -551,7 +551,7 @@ func (s *ParserGenState) getReduceTypeForGeneratedRule(
 			return s.token.Type()
 		}
 
-	case grammar.GeneratedOneOrMore:
+	case grammar.GeneratedOneOrMore, grammar.GeneratedList:
 		// a = b c+
 		//  =>
 		// a = b a'
@@ -590,6 +590,7 @@ func (s *ParserGenState) Generate() error {
 	vars.Set("not_generated", grammar.NotGenerated)
 	vars.Set("generated_zero_or_one", grammar.GeneratedZeroOrOne)
 	vars.Set("generated_one_or_more", grammar.GeneratedOneOrMore)
+	vars.Set("generated_list", grammar.GeneratedList)
 	vars.Set("go_type", s.templGoType)
 	vars.Set("term_reduce_type", s.termReduceType)
 	vars.Set("rule_reduce_type", s.reduceTypes)
