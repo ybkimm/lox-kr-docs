@@ -21,9 +21,7 @@
 
 parser    = decl* ;
 decl      = rule | token;
-rule      = ID DEFINE prods SEMICOLON ;
-prods     = prods OR prod
-          | prod ;
+rule      = ID DEFINE @list(prod, OR) SEMICOLON ;
 prod      = term_card+ qualif? ;
 term_card = term card? ;
 term      = ID | list ;

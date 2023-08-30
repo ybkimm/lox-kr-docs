@@ -56,14 +56,6 @@ func (p *parser) on_rule(name Token, _ Token, prods []*ast.Prod, _ Token) *ast.R
 	}
 }
 
-func (p *parser) on_prods(prods []*ast.Prod, _ Token, prod *ast.Prod) []*ast.Prod {
-	return append(prods, prod)
-}
-
-func (p *parser) on_prods__1(prod *ast.Prod) []*ast.Prod {
-	return []*ast.Prod{prod}
-}
-
 func (p *parser) on_prod(terms []*ast.Term, qualif *ast.ProdQualifier) *ast.Prod {
 	return &ast.Prod{
 		Terms:     terms,
