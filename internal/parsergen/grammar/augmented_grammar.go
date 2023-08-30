@@ -292,14 +292,14 @@ func (g *AugmentedGrammar) normalize() {
 						prod.Terms[i] = NewTerm(srule.Name)
 						changed = true
 					case List:
-						// a = b @list(c, d)
+						// a = b @list(c, sep)
 						//  =>
 						// a = b a'
-						// a' = a' c d
+						// a' = a' sep c
 						//    | c
 						srule := newRule(rule.Name, GeneratedList)
 						srule.Prods = []*Prod{
-							NewProd(NewTerm(srule.Name), NewTerm(term.Name), NewTerm(term.Separator.Name)),
+							NewProd(NewTerm(srule.Name), NewTerm(term.Separator.Name), NewTerm(term.Name)),
 							NewProd(NewTerm(term.Name)),
 						}
 						prod.Terms[i] = NewTermS(srule)

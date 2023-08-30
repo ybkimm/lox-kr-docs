@@ -154,8 +154,8 @@ func (p *{{parser}}) {{p}}Act(prod int32) any {
 					p.sym.Peek({{ len(method.Params) - param_index - 1 }}).({{ go_type(param.Type) }}),
 				{{- end }}
 		    )
-	{{- else if rule.Generated == generated_one_or_more or rule.Generated == generated_list }}
-	case {{ prod_index }}:  // {{ rule.Generated == generated_one_or_more ? "OneOrMore" : "List" }}
+	{{- else if rule.Generated == generated_one_or_more }}
+	case {{ prod_index }}:  // OneOrMore
 		{{- if len(prod.Terms) == 1 }}
 			{{- term_go_type := go_type(term_reduce_type(prod.Terms[0])) }}
 		  return []{{ term_go_type }}{
@@ -165,6 +165,20 @@ func (p *{{parser}}) {{p}}Act(prod int32) any {
 			{{- term_go_type := go_type(term_reduce_type(prod.Terms[1])) }}
 			return append(
 				p.sym.Peek(1).([]{{term_go_type}}),
+				p.sym.Peek(0).({{term_go_type}}),
+			)
+		{{- end }}
+	{{- else if rule.Generated == generated_list }}
+	case {{ prod_index }}:  // List
+		{{- if len(prod.Terms) == 1 }}
+			{{- term_go_type := go_type(term_reduce_type(prod.Terms[0])) }}
+		  return []{{ term_go_type }}{
+				p.sym.Peek(0).({{ term_go_type }}),
+			}
+		{{- else }}
+			{{- term_go_type := go_type(term_reduce_type(prod.Terms[2])) }}
+			return append(
+				p.sym.Peek(2).([]{{term_go_type}}),
 				p.sym.Peek(0).({{term_go_type}}),
 			)
 		{{- end }}
@@ -551,11 +565,27 @@ func (s *ParserGenState) getReduceTypeForGeneratedRule(
 			return s.token.Type()
 		}
 
-	case grammar.GeneratedOneOrMore, grammar.GeneratedList:
+	case grammar.GeneratedOneOrMore:
 		// a = b c+
 		//  =>
 		// a = b a'
 		// a' = a' c
+		//    | c
+		if prod != rule.Prods[1] {
+			return nil
+		}
+		cSym := s.grammar.TermSymbol(prod.Terms[0])
+		cType := s.token.Type()
+		if cRule, ok := cSym.(*grammar.Rule); ok {
+			cType = s.reduceTypes[cRule]
+		}
+		return gotypes.NewSlice(cType)
+
+	case grammar.GeneratedList:
+		// a = b @list(c, sep)
+		//  =>
+		// a = b a'
+		// a' = a' sep c
 		//    | c
 		if prod != rule.Prods[1] {
 			return nil
