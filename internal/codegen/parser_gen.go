@@ -204,7 +204,7 @@ func (p *{{parser}}) {{p}}Act(prod int32) any {
 const parserGenGoName = "parser.gen.go"
 const parserStateTypeName = "loxParser"
 
-type ParserGenState struct {
+type parserGenState struct {
 	implDir       string
 	grammar       *grammar.AugmentedGrammar
 	errs          *errlogger.ErrLogger
@@ -212,43 +212,43 @@ type ParserGenState struct {
 	parser        gotypes.Object
 	token         gotypes.Object
 	parserTable   *lr1.ParserTable
-	reduceMethods map[string][]*ReduceMethod
+	reduceMethods map[string][]*actionMethod
 	reduceTypes   map[*grammar.Rule]gotypes.Type
-	reduceMap     map[*grammar.Prod]*ReduceMethod
+	reduceMap     map[*grammar.Prod]*actionMethod
 	packageName   string
 	packagePath   string
 	imports       *importBuilder
 	hasOnReduce   bool
 }
 
-type ReduceMethod struct {
+type actionMethod struct {
 	Method     *gotypes.Func
-	MethodName string
-	Params     []*ReduceParam
+	Name       string
+	Params     []*actionParam
 	ReturnType gotypes.Type
 }
 
-type ReduceParam struct {
+type actionParam struct {
 	Type gotypes.Type
 }
 
-func NewParserGenState(
+func newParserGenState(
 	implDir string,
 	g *grammar.AugmentedGrammar,
 	errs *errlogger.ErrLogger,
-) *ParserGenState {
-	return &ParserGenState{
+) *parserGenState {
+	return &parserGenState{
 		implDir: implDir,
 		grammar: g,
 		errs:    errs,
 	}
 }
 
-func (s *ParserGenState) ConstructParseTables() {
+func (s *parserGenState) ConstructParseTables() {
 	s.parserTable = lr1.ConstructLALR(s.grammar)
 }
 
-func (s *ParserGenState) ParseGo() {
+func (s *parserGenState) ParseGo() {
 	var err error
 	s.packageName, err = computePackageName(s.implDir)
 	if err != nil {
@@ -305,7 +305,7 @@ func (s *ParserGenState) ParseGo() {
 	s.fset = fset
 	s.parser = parserObj
 	s.token = tokenObj
-	s.reduceMethods = make(map[string][]*ReduceMethod)
+	s.reduceMethods = make(map[string][]*actionMethod)
 
 	parserNamed := parserObj.Type().(*gotypes.Named)
 	for i := 0; i < parserNamed.NumMethods(); i++ {
@@ -328,16 +328,16 @@ func (s *ParserGenState) ParseGo() {
 			return
 		}
 
-		reduceMethod := &ReduceMethod{
+		reduceMethod := &actionMethod{
 			Method:     method,
-			MethodName: method.Name(),
+			Name:       method.Name(),
 			ReturnType: sig.Results().At(0).Type(),
 		}
 
 		params := sig.Params()
 		for i := 0; i < params.Len(); i++ {
 			param := params.At(i)
-			reduceParam := &ReduceParam{
+			reduceParam := &actionParam{
 				Type: param.Type(),
 			}
 			reduceMethod.Params = append(reduceMethod.Params, reduceParam)
@@ -387,14 +387,14 @@ func getParserObj(scope *gotypes.Scope) (gotypes.Object, error) {
 	return obj, nil
 }
 
-func (s *ParserGenState) assignActions() {
-	s.reduceMap = make(map[*grammar.Prod]*ReduceMethod)
+func (s *parserGenState) assignActions() {
+	s.reduceMap = make(map[*grammar.Prod]*actionMethod)
 	s.reduceTypes = make(map[*grammar.Rule]gotypes.Type)
 
 	// Determine the Go type of the reduce-artifact of each rule.
 	// Non-generated (user-specified) rules first.
 	for ruleName, methods := range s.reduceMethods {
-		var reduceMethod *ReduceMethod
+		var reduceMethod *actionMethod
 		for _, method := range methods {
 			if reduceMethod == nil {
 				reduceMethod = method
@@ -404,15 +404,15 @@ func (s *ParserGenState) assignActions() {
 				s.errs.Errorf(
 					s.fset.Position(method.Method.Pos()),
 					"%v returns %v but %v returns %v",
-					method.MethodName, method.ReturnType,
-					reduceMethod.MethodName, reduceMethod.ReturnType)
+					method.Name, method.ReturnType,
+					reduceMethod.Name, reduceMethod.ReturnType)
 				s.errs.Infof(
 					s.fset.Position(method.Method.Pos()),
 					"all actions for the same rule must return the same type")
 				s.errs.Infof(
 					s.fset.Position(reduceMethod.Method.Pos()),
 					"%v is defined here",
-					reduceMethod.MethodName)
+					reduceMethod.Name)
 			}
 		}
 		assert(reduceMethod != nil && reduceMethod.ReturnType != nil)
@@ -421,7 +421,7 @@ func (s *ParserGenState) assignActions() {
 			s.errs.Errorf(
 				s.fset.Position(reduceMethod.Method.Pos()),
 				"method %v does not match a rule",
-				reduceMethod.MethodName)
+				reduceMethod.Name)
 		}
 		s.reduceTypes[rule] = reduceMethod.ReturnType
 	}
@@ -501,7 +501,7 @@ func (s *ParserGenState) assignActions() {
 	}
 }
 
-func (s *ParserGenState) termReduceType(term *grammar.Term) gotypes.Type {
+func (s *parserGenState) termReduceType(term *grammar.Term) gotypes.Type {
 	termSym := s.grammar.TermSymbol(term)
 	termReduceType := s.token.Type()
 	if cRule, ok := termSym.(*grammar.Rule); ok {
@@ -510,12 +510,12 @@ func (s *ParserGenState) termReduceType(term *grammar.Term) gotypes.Type {
 	return termReduceType
 }
 
-func (s *ParserGenState) findMethodForProd(
+func (s *parserGenState) findMethodForProd(
 	prod *grammar.Prod,
-	methods []*ReduceMethod,
-) *ReduceMethod {
+	methods []*actionMethod,
+) *actionMethod {
 
-	isMatch := func(method *ReduceMethod) bool {
+	isMatch := func(method *actionMethod) bool {
 		if len(method.Params) != len(prod.Terms) {
 			return false
 		}
@@ -541,7 +541,7 @@ func (s *ParserGenState) findMethodForProd(
 	return nil
 }
 
-func (s *ParserGenState) getReduceTypeForGeneratedRule(
+func (s *parserGenState) getReduceTypeForGeneratedRule(
 	rule *grammar.Rule,
 	prod *grammar.Prod,
 ) gotypes.Type {
@@ -602,7 +602,7 @@ func (s *ParserGenState) getReduceTypeForGeneratedRule(
 	}
 }
 
-func (s *ParserGenState) Generate() error {
+func (s *parserGenState) Generate() error {
 	s.imports = newImportBuilder()
 
 	vars := jet.VarMap{}
@@ -640,7 +640,7 @@ func (s *ParserGenState) Generate() error {
 	return nil
 }
 
-func (s *ParserGenState) terminals() map[int]string {
+func (s *parserGenState) terminals() map[int]string {
 	terminals := make(map[int]string)
 	for i, terminal := range s.grammar.Terminals {
 		terminals[i] = terminal.Name
@@ -648,7 +648,7 @@ func (s *ParserGenState) terminals() map[int]string {
 	return terminals
 }
 
-func (s *ParserGenState) templGoType(t gotypes.Type) string {
+func (s *parserGenState) templGoType(t gotypes.Type) string {
 	return gotypes.TypeString(t, func(pkg *gotypes.Package) string {
 		if pkg.Path() == s.packagePath {
 			return ""
@@ -657,11 +657,11 @@ func (s *ParserGenState) templGoType(t gotypes.Type) string {
 	})
 }
 
-func (s *ParserGenState) templImport(path string) string {
+func (s *parserGenState) templImport(path string) string {
 	return s.imports.Import(path)
 }
 
-func (s *ParserGenState) templLHS() []int32 {
+func (s *parserGenState) templLHS() []int32 {
 	prods := make([]int32, len(s.grammar.Prods))
 	for prodIndex, prod := range s.grammar.Prods {
 		rule := s.grammar.ProdRule(prod)
@@ -670,13 +670,13 @@ func (s *ParserGenState) templLHS() []int32 {
 	return prods
 }
 
-func (s *ParserGenState) templArray(arr []int32) string {
+func (s *parserGenState) templArray(arr []int32) string {
 	var str strings.Builder
 	table.WriteArray(&str, arr)
 	return str.String()
 }
 
-func (s *ParserGenState) templTermCounts() []int32 {
+func (s *parserGenState) templTermCounts() []int32 {
 	prods := make([]int32, len(s.grammar.Prods))
 	for prodIndex, prod := range s.grammar.Prods {
 		prods[prodIndex] = int32(len(prod.Terms))
@@ -684,7 +684,7 @@ func (s *ParserGenState) templTermCounts() []int32 {
 	return prods
 }
 
-func (s *ParserGenState) templActions() []int32 {
+func (s *parserGenState) templActions() []int32 {
 	actionTable := table.New()
 	for _, state := range s.parserTable.States.States() {
 		var row []int32
@@ -711,7 +711,7 @@ func (s *ParserGenState) templActions() []int32 {
 	return actionTable.Array()
 }
 
-func (s *ParserGenState) templGoto() []int32 {
+func (s *parserGenState) templGoto() []int32 {
 	gotoTable := table.New()
 	for stateIndex, state := range s.parserTable.States.States() {
 		var row []int32

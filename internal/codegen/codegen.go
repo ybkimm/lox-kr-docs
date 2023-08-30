@@ -21,7 +21,7 @@ type Config struct {
 }
 
 func Generate(cfg *Config) {
-	pgen := NewParserGenState(cfg.ImplDir, cfg.Grammar, cfg.Errs)
+	pgen := newParserGenState(cfg.ImplDir, cfg.Grammar, cfg.Errs)
 	lgen := NewLexerGenState(cfg.ImplDir, cfg.Grammar)
 
 	pgen.ConstructParseTables()
