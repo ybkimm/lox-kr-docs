@@ -1,48 +1,48 @@
 package main
 
 import (
-  _i0 "fmt"
+	_i0 "fmt"
 )
 
 type TokenType int
 
 const (
-	EOF TokenType = 0
-	ERROR TokenType = 1
-	NUM TokenType = 2
-	PLUS TokenType = 3
-	MINUS TokenType = 4
-	MUL TokenType = 5
-	DIV TokenType = 6
-	REM TokenType = 7
-	POW TokenType = 8
+	EOF     TokenType = 0
+	ERROR   TokenType = 1
+	NUM     TokenType = 2
+	PLUS    TokenType = 3
+	MINUS   TokenType = 4
+	MUL     TokenType = 5
+	DIV     TokenType = 6
+	REM     TokenType = 7
+	POW     TokenType = 8
 	O_PAREN TokenType = 9
 	C_PAREN TokenType = 10
 )
 
 func (t TokenType) String() string {
 	switch t {
-	case EOF: 
+	case EOF:
 		return "EOF"
-	case ERROR: 
+	case ERROR:
 		return "ERROR"
-	case NUM: 
+	case NUM:
 		return "NUM"
-	case PLUS: 
+	case PLUS:
 		return "PLUS"
-	case MINUS: 
+	case MINUS:
 		return "MINUS"
-	case MUL: 
+	case MUL:
 		return "MUL"
-	case DIV: 
+	case DIV:
 		return "DIV"
-	case REM: 
+	case REM:
 		return "REM"
-	case POW: 
+	case POW:
 		return "POW"
-	case O_PAREN: 
+	case O_PAREN:
 		return "O_PAREN"
-	case C_PAREN: 
+	case C_PAREN:
 		return "C_PAREN"
 	default:
 		return "???"

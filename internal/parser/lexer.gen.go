@@ -1,69 +1,69 @@
 package parser
 
 import (
-  _i0 "fmt"
+	_i0 "fmt"
 )
 
 type TokenType int
 
 const (
-	EOF TokenType = 0
-	ERROR TokenType = 1
-	ID TokenType = 2
-	LITERAL TokenType = 3
-	NUM TokenType = 4
+	EOF          TokenType = 0
+	ERROR        TokenType = 1
+	ID           TokenType = 2
+	LITERAL      TokenType = 3
+	NUM          TokenType = 4
 	ZERO_OR_MANY TokenType = 5
-	ONE_OR_MANY TokenType = 6
-	ZERO_OR_ONE TokenType = 7
-	COMMA TokenType = 8
-	CPAREN TokenType = 9
-	DEFINE TokenType = 10
-	OPAREN TokenType = 11
-	OR TokenType = 12
-	SEMICOLON TokenType = 13
-	TOKEN TokenType = 14
-	LEFT TokenType = 15
-	RIGHT TokenType = 16
-	LIST TokenType = 17
+	ONE_OR_MANY  TokenType = 6
+	ZERO_OR_ONE  TokenType = 7
+	COMMA        TokenType = 8
+	CPAREN       TokenType = 9
+	DEFINE       TokenType = 10
+	OPAREN       TokenType = 11
+	OR           TokenType = 12
+	SEMICOLON    TokenType = 13
+	TOKEN        TokenType = 14
+	LEFT         TokenType = 15
+	RIGHT        TokenType = 16
+	LIST         TokenType = 17
 )
 
 func (t TokenType) String() string {
 	switch t {
-	case EOF: 
+	case EOF:
 		return "EOF"
-	case ERROR: 
+	case ERROR:
 		return "ERROR"
-	case ID: 
+	case ID:
 		return "ID"
-	case LITERAL: 
+	case LITERAL:
 		return "LITERAL"
-	case NUM: 
+	case NUM:
 		return "NUM"
-	case ZERO_OR_MANY: 
+	case ZERO_OR_MANY:
 		return "ZERO_OR_MANY"
-	case ONE_OR_MANY: 
+	case ONE_OR_MANY:
 		return "ONE_OR_MANY"
-	case ZERO_OR_ONE: 
+	case ZERO_OR_ONE:
 		return "ZERO_OR_ONE"
-	case COMMA: 
+	case COMMA:
 		return "COMMA"
-	case CPAREN: 
+	case CPAREN:
 		return "CPAREN"
-	case DEFINE: 
+	case DEFINE:
 		return "DEFINE"
-	case OPAREN: 
+	case OPAREN:
 		return "OPAREN"
-	case OR: 
+	case OR:
 		return "OR"
-	case SEMICOLON: 
+	case SEMICOLON:
 		return "SEMICOLON"
-	case TOKEN: 
+	case TOKEN:
 		return "TOKEN"
-	case LEFT: 
+	case LEFT:
 		return "LEFT"
-	case RIGHT: 
+	case RIGHT:
 		return "RIGHT"
-	case LIST: 
+	case LIST:
 		return "LIST"
 	default:
 		return "???"

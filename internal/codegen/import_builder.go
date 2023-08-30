@@ -28,6 +28,10 @@ func (b *importBuilder) Import(path string) string {
 }
 
 func (b *importBuilder) WriteTo(w *bytes.Buffer) {
+	if len(b.imports) == 0 {
+		return
+	}
+
 	fmt.Fprintf(w, "import (\n")
 	paths := make([]string, 0, len(b.imports))
 	for path := range b.imports {

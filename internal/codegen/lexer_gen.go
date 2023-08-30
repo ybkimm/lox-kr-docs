@@ -3,6 +3,7 @@ package codegen
 import (
 	"bytes"
 	"fmt"
+	goformat "go/format"
 	"os"
 	"path/filepath"
 
@@ -91,7 +92,13 @@ func (s *LexerGenState) Generate() error {
 	fmt.Fprintf(out, "package %v\n\n", packageName)
 	s.imports.WriteTo(out)
 	out.WriteString(body)
-	err = os.WriteFile(filepath.Join(s.ImplDir, lexerGenGo), out.Bytes(), 0666)
+
+	outFinal, err := goformat.Source(out.Bytes())
+	if err != nil {
+		return fmt.Errorf("failed to format %v: %w", lexerGenGo, err)
+	}
+
+	err = os.WriteFile(filepath.Join(s.ImplDir, lexerGenGo), outFinal, 0666)
 	if err != nil {
 		return err
 	}

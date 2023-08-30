@@ -3,6 +3,7 @@ package codegen
 import (
 	"bytes"
 	"fmt"
+	goformat "go/format"
 	gotoken "go/token"
 	gotypes "go/types"
 	"math"
@@ -149,7 +150,7 @@ func (p *{{parser}}) {{p}}Act(prod int32) any {
 	{{- if rule.Generated == not_generated }}
 		{{- method := methods[prod] }}
 			case {{ prod_index }}:
-				return p.{{ method.MethodName}}(
+				return p.{{ method.Name}}(
 				{{- range param_index, param := method.Params }}
 					p.sym.Peek({{ len(method.Params) - param_index - 1 }}).({{ go_type(param.Type) }}),
 				{{- end }}
@@ -437,7 +438,7 @@ func (s *parserGenState) assignActions() {
 		changed = false
 		for _, prod := range s.grammar.Prods {
 			rule := s.grammar.ProdRule(prod)
-			typ := s.getReduceTypeForGeneratedRule(rule, prod)
+			typ := s.actionTypeForGeneratedRule(rule, prod)
 			if typ == nil {
 				continue
 			}
@@ -501,7 +502,7 @@ func (s *parserGenState) assignActions() {
 	}
 }
 
-func (s *parserGenState) termReduceType(term *grammar.Term) gotypes.Type {
+func (s *parserGenState) actionTypeForTerm(term *grammar.Term) gotypes.Type {
 	termSym := s.grammar.TermSymbol(term)
 	termReduceType := s.token.Type()
 	if cRule, ok := termSym.(*grammar.Rule); ok {
@@ -541,7 +542,7 @@ func (s *parserGenState) findMethodForProd(
 	return nil
 }
 
-func (s *parserGenState) getReduceTypeForGeneratedRule(
+func (s *parserGenState) actionTypeForGeneratedRule(
 	rule *grammar.Rule,
 	prod *grammar.Prod,
 ) gotypes.Type {
@@ -622,7 +623,7 @@ func (s *parserGenState) Generate() error {
 	vars.Set("generated_one_or_more", grammar.GeneratedOneOrMore)
 	vars.Set("generated_list", grammar.GeneratedList)
 	vars.Set("go_type", s.templGoType)
-	vars.Set("term_reduce_type", s.termReduceType)
+	vars.Set("term_reduce_type", s.actionTypeForTerm)
 	vars.Set("rule_reduce_type", s.reduceTypes)
 	vars.Set("has_on_reduce", s.hasOnReduce)
 
@@ -632,7 +633,13 @@ func (s *parserGenState) Generate() error {
 	fmt.Fprintf(out, "package %v\n\n", s.packageName)
 	s.imports.WriteTo(out)
 	out.WriteString(body)
-	err := os.WriteFile(filepath.Join(s.implDir, parserGenGoName), out.Bytes(), 0666)
+
+	outFinal, err := goformat.Source(out.Bytes())
+	if err != nil {
+		return fmt.Errorf("failed to format %v: %w", parserGenGoName, err)
+	}
+
+	err = os.WriteFile(filepath.Join(s.implDir, parserGenGoName), outFinal, 0666)
 	if err != nil {
 		return err
 	}
