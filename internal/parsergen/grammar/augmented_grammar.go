@@ -114,15 +114,20 @@ func (g *AugmentedGrammar) resolveReferences(errs *errlogger.ErrLogger) {
 }
 
 func (g *AugmentedGrammar) resolveTerm(term *Term, errs *errlogger.ErrLogger) {
+	if term.Type != Simple {
+		g.resolveTerm(term.Child, errs)
+		if term.Sep != nil {
+			g.resolveTerm(term.Sep, errs)
+		}
+		return
+	}
+
 	sym := g.nameToSymbol[term.Name]
 	if sym == nil {
 		errs.Errorf(term.Pos, "%q undefined", term.Name)
 		return
 	}
 	g.termToSymbol[term] = sym
-	if term.Separator != nil {
-		g.resolveTerm(term.Separator, errs)
-	}
 }
 
 func (g *AugmentedGrammar) assignIndex() {
@@ -252,55 +257,55 @@ func (g *AugmentedGrammar) normalize() {
 		for _, rule := range g.Rules {
 			for _, prod := range rule.Prods {
 				for i, term := range prod.Terms {
-					switch term.Cardinality {
-					case One:
+					switch term.Type {
+					case Simple:
 					case ZeroOrMore:
 						// a = b c*
-						//  =>
+						//   =>
 						// a = b a'
-						// a' = c+ | e
+						// a' = c+ | ε
 						srule := newRule(rule.Name, GeneratedZeroOrOne)
 						srule.Prods = []*Prod{
-							NewProd(NewTerm(term.Name, OneOrMore)),
+							NewProd(&Term{Type: OneOrMore, Child: term.Child}),
 							NewProd(),
 						}
 						prod.Terms[i] = NewTermS(srule)
 						changed = true
 					case OneOrMore:
 						// a = b c+
-						//  =>
+						//   =>
 						// a = b a'
 						// a' = a' c
 						//    | c
 						srule := newRule(rule.Name, GeneratedOneOrMore)
 						srule.Prods = []*Prod{
-							NewProd(NewTerm(srule.Name), NewTerm(term.Name)),
-							NewProd(NewTerm(term.Name)),
+							NewProd(NewTerm(srule.Name), term.Child),
+							NewProd(term.Child),
 						}
 						prod.Terms[i] = NewTermS(srule)
 						changed = true
 					case ZeroOrOne:
 						// a = b c?
-						//  =>
+						//   =>
 						// a = b a'
-						// a' = c | e
+						// a' = c | ε
 						srule := newRule(rule.Name, GeneratedZeroOrOne)
 						srule.Prods = []*Prod{
-							NewProd(NewTerm(term.Name)),
+							NewProd(term.Child),
 							NewProd(),
 						}
 						prod.Terms[i] = NewTerm(srule.Name)
 						changed = true
 					case List:
 						// a = b @list(c, sep)
-						//  =>
+						//   =>
 						// a = b a'
 						// a' = a' sep c
 						//    | c
 						srule := newRule(rule.Name, GeneratedList)
 						srule.Prods = []*Prod{
-							NewProd(NewTerm(srule.Name), NewTerm(term.Separator.Name), NewTerm(term.Name)),
-							NewProd(NewTerm(term.Name)),
+							NewProd(NewTerm(srule.Name), term.Sep, term.Child),
+							NewProd(term.Child),
 						}
 						prod.Terms[i] = NewTermS(srule)
 						changed = true

@@ -8,12 +8,9 @@ func prod(terms ...*grammar.Term) *grammar.Prod {
 	}
 }
 
-func term(symName string, q ...grammar.Cardinality) *grammar.Term {
+func term(symName string) *grammar.Term {
 	t := &grammar.Term{
 		Name: symName,
-	}
-	if len(q) != 0 {
-		t.Cardinality = q[0]
 	}
 	return t
 }

@@ -52,20 +52,7 @@ func (r *Rule) Print(w io.Writer) {
 			if j != 0 {
 				fmt.Fprintf(w, " ")
 			}
-			cardinality := ""
-			switch term.Cardinality {
-			case One:
-				cardinality = ""
-			case ZeroOrMore:
-				cardinality = "*"
-			case OneOrMore:
-				cardinality = "+"
-			case ZeroOrOne:
-				cardinality = "?"
-			default:
-				panic("not reached")
-			}
-			fmt.Fprintf(w, "%s%s", term.Name, cardinality)
+			fmt.Fprint(w, term.String())
 		}
 	}
 	fmt.Fprintf(w, " .\n")
@@ -91,35 +78,49 @@ func NewProd(terms ...*Term) *Prod {
 	}
 }
 
-type Cardinality int
+type TermType int
 
 const (
-	One        Cardinality = iota
-	ZeroOrMore             // *
-	OneOrMore              // +
-	ZeroOrOne              // ?
-	List                   // @list(term, sep)
+	Simple     TermType = iota
+	ZeroOrMore          // *
+	OneOrMore           // +
+	ZeroOrOne           // ?
+	List                // @list(term, sep)
 )
 
 type Term struct {
-	Name        string
-	Cardinality Cardinality
-	Pos         gotoken.Position
-	Separator   *Term
+	Pos   gotoken.Position
+	Type  TermType
+	Name  string
+	Child *Term
+	Sep   *Term
 }
 
-func NewTerm(symName string, q ...Cardinality) *Term {
-	t := &Term{
+func NewTerm(symName string) *Term {
+	return &Term{
 		Name: symName,
 	}
-	if len(q) != 0 {
-		t.Cardinality = q[0]
-	}
-	return t
 }
 
-func NewTermS(sym Symbol, q ...Cardinality) *Term {
-	return NewTerm(sym.SymName(), q...)
+func NewTermS(sym Symbol) *Term {
+	return NewTerm(sym.SymName())
+}
+
+func (t *Term) String() string {
+	switch t.Type {
+	case Simple:
+		return t.Name
+	case ZeroOrMore:
+		return t.Child.String() + "*"
+	case OneOrMore:
+		return t.Child.String() + "+"
+	case ZeroOrOne:
+		return t.Child.String() + "?"
+	case List:
+		return fmt.Sprintf("@list(%v, %v)", t.Child.String(), t.Sep.String())
+	default:
+		panic("not-reached")
+	}
 }
 
 type Terminal struct {

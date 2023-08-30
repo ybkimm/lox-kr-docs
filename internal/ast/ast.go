@@ -26,13 +26,14 @@ func (a *baseAST) Bounds() Bounds {
 	return a.bounds
 }
 
-type Cardinality int
+type TermType int
 
 const (
-	One        Cardinality = iota
-	ZeroOrMore             // *
-	OneOrMore              // +
-	ZeroOrOne              // ?
+	Simple     TermType = iota
+	ZeroOrMore          // *
+	OneOrMore           // +
+	ZeroOrOne           // ?
+	List                // @list
 )
 
 type Parser struct {
@@ -77,8 +78,10 @@ type Prod struct {
 
 type Term struct {
 	baseAST
-	Name        string
-	Cardinality Cardinality
+	Type  TermType
+	Name  string
+	Child *Term
+	Sep   *Term
 }
 
 type CustomTokenDecl struct {

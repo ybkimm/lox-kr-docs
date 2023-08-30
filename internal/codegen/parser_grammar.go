@@ -69,22 +69,8 @@ func addParserToGrammar(fset *gotoken.FileSet, parser *ast.Parser, g *grammar.Gr
 					Pos: fset.Position(astProd.Bounds().Begin),
 				}
 				for _, astTerm := range astProd.Terms {
-					term := &grammar.Term{
-						Name: astTerm.Name,
-						Pos:  fset.Position(astTerm.Bounds().Begin),
-					}
-					switch astTerm.Cardinality {
-					case ast.One:
-						term.Cardinality = grammar.One
-					case ast.ZeroOrMore:
-						term.Cardinality = grammar.ZeroOrMore
-					case ast.OneOrMore:
-						term.Cardinality = grammar.OneOrMore
-					case ast.ZeroOrOne:
-						term.Cardinality = grammar.ZeroOrOne
-					default:
-						panic("not-reached")
-					}
+					term := termASTToGrammar(astTerm)
+					term.Pos = fset.Position(astTerm.Bounds().Begin)
 					prod.Terms = append(prod.Terms, term)
 				}
 				if astProd.Qualifier != nil {
@@ -106,5 +92,28 @@ func addParserToGrammar(fset *gotoken.FileSet, parser *ast.Parser, g *grammar.Gr
 		default:
 			panic("not-reached")
 		}
+	}
+}
+
+func termASTToGrammar(astTerm *ast.Term) *grammar.Term {
+	switch astTerm.Type {
+	case ast.Simple:
+		return &grammar.Term{
+			Type: grammar.Simple,
+			Name: astTerm.Name,
+		}
+	case ast.ZeroOrMore, ast.OneOrMore, ast.ZeroOrOne:
+		return &grammar.Term{
+			Type:  grammar.TermType(astTerm.Type),
+			Child: termASTToGrammar(astTerm.Child),
+		}
+	case ast.List:
+		return &grammar.Term{
+			Type:  grammar.List,
+			Child: termASTToGrammar(astTerm.Child),
+			Sep:   termASTToGrammar(astTerm.Sep),
+		}
+	default:
+		panic("not-reached")
 	}
 }

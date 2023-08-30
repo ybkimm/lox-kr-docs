@@ -71,9 +71,14 @@ func (p *parser) on_prod(terms []*ast.Term, qualif *ast.ProdQualifier) *ast.Prod
 	}
 }
 
-func (p *parser) on_term_card(term *ast.Term, q ast.Cardinality) *ast.Term {
-	term.Cardinality = q
-	return term
+func (p *parser) on_term_card(term *ast.Term, typ ast.TermType) *ast.Term {
+	if typ == ast.Simple {
+		return term
+	}
+	return &ast.Term{
+		Type:  typ,
+		Child: term,
+	}
 }
 
 func (p *parser) on_term__id(name Token) *ast.Term {
@@ -86,11 +91,15 @@ func (p *parser) on_term__list(listTerm *ast.Term) *ast.Term {
 	return listTerm
 }
 
-func (p *parser) on_list(_, _ Token, elem *ast.Term, _ Token, sep *ast.Term) *ast.Term {
-	return elem
+func (p *parser) on_list(_, _ Token, elem *ast.Term, _ Token, sep *ast.Term, _ Token) *ast.Term {
+	return &ast.Term{
+		Type:  ast.List,
+		Child: elem,
+		Sep:   sep,
+	}
 }
 
-func (p *parser) on_card(card Token) ast.Cardinality {
+func (p *parser) on_card(card Token) ast.TermType {
 	switch card.Type {
 	case ZERO_OR_MANY:
 		return ast.ZeroOrMore
