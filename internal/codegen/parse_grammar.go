@@ -53,8 +53,9 @@ func addParserToGrammar(fset *gotoken.FileSet, parser *ast.Parser, g *grammar.Gr
 		case *ast.CustomTokenDecl:
 			for _, token := range decl.CustomTokens {
 				terminal := &grammar.Terminal{
-					Name: token.Name,
-					Pos:  fset.Position(token.Bounds().Begin),
+					Name:  token.Name,
+					Alias: token.Alias,
+					Pos:   fset.Position(token.Bounds().Begin),
 				}
 				g.Terminals = append(g.Terminals, terminal)
 			}

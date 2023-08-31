@@ -18,6 +18,7 @@ type AugmentedGrammar struct {
 	Sprime *Rule
 
 	nameToSymbol    map[string]Symbol
+	aliasToTerminal map[string]*Terminal
 	termToSymbol    map[*Term]Symbol
 	terminalToIndex map[*Terminal]int
 	prodToIndex     map[*Prod]int
@@ -29,6 +30,7 @@ type AugmentedGrammar struct {
 func (g *Grammar) ToAugmentedGrammar(errs *errlogger.ErrLogger) *AugmentedGrammar {
 	ag := &AugmentedGrammar{
 		nameToSymbol:    make(map[string]Symbol),
+		aliasToTerminal: make(map[string]*Terminal),
 		termToSymbol:    make(map[*Term]Symbol),
 		terminalToIndex: make(map[*Terminal]int),
 		prodToIndex:     make(map[*Prod]int),

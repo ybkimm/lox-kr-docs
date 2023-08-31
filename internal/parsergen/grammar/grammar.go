@@ -124,8 +124,9 @@ func (t *Term) String() string {
 }
 
 type Terminal struct {
-	Name string
-	Pos  gotoken.Position
+	Name  string
+	Alias string
+	Pos   gotoken.Position
 }
 
 func (t *Terminal) SymName() string {
