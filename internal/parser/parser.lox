@@ -1,26 +1,35 @@
+//
+//     __         ______     __  __
+//    /\ \       /\  __ \   /\_\_\_\
+//    \ \ \____  \ \ \/\ \  \/_/\_\/_
+//     \ \_____\  \ \_____\   /\_\/\_\
+//      \/_____/   \/_____/   \/_/\/_/
+//
+//
+
 @token
   ID
   LITERAL
   NUM
 
-  ZERO_OR_MANY
-  ONE_OR_MANY
-  ZERO_OR_ONE
+  ZERO_OR_MANY '*'
+  ONE_OR_MANY  '+'
+  ZERO_OR_ONE  '?'
 
-  COMMA
-  CPAREN
-  DEFINE
-  OPAREN
-  OR
-  SEMICOLON
+  COMMA        ','
+  CPAREN       ')'
+  DEFINE       '='
+  OPAREN       '('
+  OR           '|'
+  SEMICOLON    ';'
 
-  TOKEN
-  LEFT
-  RIGHT
-  LIST ;
+  TOKEN        '@token'
+  LEFT         '@left'
+  RIGHT        '@right'
+  LIST         '@list' ;
 
 parser    = decl* ;
-decl      = rule | token;
+decl      = rule | token_decl;
 rule      = ID DEFINE @list(prod, OR) SEMICOLON ;
 prod      = term_card+ qualif? ;
 term_card = term card? ;
@@ -29,4 +38,7 @@ list      = LIST OPAREN term COMMA term CPAREN ;
 card      = ZERO_OR_MANY | ONE_OR_MANY | ZERO_OR_ONE ;
 qualif    = LEFT OPAREN NUM CPAREN
           | RIGHT OPAREN NUM CPAREN ;
-token     = TOKEN ID+ SEMICOLON ;
+
+token_decl = TOKEN token+ SEMICOLON ;
+
+token = ID LITERAL? ;

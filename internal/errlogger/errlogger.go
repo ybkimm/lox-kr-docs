@@ -30,11 +30,6 @@ func (l *ErrLogger) Infof(pos gotoken.Position, msg string, args ...any) {
 	fmt.Fprintf(os.Stderr, "%v: %v\n", rel(pos).String(), msg)
 }
 
-func (l *ErrLogger) Error(pos gotoken.Pos, err error) {
-	l.hasErrors = true
-	fmt.Fprintf(os.Stderr, "%v\n", err.Error())
-}
-
 func rel(pos gotoken.Position) gotoken.Position {
 	if pos.Filename == "" {
 		return pos

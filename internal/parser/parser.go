@@ -128,16 +128,20 @@ func (p *parser) on_qualif(assoc Token, _ Token, prec Token, _ Token) *ast.ProdQ
 	return q
 }
 
-func (p *parser) on_token(_ Token, names []Token, _ Token) *ast.CustomTokenDecl {
-	d := &ast.CustomTokenDecl{
-		CustomTokens: make([]*ast.CustomToken, len(names)),
+func (p *parser) on_token_decl(_ Token, tokens []*ast.CustomToken, _ Token) *ast.CustomTokenDecl {
+	return &ast.CustomTokenDecl{
+		CustomTokens: tokens,
 	}
-	for i, name := range names {
-		d.CustomTokens[i] = &ast.CustomToken{
-			Name: name.Str,
-		}
+}
+
+func (p *parser) on_token(name Token, alias Token) *ast.CustomToken {
+	t := &ast.CustomToken{
+		Name: name.Str,
 	}
-	return d
+	if alias.Type == LITERAL {
+		t.Alias = alias.Str
+	}
+	return t
 }
 
 func (p *parser) onReduce(r any, begin, end Token) {

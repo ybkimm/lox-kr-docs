@@ -2,7 +2,6 @@ package parser
 
 import (
 	"bytes"
-	"fmt"
 	gotoken "go/token"
 	"io"
 
@@ -133,6 +132,8 @@ func (l *lex) nextToken(tok *Token) {
 		case ',':
 			l.advance()
 			tok.Type = COMMA
+		case '\'':
+			l.scanLiteral(tok)
 		case '@':
 			l.scanKeyword(tok)
 		default:
@@ -141,7 +142,8 @@ func (l *lex) nextToken(tok *Token) {
 			} else if isNumber(r) {
 				l.scanNum(tok)
 			} else {
-				l.errLogger.Error(l.pos(), fmt.Errorf("unexpected character: %v", r))
+				l.errLogger.Errorf(
+					l.file.Position(l.pos()), "unexpected character: %v", r)
 				tok.Type = ERROR
 			}
 		}
@@ -151,12 +153,55 @@ func (l *lex) nextToken(tok *Token) {
 func (l *lex) scanComment(tok *Token) {
 	l.advance()
 	if l.peek() != '/' {
-		l.errLogger.Error(l.pos(), fmt.Errorf("unexpected character: %v", l.peek()))
+		l.errLogger.Errorf(
+			l.file.Position(l.pos()), "unexpected character: %v", l.peek())
 		tok.Type = ERROR
 		return
 	}
 	for l.peek() != '\n' {
 		l.advance()
+	}
+}
+
+func (l *lex) scanLiteral(tok *Token) {
+	l.buf.Reset()
+
+	// Skip the first '.
+	l.advance()
+
+	for {
+		r := l.peek()
+		switch r {
+		case '\'':
+			l.advance()
+			tok.Str = l.buf.String()
+			tok.Type = LITERAL
+			return
+
+		case '\\':
+			l.advance()
+			r = l.peek()
+			switch r {
+			case '\'', '\\':
+				l.buf.WriteRune(r)
+				l.advance()
+			default:
+				l.errLogger.Errorf(
+					l.file.Position(l.pos()), "unexpected character %v in string literal", r)
+				tok.Type = ERROR
+				return
+			}
+
+		case '\n':
+			l.errLogger.Errorf(
+				l.file.Position(l.pos()), "newline in string literal")
+			tok.Type = ERROR
+			return
+
+		default:
+			l.buf.WriteRune(r)
+			l.advance()
+		}
 	}
 }
 
@@ -210,7 +255,7 @@ func (l *lex) scanKeyword(tok *Token) {
 	tokStr := l.buf.String()
 	keyword, ok := keywords[tokStr]
 	if !ok {
-		l.errLogger.Error(tok.Pos, fmt.Errorf("invalid keyword %v", tokStr))
+		l.errLogger.Errorf(l.file.Position(tok.Pos), "invalid keyword %v", tokStr)
 		tok.Type = ERROR
 		return
 	}

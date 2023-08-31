@@ -1,13 +1,14 @@
 @token 
   NUM
-  PLUS
-  MINUS
-  MUL
-  DIV
-  REM
-  POW
-  O_PAREN
-  C_PAREN ;
+
+  PLUS     '+'
+  MINUS    '-'
+  MUL      '*'
+  DIV      '/'
+  REM      '%'
+  POW      '^'
+  O_PAREN  '('
+  C_PAREN  ')' ;
 
 S = expr ;
 

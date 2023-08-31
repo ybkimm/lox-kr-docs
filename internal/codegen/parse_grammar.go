@@ -1,7 +1,6 @@
 package codegen
 
 import (
-	"fmt"
 	gotoken "go/token"
 	"os"
 	"path/filepath"
@@ -15,12 +14,12 @@ import (
 func ParseGrammar(fset *gotoken.FileSet, dir string, errs *errlogger.ErrLogger) *grammar.AugmentedGrammar {
 	loxFiles, err := filepath.Glob(filepath.Join(dir, "*.lox"))
 	if err != nil {
-		errs.Error(0, err)
+		errs.Errorf(gotoken.Position{}, "%v", err)
 		return nil
 	}
 
 	if len(loxFiles) == 0 {
-		errs.Error(0, fmt.Errorf("%v contains no .lox files", dir))
+		errs.Errorf(gotoken.Position{}, "%v contains no .lox files", dir)
 		return nil
 	}
 
@@ -28,7 +27,7 @@ func ParseGrammar(fset *gotoken.FileSet, dir string, errs *errlogger.ErrLogger) 
 	for _, loxFile := range loxFiles {
 		loxFileData, err := os.ReadFile(loxFile)
 		if err != nil {
-			errs.Error(0, err)
+			errs.Errorf(gotoken.Position{}, "%v", err)
 			return nil
 		}
 		file := fset.AddFile(loxFile, -1, len(loxFileData))

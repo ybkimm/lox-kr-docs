@@ -253,7 +253,7 @@ func (s *parserGenState) ParseGo() {
 	var err error
 	s.packageName, err = computePackageName(s.implDir)
 	if err != nil {
-		s.errs.Error(0, err)
+		s.errs.Errorf(gotoken.Position{}, "%v", err)
 		return
 	}
 
@@ -264,7 +264,7 @@ func (s *parserGenState) ParseGo() {
 	loxGenGoPath, err := filepath.Abs(
 		filepath.Join(s.implDir, parserGenGoName))
 	if err != nil {
-		s.errs.Error(0, fmt.Errorf("filepath.Abs failed: %w", err))
+		s.errs.Errorf(gotoken.Position{}, "filepath.Abs failed: %w", err)
 		return
 	}
 
@@ -280,7 +280,7 @@ func (s *parserGenState) ParseGo() {
 
 	pkgs, err := packages.Load(cfg, ".")
 	if err != nil {
-		s.errs.Error(0, err)
+		s.errs.Errorf(gotoken.Position{}, "%v", err)
 		return
 	}
 
@@ -289,7 +289,7 @@ func (s *parserGenState) ParseGo() {
 
 	if len(pkg.Errors) != 0 {
 		for _, err := range pkg.Errors {
-			s.errs.Error(0, err)
+			s.errs.Errorf(gotoken.Position{}, "%v", err)
 		}
 		return
 	}
@@ -297,7 +297,7 @@ func (s *parserGenState) ParseGo() {
 	scope := pkg.Types.Scope()
 	parserObj, err := getParserObj(scope)
 	if err != nil {
-		s.errs.Error(0, err)
+		s.errs.Errorf(gotoken.Position{}, "%v", err)
 		return
 	}
 
@@ -323,9 +323,10 @@ func (s *parserGenState) ParseGo() {
 
 		sig := method.Type().(*gotypes.Signature)
 		if sig.Results().Len() != 1 {
-			s.errs.Error(0, fmt.Errorf(
+			s.errs.Errorf(
+				gotoken.Position{},
 				"%v: reduce method must return exactly one result",
-				method.Name()))
+				method.Name())
 			return
 		}
 

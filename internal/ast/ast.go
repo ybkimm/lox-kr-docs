@@ -92,5 +92,6 @@ type CustomTokenDecl struct {
 
 type CustomToken struct {
 	baseAST
-	Name string
+	Name  string
+	Alias string
 }
