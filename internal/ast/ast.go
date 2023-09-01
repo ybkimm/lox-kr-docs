@@ -80,6 +80,7 @@ type Term struct {
 	baseAST
 	Type  TermType
 	Name  string
+	Alias string
 	Child *Term
 	Sep   *Term
 }

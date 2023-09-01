@@ -73,9 +73,14 @@ func (p *parser) on_term_card(term *ast.Term, typ ast.TermType) *ast.Term {
 	}
 }
 
-func (p *parser) on_term__id(name Token) *ast.Term {
-	return &ast.Term{
-		Name: name.Str,
+func (p *parser) on_term__token(tok Token) *ast.Term {
+	switch tok.Type {
+	case ID:
+		return &ast.Term{Name: tok.Str}
+	case LITERAL:
+		return &ast.Term{Alias: tok.Str}
+	default:
+		panic("not-reached")
 	}
 }
 
