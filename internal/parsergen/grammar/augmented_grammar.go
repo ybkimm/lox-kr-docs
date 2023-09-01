@@ -87,6 +87,7 @@ func (g *AugmentedGrammar) ProdRule(prod *Prod) *Rule {
 
 func (g *AugmentedGrammar) resolveReferences(errs *errlogger.ErrLogger) {
 	g.nameToSymbol = make(map[string]Symbol)
+	g.aliasToTerminal = make(map[string]*Terminal)
 	g.termToSymbol = make(map[*Term]Symbol)
 
 	for _, terminal := range g.Terminals {
@@ -96,6 +97,14 @@ func (g *AugmentedGrammar) resolveReferences(errs *errlogger.ErrLogger) {
 			continue
 		}
 		g.nameToSymbol[terminal.SymName()] = terminal
+		if terminal.Alias != "" {
+			if other := g.aliasToTerminal[terminal.Alias]; other != nil {
+				errs.Errorf(terminal.Pos, "alias '%v' redeclared", terminal.Alias)
+				errs.Infof(other.Position(), "other '%v' declared here", terminal.Alias)
+				continue
+			}
+			g.aliasToTerminal[terminal.Alias] = terminal
+		}
 	}
 	for _, rule := range g.Rules {
 		if other := g.nameToSymbol[rule.SymName()]; other != nil {
