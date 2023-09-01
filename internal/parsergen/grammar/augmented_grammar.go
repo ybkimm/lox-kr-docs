@@ -133,6 +133,16 @@ func (g *AugmentedGrammar) resolveTerm(term *Term, errs *errlogger.ErrLogger) {
 		return
 	}
 
+	if term.Alias != "" {
+		sym := g.aliasToTerminal[term.Alias]
+		if sym == nil {
+			errs.Errorf(term.Pos, "alias '%v' undefined", term.Alias)
+			return
+		}
+		term.Name = sym.Name
+		g.termToSymbol[term] = sym
+	}
+
 	sym := g.nameToSymbol[term.Name]
 	if sym == nil {
 		errs.Errorf(term.Pos, "%q undefined", term.Name)

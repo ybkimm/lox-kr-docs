@@ -92,6 +92,7 @@ type Term struct {
 	Pos   gotoken.Position
 	Type  TermType
 	Name  string
+	Alias string
 	Child *Term
 	Sep   *Term
 }

@@ -99,8 +99,9 @@ func termASTToGrammar(astTerm *ast.Term) *grammar.Term {
 	switch astTerm.Type {
 	case ast.Simple:
 		return &grammar.Term{
-			Type: grammar.Simple,
-			Name: astTerm.Name,
+			Type:  grammar.Simple,
+			Name:  astTerm.Name,
+			Alias: astTerm.Alias,
 		}
 	case ast.ZeroOrMore, ast.OneOrMore, ast.ZeroOrOne:
 		return &grammar.Term{

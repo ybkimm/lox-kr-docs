@@ -30,15 +30,15 @@
 
 parser    = decl* ;
 decl      = rule | token_decl;
-rule      = ID DEFINE @list(prod, OR) SEMICOLON ;
+rule      = ID DEFINE @list(prod, '|') ';' ;
 prod      = term_card+ qualif? ;
 term_card = term card? ;
 term      = ID | LITERAL | list ;
-list      = LIST OPAREN term COMMA term CPAREN ;
-card      = ZERO_OR_MANY | ONE_OR_MANY | ZERO_OR_ONE ;
-qualif    = LEFT OPAREN NUM CPAREN
-          | RIGHT OPAREN NUM CPAREN ;
+list      = '@list' '(' term ',' term ')' ;
+card      = '*' | '+' | '?' ;
+qualif    = '@left' '(' NUM ')'
+          | '@right' '(' NUM ')' ;
 
-token_decl = TOKEN token+ SEMICOLON ;
+token_decl = TOKEN token+ ';' ;
 
 token = ID LITERAL? ;
