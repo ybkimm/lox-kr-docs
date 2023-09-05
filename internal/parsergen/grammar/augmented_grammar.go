@@ -39,8 +39,8 @@ func (g *Grammar) ToAugmentedGrammar(errs *errlogger.ErrLogger) *AugmentedGramma
 		firstSets:       make(map[*Rule]*set.Set[*Terminal]),
 	}
 
-	ag.EOF = &Terminal{Name: "EOF"}
-	ag.Error = &Terminal{Name: "ERROR"}
+	ag.EOF = &Terminal{Name: "EOF", Alias: "end-of-file"}
+	ag.Error = &Terminal{Name: "ERROR", Alias: "error"}
 	ag.Terminals = append(
 		[]*Terminal{ag.EOF, ag.Error},
 		g.Terminals...)
@@ -125,30 +125,36 @@ func (g *AugmentedGrammar) resolveReferences(errs *errlogger.ErrLogger) {
 }
 
 func (g *AugmentedGrammar) resolveTerm(term *Term, errs *errlogger.ErrLogger) {
-	if term.Type != Simple {
+	switch term.Type {
+	case Simple:
+		if term.Alias != "" {
+			sym := g.aliasToTerminal[term.Alias]
+			if sym == nil {
+				errs.Errorf(term.Pos, "alias '%v' undefined", term.Alias)
+				return
+			}
+			term.Name = sym.Name
+			g.termToSymbol[term] = sym
+		}
+		sym := g.nameToSymbol[term.Name]
+		if sym == nil {
+			errs.Errorf(term.Pos, "%q undefined", term.Name)
+			return
+		}
+		g.termToSymbol[term] = sym
+
+	case ZeroOrMore, OneOrMore, ZeroOrOne, List:
 		g.resolveTerm(term.Child, errs)
 		if term.Sep != nil {
 			g.resolveTerm(term.Sep, errs)
 		}
 		return
-	}
+	case Error:
+		g.termToSymbol[term] = g.Error
 
-	if term.Alias != "" {
-		sym := g.aliasToTerminal[term.Alias]
-		if sym == nil {
-			errs.Errorf(term.Pos, "alias '%v' undefined", term.Alias)
-			return
-		}
-		term.Name = sym.Name
-		g.termToSymbol[term] = sym
+	default:
+		panic("not-reached")
 	}
-
-	sym := g.nameToSymbol[term.Name]
-	if sym == nil {
-		errs.Errorf(term.Pos, "%q undefined", term.Name)
-		return
-	}
-	g.termToSymbol[term] = sym
 }
 
 func (g *AugmentedGrammar) assignIndex() {
@@ -279,7 +285,7 @@ func (g *AugmentedGrammar) normalize() {
 			for _, prod := range rule.Prods {
 				for i, term := range prod.Terms {
 					switch term.Type {
-					case Simple:
+					case Simple, Error:
 					case ZeroOrMore:
 						// a = b c*
 						//   =>

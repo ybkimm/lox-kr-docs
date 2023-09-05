@@ -8,9 +8,7 @@ import (
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
 )
 
-const prefix = "_lx"
-
-const lexerGenGoName = "lexer.gen.go"
+const prefix = "_"
 
 type Config struct {
 	Errs           *errlogger.ErrLogger
@@ -41,7 +39,7 @@ func Generate(cfg *Config) {
 
 	err := lgen.Generate()
 	if err != nil {
-		cfg.Errs.Errorf(gotoken.Position{}, "failed to generate lexer.gen.go: %v", err)
+		cfg.Errs.Errorf(gotoken.Position{}, "failed to generate base.gen.go: %v", err)
 		return
 	}
 

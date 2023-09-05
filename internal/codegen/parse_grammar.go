@@ -31,8 +31,8 @@ func ParseGrammar(fset *gotoken.FileSet, dir string, errs *errlogger.ErrLogger) 
 			return nil
 		}
 		file := fset.AddFile(loxFile, -1, len(loxFileData))
-		spec, ok := parser.Parse(file, loxFileData, errs)
-		if !ok {
+		spec := parser.Parse(file, loxFileData, errs)
+		if errs.HasError() {
 			return nil
 		}
 
@@ -113,6 +113,10 @@ func termASTToGrammar(astTerm *ast.Term) *grammar.Term {
 			Type:  grammar.List,
 			Child: termASTToGrammar(astTerm.Child),
 			Sep:   termASTToGrammar(astTerm.Sep),
+		}
+	case ast.Error:
+		return &grammar.Term{
+			Type: grammar.Error,
 		}
 	default:
 		panic("not-reached")

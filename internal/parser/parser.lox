@@ -8,9 +8,9 @@
 //
 
 @token
-  ID
-  LITERAL
-  NUM
+  ID           'identifier'
+  LITERAL      'string'
+  NUM          'number'
 
   ZERO_OR_MANY '*'
   ONE_OR_MANY  '+'
@@ -23,22 +23,25 @@
   OR           '|'
   SEMICOLON    ';'
 
-  TOKEN        '@token'
-  LEFT         '@left'
-  RIGHT        '@right'
-  LIST         '@list' ;
+  ERROR_KEYWORD '@error'
+  LEFT          '@left'
+  LIST          '@list'
+  RIGHT         '@right'
+  TOKEN         '@token' ;
 
 parser    = decl* ;
-decl      = rule | token_decl;
-rule      = ID DEFINE @list(prod, '|') ';' ;
+decl      = rule
+          | token_decl
+          | @error ';' ;
+
+rule      = ID '=' @list(prod, '|') ';' ;
 prod      = term_card+ qualif? ;
 term_card = term card? ;
-term      = ID | LITERAL | list ;
+term      = ID | LITERAL | list | '@error' ;
 list      = '@list' '(' term ',' term ')' ;
 card      = '*' | '+' | '?' ;
 qualif    = '@left' '(' NUM ')'
           | '@right' '(' NUM ')' ;
 
 token_decl = TOKEN token+ ';' ;
-
-token = ID LITERAL? ;
+token      = ID LITERAL? ;

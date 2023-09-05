@@ -8,34 +8,21 @@ import (
 	"github.com/dcaiafa/lox/internal/errlogger"
 )
 
-type errLogger struct {
-	*errlogger.ErrLogger
-	File *gotoken.File
-}
-
-func (e *errLogger) ParserError(err error) {
-	var pos gotoken.Position
-	if err, ok := err.(interface{ Pos() Token }); ok {
-		pos = e.File.Position(err.Pos().Pos)
-	}
-	e.Errorf(pos, "%v", err)
-}
-
 type parser struct {
-	loxParser
+	lox
+	file      *gotoken.File
+	errs      *errlogger.ErrLogger
 	parserAST *ast.Parser
 }
 
-func Parse(file *gotoken.File, data []byte, errs *errlogger.ErrLogger) (*ast.Parser, bool) {
-	errLogger := &errLogger{
-		ErrLogger: errs,
-		File:      file,
-	}
-
-	var parser parser
+func Parse(file *gotoken.File, data []byte, errs *errlogger.ErrLogger) *ast.Parser {
 	lex := newLex(file, data, errs)
-	ok := parser.parse(lex, errLogger)
-	return parser.parserAST, ok
+	parser := parser{
+		file: file,
+		errs: errs,
+	}
+	parser.parse(lex)
+	return parser.parserAST
 }
 
 func (p *parser) on_parser(decls []ast.ParserDecl) *ast.Parser {
@@ -47,6 +34,15 @@ func (p *parser) on_parser(decls []ast.ParserDecl) *ast.Parser {
 
 func (p *parser) on_decl(r ast.ParserDecl) ast.ParserDecl {
 	return r
+}
+
+func (p *parser) on_decl__error(_ error, tok Token) ast.ParserDecl {
+	p.errs.Errorf(
+		p.file.Position(p.errorToken().Pos),
+		"unexpected %v",
+		p.errorToken())
+
+	return nil
 }
 
 func (p *parser) on_rule(name Token, _ Token, prods []*ast.Prod, _ Token) *ast.Rule {
@@ -64,7 +60,7 @@ func (p *parser) on_prod(terms []*ast.Term, qualif *ast.ProdQualifier) *ast.Prod
 }
 
 func (p *parser) on_term_card(term *ast.Term, typ ast.TermType) *ast.Term {
-	if typ == ast.Simple {
+	if typ == ast.Simple || typ == ast.Error {
 		return term
 	}
 	return &ast.Term{
@@ -79,6 +75,8 @@ func (p *parser) on_term__token(tok Token) *ast.Term {
 		return &ast.Term{Name: tok.Str}
 	case LITERAL:
 		return &ast.Term{Alias: tok.Str}
+	case ERROR_KEYWORD:
+		return &ast.Term{Type: ast.Error}
 	default:
 		panic("not-reached")
 	}
@@ -158,4 +156,10 @@ func (p *parser) onReduce(r any, begin, end Token) {
 		Begin: begin.Pos,
 		End:   end.Pos,
 	})
+}
+
+func (p *parser) onError() {
+	p.errs.Errorf(
+		p.file.Position(p.errorToken().Pos),
+		"unexpected %v", p.errorToken())
 }

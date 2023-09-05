@@ -42,9 +42,9 @@ func newLex(file *gotoken.File, input []byte, errLogger *ErrLogger) *lex {
 	return l
 }
 
-func (l *lex) NextToken() (Token, TokenType) {
+func (l *lex) ReadToken() (Token, TokenType) {
 	var tok Token
-	l.nextToken(&tok)
+	l.readToken(&tok)
 	return tok, tok.Type
 }
 
@@ -75,14 +75,11 @@ func (l *lex) peek() rune {
 	return l.char
 }
 
-func (l *lex) nextToken(tok *Token) {
+func (l *lex) readToken(tok *Token) {
 	tok.Type = -1
 	for tok.Type == -1 {
 		r := l.peek()
-		if r == 0 {
-			tok.Type = EOF
-			return
-		}
+
 		if isSpace(r) {
 			l.advance()
 			continue
@@ -93,6 +90,10 @@ func (l *lex) nextToken(tok *Token) {
 		}
 
 		tok.Pos = l.pos()
+		if r == 0 {
+			tok.Type = EOF
+			return
+		}
 
 		switch r {
 		case '+':
@@ -123,6 +124,7 @@ func (l *lex) nextToken(tok *Token) {
 			if isNumber(r) {
 				l.scanNum(tok)
 			} else {
+				l.advance()
 				l.errLogger.Errorf(
 					l.pos(),
 					"unexpected character: %c", r)

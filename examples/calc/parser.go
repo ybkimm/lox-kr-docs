@@ -16,12 +16,12 @@ func Eval(expr string) (float64, error) {
 	var parser parser
 	parser.errLogger = errLogger
 	lex := newLex(file, []byte(expr), errLogger)
-	_ = parser.parse(lex, errLogger)
+	_ = parser.parse(lex)
 	return parser.result, errLogger.Err()
 }
 
 type parser struct {
-	loxParser
+	lox
 	errLogger *ErrLogger
 	result    float64
 }
@@ -74,4 +74,8 @@ func (p *parser) on_num__minus(_ Token, num Token) float64 {
 		return 0
 	}
 	return -v
+}
+
+func (p *parser) onError() {
+	p.errLogger.Errorf(p.errorToken().Pos, "unexpected token %v", p.errorToken())
 }

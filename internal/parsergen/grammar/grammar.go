@@ -86,6 +86,7 @@ const (
 	OneOrMore           // +
 	ZeroOrOne           // ?
 	List                // @list(term, sep)
+	Error               // @error
 )
 
 type Term struct {
@@ -119,6 +120,8 @@ func (t *Term) String() string {
 		return t.Child.String() + "?"
 	case List:
 		return fmt.Sprintf("@list(%v, %v)", t.Child.String(), t.Sep.String())
+	case Error:
+		return "@error"
 	default:
 		panic("not-reached")
 	}

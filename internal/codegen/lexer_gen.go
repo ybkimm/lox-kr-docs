@@ -11,7 +11,7 @@ import (
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
 )
 
-const lexerGenGo = "lexer.gen.go"
+const lexerGenGo = "base.gen.go"
 
 const lexerTemplate = `
 type TokenType int
@@ -26,36 +26,20 @@ func (t TokenType) String() string {
 	switch t {
 {{- range i, t := terminals }}
 	case {{ t.Name }}: 
-		return "{{ t.Name }}"
+		return "{{ t.Alias != "" ? t.Alias : t.Name }}"
 {{- end }}
 	default:
 		return "???"
 	}
 }
 
-type {{p}}Bounds struct {
+type _Bounds struct {
 	Begin Token
 	End   Token
 }
 
-type {{p}}ErrorLogger interface {
-	ParserError(err error)
-}
-
-type {{p}}UnexpectedTokenError struct {
-	Token Token
-}
-
-func (e {{p}}UnexpectedTokenError) Error() string {
-	return {{ i("fmt") }}.Sprintf("unexpected token: %v", e.Token)
-}
-
-func (e {{p}}UnexpectedTokenError) Pos() Token {
-	return e.Token
-}
-
-type {{p}}Lexer interface {
-	NextToken() (Token, TokenType)
+type lexer interface {
+	ReadToken() (Token, TokenType)
 }
 `
 

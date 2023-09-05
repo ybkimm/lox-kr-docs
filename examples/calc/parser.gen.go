@@ -1,14 +1,18 @@
 package main
 
-var _lxLHS = []int32{
+import (
+	_i0 "errors"
+)
+
+var _LHS = []int32{
 	0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3,
 }
 
-var _lxTermCounts = []int32{
+var _TermCounts = []int32{
 	1, 1, 3, 3, 3, 3, 3, 3, 3, 1, 1, 2,
 }
 
-var _lxActions = []int32{
+var _Actions = []int32{
 	22, 29, 32, 22, 49, 52, 67, 84, 101, 22, 22, 22, 22, 22,
 	22, 116, 133, 150, 167, 184, 201, 218, 6, 4, 1, 2, 2, 9,
 	3, 2, 2, 7, 16, 10, -10, 6, -10, 0, -10, 4, -10, 5,
@@ -28,7 +32,7 @@ var _lxActions = []int32{
 	-6, 4, -6, 5, -6, 3, -6, 8, 13, 7, -6,
 }
 
-var _lxGoto = []int32{
+var _Goto = []int32{
 	22, 29, 29, 30, 29, 29, 29, 29, 29, 35, 40, 45, 50, 55,
 	60, 29, 29, 29, 29, 29, 29, 29, 6, 1, 4, 2, 5, 3,
 	6, 0, 4, 2, 8, 3, 6, 4, 2, 16, 3, 6, 4, 2,
@@ -36,25 +40,28 @@ var _lxGoto = []int32{
 	2, 20, 3, 6, 4, 2, 21, 3, 6,
 }
 
-type _lxStack[T any] []T
+type _Stack[T any] []T
 
-func (s *_lxStack[T]) Push(x T) {
+func (s *_Stack[T]) Push(x T) {
 	*s = append(*s, x)
 }
 
-func (s *_lxStack[T]) Pop(n int) {
+func (s *_Stack[T]) Pop(n int) {
 	*s = (*s)[:len(*s)-n]
 }
 
-func (s _lxStack[T]) Peek(n int) T {
+func (s _Stack[T]) Peek(n int) T {
 	return s[len(s)-n-1]
 }
 
-func (s _lxStack[T]) Slice(n int) []T {
-	return s[len(s)-n:]
+func _cast[T any](v any) T {
+	cv, _ := v.(T)
+	return cv
 }
 
-func _lxFind(table []int32, y, x int32) (int32, bool) {
+var _errorPlaceholder = _i0.New("error placeholder")
+
+func _Find(table []int32, y, x int32) (int32, bool) {
 	i := int(table[int(y)])
 	count := int(table[i])
 	i++
@@ -67,107 +74,169 @@ func _lxFind(table []int32, y, x int32) (int32, bool) {
 	return 0, false
 }
 
-type loxParser struct {
-	state _lxStack[int32]
-	sym   _lxStack[any]
+type lox struct {
+	_lex   lexer
+	_state _Stack[int32]
+	_sym   _Stack[any]
+
+	_lookahead     Token
+	_lookaheadType TokenType
+	_errorToken    Token
 }
 
-func (p *parser) parse(lex _lxLexer, errLogger _lxErrorLogger) bool {
+func (p *parser) parse(lex lexer) bool {
 	const accept = 2147483647
 
-	p.loxParser.state.Push(0)
-	tok, tokType := lex.NextToken()
+	p._lex = lex
+
+	p._state.Push(0)
+	p._ReadToken()
 
 	for {
-		topState := p.loxParser.state.Peek(0)
-		action, ok := _lxFind(_lxActions, topState, int32(tokType))
+		if p._lookaheadType == ERROR {
+			_, ok := p._Recover()
+			if !ok {
+				return false
+			}
+		}
+		topState := p._state.Peek(0)
+		action, ok := _Find(
+			_Actions, topState, int32(p._lookaheadType))
 		if !ok {
-			errLogger.ParserError(&_lxUnexpectedTokenError{Token: tok})
-			return false
+			action, ok = p._Recover()
+			if !ok {
+				return false
+			}
 		}
 		if action == accept {
 			break
 		} else if action >= 0 { // shift
-			p.loxParser.state.Push(action)
-			p.loxParser.sym.Push(tok)
-			tok, tokType = lex.NextToken()
+			p._state.Push(action)
+			p._sym.Push(p._lookahead)
+			p._ReadToken()
 		} else { // reduce
 			prod := -action
-			termCount := _lxTermCounts[int(prod)]
-			rule := _lxLHS[int(prod)]
-			res := p._lxAct(prod)
-			p.loxParser.state.Pop(int(termCount))
-			p.loxParser.sym.Pop(int(termCount))
-			topState = p.loxParser.state.Peek(0)
-			nextState, _ := _lxFind(_lxGoto, topState, rule)
-			p.loxParser.state.Push(nextState)
-			p.loxParser.sym.Push(res)
+			termCount := _TermCounts[int(prod)]
+			rule := _LHS[int(prod)]
+			res := p._Act(prod)
+			p._state.Pop(int(termCount))
+			p._sym.Pop(int(termCount))
+			topState = p._state.Peek(0)
+			nextState, _ := _Find(_Goto, topState, rule)
+			p._state.Push(nextState)
+			p._sym.Push(res)
 		}
 	}
 
 	return true
 }
 
-func (p *parser) _lxAct(prod int32) any {
+func (p *parser) errorToken() Token {
+	return p._errorToken
+}
+
+func (p *parser) _ReadToken() {
+	p._lookahead, p._lookaheadType = p._lex.ReadToken()
+}
+
+func (p *parser) _Recover() (int32, bool) {
+	p._errorToken = p._lookahead
+
+	for {
+		for p._lookaheadType == ERROR {
+			p._ReadToken()
+		}
+
+		saveState := p._state
+		saveSym := p._sym
+
+		for len(p._state) > 1 {
+			topState := p._state.Peek(0)
+			action, ok := _Find(_Actions, topState, int32(ERROR))
+			if ok {
+				action2, ok := _Find(
+					_Actions, action, int32(p._lookaheadType))
+				if ok {
+					p._state.Push(action)
+					p._sym.Push(_errorPlaceholder)
+					return action2, true
+				}
+			}
+			p._state.Pop(1)
+			p._sym.Pop(1)
+		}
+
+		if p._lookaheadType == EOF {
+			p.onError()
+			return 0, false
+		}
+
+		p._ReadToken()
+		p._state = saveState
+		p._sym = saveSym
+	}
+}
+
+func (p *parser) _Act(prod int32) any {
 	switch prod {
 	case 1:
 		return p.on_S(
-			p.sym.Peek(0).(float64),
+			_cast[float64](p._sym.Peek(0)),
 		)
 	case 2:
 		return p.on_expr__binary(
-			p.sym.Peek(2).(float64),
-			p.sym.Peek(1).(Token),
-			p.sym.Peek(0).(float64),
+			_cast[float64](p._sym.Peek(2)),
+			_cast[Token](p._sym.Peek(1)),
+			_cast[float64](p._sym.Peek(0)),
 		)
 	case 3:
 		return p.on_expr__binary(
-			p.sym.Peek(2).(float64),
-			p.sym.Peek(1).(Token),
-			p.sym.Peek(0).(float64),
+			_cast[float64](p._sym.Peek(2)),
+			_cast[Token](p._sym.Peek(1)),
+			_cast[float64](p._sym.Peek(0)),
 		)
 	case 4:
 		return p.on_expr__binary(
-			p.sym.Peek(2).(float64),
-			p.sym.Peek(1).(Token),
-			p.sym.Peek(0).(float64),
+			_cast[float64](p._sym.Peek(2)),
+			_cast[Token](p._sym.Peek(1)),
+			_cast[float64](p._sym.Peek(0)),
 		)
 	case 5:
 		return p.on_expr__binary(
-			p.sym.Peek(2).(float64),
-			p.sym.Peek(1).(Token),
-			p.sym.Peek(0).(float64),
+			_cast[float64](p._sym.Peek(2)),
+			_cast[Token](p._sym.Peek(1)),
+			_cast[float64](p._sym.Peek(0)),
 		)
 	case 6:
 		return p.on_expr__binary(
-			p.sym.Peek(2).(float64),
-			p.sym.Peek(1).(Token),
-			p.sym.Peek(0).(float64),
+			_cast[float64](p._sym.Peek(2)),
+			_cast[Token](p._sym.Peek(1)),
+			_cast[float64](p._sym.Peek(0)),
 		)
 	case 7:
 		return p.on_expr__binary(
-			p.sym.Peek(2).(float64),
-			p.sym.Peek(1).(Token),
-			p.sym.Peek(0).(float64),
+			_cast[float64](p._sym.Peek(2)),
+			_cast[Token](p._sym.Peek(1)),
+			_cast[float64](p._sym.Peek(0)),
 		)
 	case 8:
 		return p.on_expr__paren(
-			p.sym.Peek(2).(Token),
-			p.sym.Peek(1).(float64),
-			p.sym.Peek(0).(Token),
+			_cast[Token](p._sym.Peek(2)),
+			_cast[float64](p._sym.Peek(1)),
+			_cast[Token](p._sym.Peek(0)),
 		)
 	case 9:
 		return p.on_expr__num(
-			p.sym.Peek(0).(float64),
+			_cast[float64](p._sym.Peek(0)),
 		)
 	case 10:
 		return p.on_num(
-			p.sym.Peek(0).(Token),
+			_cast[Token](p._sym.Peek(0)),
 		)
 	case 11:
 		return p.on_num__minus(
-			p.sym.Peek(1).(Token),
-			p.sym.Peek(0).(Token),
+			_cast[Token](p._sym.Peek(1)),
+			_cast[Token](p._sym.Peek(0)),
 		)
 	default:
 		panic("unreachable")

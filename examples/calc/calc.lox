@@ -1,5 +1,5 @@
-@token 
-  NUM
+@token
+  NUM      'number'
 
   PLUS     '+'
   MINUS    '-'

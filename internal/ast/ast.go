@@ -34,6 +34,7 @@ const (
 	OneOrMore           // +
 	ZeroOrOne           // ?
 	List                // @list
+	Error               // @error
 )
 
 type Parser struct {
