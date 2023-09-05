@@ -9,6 +9,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/CloudyKit/jet/v6"
@@ -16,6 +17,7 @@ import (
 	"github.com/dcaiafa/lox/internal/errlogger"
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
 	"github.com/dcaiafa/lox/internal/parsergen/lr1"
+	"github.com/dcaiafa/lox/internal/util/set"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -35,7 +37,6 @@ func (p *lox) parse(l lexer) bool {
 func (p *lox) errorToken() Token {
 	panic("not-implemented")
 }
-
 `
 
 const parserTemplate = `
@@ -294,11 +295,10 @@ type parserGenState struct {
 	grammar       *grammar.AugmentedGrammar
 	errs          *errlogger.ErrLogger
 	fset          *gotoken.FileSet
-	parser        gotypes.Object
-	token         gotypes.Object
-	errorMark     gotypes.Object
+	tokenType     gotypes.Type
+	errorType     gotypes.Type
 	parserTable   *lr1.ParserTable
-	reduceMethods map[string][]*actionMethod
+	actionMethods map[string][]*actionMethod
 	reduceTypes   map[*grammar.Rule]gotypes.Type
 	reduceMap     map[*grammar.Prod]*actionMethod
 	packageName   string
@@ -336,6 +336,7 @@ func (s *parserGenState) ConstructParseTables() {
 
 func (s *parserGenState) ParseGo() {
 	var err error
+
 	s.packageName, err = computePackageName(s.implDir)
 	if err != nil {
 		s.errs.Errorf(gotoken.Position{}, "%v", err)
@@ -353,11 +354,11 @@ func (s *parserGenState) ParseGo() {
 		return
 	}
 
-	fset := gotoken.NewFileSet()
+	s.fset = gotoken.NewFileSet()
 	cfg := &packages.Config{
 		Mode: packages.NeedName | packages.NeedTypes | packages.NeedSyntax,
 		Dir:  filepath.Clean(s.implDir),
-		Fset: fset,
+		Fset: s.fset,
 		Overlay: map[string][]byte{
 			loxGenGoPath: []byte(loxGenGo),
 		},
@@ -380,28 +381,32 @@ func (s *parserGenState) ParseGo() {
 	}
 
 	scope := pkg.Types.Scope()
-	parserObj, err := getParserObj(scope)
+
+	tokenObj := scope.Lookup("Token")
+	if tokenObj == nil {
+		s.errs.Errorf(
+			gotoken.Position{},
+			"Token undefined: you must define a type named Token")
+		return
+	}
+	s.tokenType = tokenObj.Type()
+
+	errorObj := gotypes.Universe.Lookup("error")
+	if errorObj == nil {
+		panic("error is undefined")
+	}
+
+	s.errorType = errorObj.Type()
+
+	parserObject, err := getParserObj(scope)
 	if err != nil {
 		s.errs.Errorf(gotoken.Position{}, "%v", err)
 		return
 	}
 
-	s.token = scope.Lookup("Token")
-	if s.token == nil {
-		s.errs.Errorf(gotoken.Position{}, "type Token is undefined")
-		return
-	}
-
-	s.errorMark = gotypes.Universe.Lookup("error")
-	if s.errorMark == nil {
-		panic("error is undefined")
-	}
-
-	s.fset = fset
-	s.parser = parserObj
-	s.reduceMethods = make(map[string][]*actionMethod)
-
-	parserNamed := parserObj.Type().(*gotypes.Named)
+	// Catalog user-provided action methods with the prefix on_<rule>.
+	s.actionMethods = make(map[string][]*actionMethod)
+	parserNamed := parserObject.Type().(*gotypes.Named)
 	for i := 0; i < parserNamed.NumMethods(); i++ {
 		method := parserNamed.Method(i)
 		if method.Name() == "onReduce" {
@@ -417,13 +422,13 @@ func (s *parserGenState) ParseGo() {
 		sig := method.Type().(*gotypes.Signature)
 		if sig.Results().Len() != 1 {
 			s.errs.Errorf(
-				gotoken.Position{},
+				s.fset.Position(method.Pos()),
 				"%v: reduce method must return exactly one result",
 				method.Name())
 			return
 		}
 
-		reduceMethod := &actionMethod{
+		action := &actionMethod{
 			Method:     method,
 			Name:       method.Name(),
 			ReturnType: sig.Results().At(0).Type(),
@@ -432,14 +437,14 @@ func (s *parserGenState) ParseGo() {
 		params := sig.Params()
 		for i := 0; i < params.Len(); i++ {
 			param := params.At(i)
-			reduceParam := &actionParam{
+			actionParam := &actionParam{
 				Type: param.Type(),
 			}
-			reduceMethod.Params = append(reduceMethod.Params, reduceParam)
+			action.Params = append(action.Params, actionParam)
 		}
 
-		s.reduceMethods[ruleName] =
-			append(s.reduceMethods[ruleName], reduceMethod)
+		s.actionMethods[ruleName] =
+			append(s.actionMethods[ruleName], action)
 	}
 }
 
@@ -486,9 +491,8 @@ func (s *parserGenState) assignActions() {
 	s.reduceMap = make(map[*grammar.Prod]*actionMethod)
 	s.reduceTypes = make(map[*grammar.Rule]gotypes.Type)
 
-	// Determine the Go type of the reduce-artifact of each rule.
-	// Non-generated (user-specified) rules first.
-	for ruleName, methods := range s.reduceMethods {
+	// Determine the Go type of reduce-artifacts: user-specified rules first.
+	for ruleName, methods := range s.actionMethods {
 		var reduceMethod *actionMethod
 		for _, method := range methods {
 			if reduceMethod == nil {
@@ -525,8 +529,7 @@ func (s *parserGenState) assignActions() {
 		return
 	}
 
-	// Determine the reduce-artifact's Go-type for each rule.
-	// Synthetic rules first.
+	// Determine the Go type of reduce-artifacts: generated rules.
 	changed := true
 	for changed {
 		changed = false
@@ -546,7 +549,7 @@ func (s *parserGenState) assignActions() {
 		}
 	}
 
-	// User-defined rules next.
+	// Check that every rule has been covered.
 	for _, rule := range s.grammar.Rules {
 		if rule.Generated == grammar.GeneratedSPrime {
 			continue
@@ -564,6 +567,11 @@ func (s *parserGenState) assignActions() {
 		return
 	}
 
+	var unassignedMethods set.Set[*actionMethod]
+	for _, methods := range s.actionMethods {
+		unassignedMethods.AddSlice(methods)
+	}
+
 	// Assign each method to a production.
 	for _, prod := range s.grammar.Prods {
 		rule := s.grammar.ProdRule(prod)
@@ -572,7 +580,7 @@ func (s *parserGenState) assignActions() {
 			// also be generated.
 			continue
 		}
-		method := s.findMethodForProd(prod, s.reduceMethods[rule.Name])
+		method := s.findMethodForProd(prod, s.actionMethods[rule.Name])
 		if method == nil {
 			s.errs.Errorf(
 				prod.Pos,
@@ -589,16 +597,31 @@ func (s *parserGenState) assignActions() {
 				rule.Name, existing, reduceType))
 		}
 		s.reduceMap[prod] = method
+		unassignedMethods.Remove(method)
 	}
 
 	if s.errs.HasError() {
+		return
+	}
+
+	if unassignedMethods.Len() > 0 {
+		methods := unassignedMethods.Elements()
+		sort.Slice(methods, func(i, j int) bool {
+			return methods[i].Name < methods[j].Name
+		})
+		for _, method := range methods {
+			s.errs.Errorf(
+				s.fset.Position(method.Method.Pos()),
+				"method %v does not match a production",
+				method.Name)
+		}
 		return
 	}
 }
 
 func (s *parserGenState) actionTypeForTerm(term *grammar.Term) gotypes.Type {
 	termSym := s.grammar.TermSymbol(term)
-	termReduceType := s.token.Type()
+	termReduceType := s.tokenType
 	if cRule, ok := termSym.(*grammar.Rule); ok {
 		termReduceType = s.reduceTypes[cRule]
 	}
@@ -623,9 +646,9 @@ func (s *parserGenState) findMethodForProd(
 				termReduceType = s.reduceTypes[termSym]
 			case *grammar.Terminal:
 				if prod.Terms[i].Type == grammar.Error {
-					termReduceType = s.errorMark.Type()
+					termReduceType = s.errorType
 				} else {
-					termReduceType = s.token.Type()
+					termReduceType = s.tokenType
 				}
 			}
 
@@ -666,7 +689,7 @@ func (s *parserGenState) actionTypeForGeneratedRule(
 		if cRule, ok := cSym.(*grammar.Rule); ok {
 			return s.reduceTypes[cRule]
 		} else {
-			return s.token.Type()
+			return s.tokenType
 		}
 
 	case grammar.GeneratedOneOrMore:
@@ -679,7 +702,7 @@ func (s *parserGenState) actionTypeForGeneratedRule(
 			return nil
 		}
 		cSym := s.grammar.TermSymbol(prod.Terms[0])
-		cType := s.token.Type()
+		cType := s.tokenType
 		if cRule, ok := cSym.(*grammar.Rule); ok {
 			cType = s.reduceTypes[cRule]
 		}
@@ -695,7 +718,7 @@ func (s *parserGenState) actionTypeForGeneratedRule(
 			return nil
 		}
 		cSym := s.grammar.TermSymbol(prod.Terms[0])
-		cType := s.token.Type()
+		cType := s.tokenType
 		if cRule, ok := cSym.(*grammar.Rule); ok {
 			cType = s.reduceTypes[cRule]
 		}
@@ -764,10 +787,6 @@ func (s *parserGenState) templGoType(t gotypes.Type) string {
 		}
 		return s.imports.Import(pkg.Path())
 	})
-}
-
-func (s *parserGenState) templIsErrorParam(t gotypes.Type) bool {
-	return gotypes.Identical(t, s.errorMark.Type())
 }
 
 func (s *parserGenState) templImport(path string) string {
