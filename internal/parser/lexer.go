@@ -84,6 +84,16 @@ func (l *lex) advance() {
 	l.char = r
 }
 
+func (l *lex) recover() {
+	for {
+		l.advance()
+		ch := l.peek()
+		if ch == ' ' || ch == '\n' || ch == 0 {
+			return
+		}
+	}
+}
+
 func (l *lex) offset() int {
 	offset, _ := l.input.Seek(0, io.SeekCurrent)
 	return int(offset) - 1
@@ -158,6 +168,7 @@ func (l *lex) readToken(tok *Token) {
 			} else {
 				l.errLogger.Errorf(
 					l.file.Position(l.pos()), "unexpected character: %v", r)
+				l.recover()
 				tok.Type = ERROR
 			}
 		}
@@ -169,6 +180,7 @@ func (l *lex) scanComment(tok *Token) {
 	if l.peek() != '/' {
 		l.errLogger.Errorf(
 			l.file.Position(l.pos()), "unexpected character: %v", l.peek())
+		l.recover()
 		tok.Type = ERROR
 		return
 	}
@@ -202,6 +214,7 @@ func (l *lex) scanLiteral(tok *Token) {
 			default:
 				l.errLogger.Errorf(
 					l.file.Position(l.pos()), "unexpected character %v in string literal", r)
+				l.recover()
 				tok.Type = ERROR
 				return
 			}
@@ -209,6 +222,7 @@ func (l *lex) scanLiteral(tok *Token) {
 		case '\n':
 			l.errLogger.Errorf(
 				l.file.Position(l.pos()), "newline in string literal")
+			// Don't recover. We will start parsing from the '\n'.
 			tok.Type = ERROR
 			return
 
@@ -271,6 +285,7 @@ func (l *lex) scanKeyword(tok *Token) {
 	if !ok {
 		l.errLogger.Errorf(l.file.Position(tok.Pos), "invalid keyword %v", tokStr)
 		tok.Type = ERROR
+		l.recover()
 		return
 	}
 	tok.Type = keyword

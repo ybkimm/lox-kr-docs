@@ -152,6 +152,7 @@ func (p *parser) onReduce(r any, begin, end Token) {
 	if !ok {
 		return
 	}
+
 	rAST.SetBounds(ast.Bounds{
 		Begin: begin.Pos,
 		End:   end.Pos,
