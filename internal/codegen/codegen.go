@@ -6,6 +6,7 @@ import (
 
 	"github.com/dcaiafa/lox/internal/errlogger"
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
+	"github.com/dcaiafa/lox/internal/parsergen/lr1"
 )
 
 const prefix = "_"
@@ -14,28 +15,13 @@ type Config struct {
 	Errs           *errlogger.ErrLogger
 	ImplDir        string
 	Grammar        *grammar.AugmentedGrammar
+	ParserTable    *lr1.ParserTable
 	AnalysisWriter io.Writer
 	AnalysisOnly   bool
 }
 
 func Generate(cfg *Config) {
-	pgen := newParserGenState(cfg.ImplDir, cfg.Grammar, cfg.Errs)
-	lgen := NewLexerGenState(cfg.ImplDir, cfg.Grammar)
-
-	pgen.ConstructParseTables()
-	if cfg.Errs.HasError() {
-		return
-	}
-
-	if cfg.AnalysisWriter != nil {
-		pgen.parserTable.Print(cfg.AnalysisWriter)
-	}
-
-	if cfg.AnalysisOnly {
-		return
-	}
-
-	// TODO: check for conflicts
+	lgen := newBaseGen(cfg.ImplDir, cfg.Grammar)
 
 	err := lgen.Generate()
 	if err != nil {
@@ -43,19 +29,8 @@ func Generate(cfg *Config) {
 		return
 	}
 
-	pgen.ParseGo()
-	if cfg.Errs.HasError() {
-		return
-	}
-
-	pgen.assignActions()
-	if cfg.Errs.HasError() {
-		return
-	}
-
-	err = pgen.Generate()
-	if err != nil {
-		cfg.Errs.Errorf(gotoken.Position{}, "failed to emit parser.gen.go: %v", err)
+	pgen := newParserGen(cfg.ImplDir, cfg.Grammar, cfg.ParserTable, cfg.Errs)
+	if !pgen.Generate() {
 		return
 	}
 }

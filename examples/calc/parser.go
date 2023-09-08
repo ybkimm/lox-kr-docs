@@ -13,25 +13,25 @@ func Eval(expr string) (float64, error) {
 		Fset: fset,
 	}
 
-	var parser parser
+	var parser calcParser
 	parser.errLogger = errLogger
 	lex := newLex(file, []byte(expr), errLogger)
 	_ = parser.parse(lex)
 	return parser.result, errLogger.Err()
 }
 
-type parser struct {
+type calcParser struct {
 	lox
 	errLogger *ErrLogger
 	result    float64
 }
 
-func (p *parser) on_S(e float64) any {
+func (p *calcParser) on_S(e float64) any {
 	p.result = e
 	return nil
 }
 
-func (p *parser) on_expr__binary(left float64, op Token, right float64) float64 {
+func (p *calcParser) on_expr__binary(left float64, op Token, right float64) float64 {
 	switch op.Type {
 	case PLUS:
 		return left + right
@@ -50,15 +50,15 @@ func (p *parser) on_expr__binary(left float64, op Token, right float64) float64 
 	}
 }
 
-func (p *parser) on_expr__paren(_ Token, e float64, _ Token) float64 {
+func (p *calcParser) on_expr__paren(_ Token, e float64, _ Token) float64 {
 	return e
 }
 
-func (p *parser) on_expr__num(e float64) float64 {
+func (p *calcParser) on_expr__num(e float64) float64 {
 	return e
 }
 
-func (p *parser) on_num(num Token) float64 {
+func (p *calcParser) on_num(num Token) float64 {
 	v, err := strconv.ParseFloat(num.Str, 64)
 	if err != nil {
 		p.errLogger.Errorf(num.Pos, "invalid float: %v", err)
@@ -67,7 +67,7 @@ func (p *parser) on_num(num Token) float64 {
 	return v
 }
 
-func (p *parser) on_num__minus(_ Token, num Token) float64 {
+func (p *calcParser) on_num__minus(_ Token, num Token) float64 {
 	v, err := strconv.ParseFloat(num.Str, 64)
 	if err != nil {
 		p.errLogger.Errorf(num.Pos, "invalid float: %v", err)
@@ -76,6 +76,6 @@ func (p *parser) on_num__minus(_ Token, num Token) float64 {
 	return -v
 }
 
-func (p *parser) onError() {
+func (p *calcParser) onError() {
 	p.errLogger.Errorf(p.errorToken().Pos, "unexpected token %v", p.errorToken())
 }

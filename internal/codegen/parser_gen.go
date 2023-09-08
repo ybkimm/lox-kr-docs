@@ -23,8 +23,6 @@ import (
 
 const accept = math.MaxInt32
 
-const parserTypeName = "parser"
-
 const parserPlaceholderTemplate = `
 package {{package}}
 
@@ -290,13 +288,14 @@ func (p *{{parser}}) _Act(prod int32) any {
 const parserGenGoName = "parser.gen.go"
 const parserStateTypeName = "lox"
 
-type parserGenState struct {
+type parserGen struct {
 	implDir       string
 	grammar       *grammar.AugmentedGrammar
 	errs          *errlogger.ErrLogger
 	fset          *gotoken.FileSet
 	tokenType     gotypes.Type
 	errorType     gotypes.Type
+	parserType    *gotypes.Named
 	parserTable   *lr1.ParserTable
 	actionMethods map[string][]*actionMethod
 	reduceTypes   map[*grammar.Rule]gotypes.Type
@@ -318,23 +317,43 @@ type actionParam struct {
 	Type gotypes.Type
 }
 
-func newParserGenState(
+func newParserGen(
 	implDir string,
 	g *grammar.AugmentedGrammar,
+	parserTable *lr1.ParserTable,
 	errs *errlogger.ErrLogger,
-) *parserGenState {
-	return &parserGenState{
-		implDir: implDir,
-		grammar: g,
-		errs:    errs,
+) *parserGen {
+	return &parserGen{
+		implDir:     implDir,
+		grammar:     g,
+		parserTable: parserTable,
+		errs:        errs,
 	}
 }
 
-func (s *parserGenState) ConstructParseTables() {
-	s.parserTable = lr1.ConstructLALR(s.grammar)
+func (s *parserGen) Generate() bool {
+	s.parseGo()
+	if s.errs.HasError() {
+		return false
+	}
+	s.catalogActionMethods()
+	if s.errs.HasError() {
+		return false
+	}
+	s.assignActions()
+	if s.errs.HasError() {
+		return false
+	}
+	err := s.emit()
+	if err != nil {
+		s.errs.Errorf(gotoken.Position{}, "failed to emit parser.gen.go: %v", err)
+		return false
+	}
+	return true
 }
 
-func (s *parserGenState) ParseGo() {
+// parseGo parses all Go files in the project
+func (s *parserGen) parseGo() {
 	var err error
 
 	s.packageName, err = computePackageName(s.implDir)
@@ -398,17 +417,17 @@ func (s *parserGenState) ParseGo() {
 
 	s.errorType = errorObj.Type()
 
-	parserObject, err := getParserObj(scope)
-	if err != nil {
-		s.errs.Errorf(gotoken.Position{}, "%v", err)
+	s.parserType = s.lookupParserType(scope)
+	if s.parserType == nil {
+		// Error was already logged.
 		return
 	}
+}
 
-	// Catalog user-provided action methods with the prefix on_<rule>.
+func (s *parserGen) catalogActionMethods() {
 	s.actionMethods = make(map[string][]*actionMethod)
-	parserNamed := parserObject.Type().(*gotypes.Named)
-	for i := 0; i < parserNamed.NumMethods(); i++ {
-		method := parserNamed.Method(i)
+	for i := 0; i < s.parserType.NumMethods(); i++ {
+		method := s.parserType.Method(i)
 		if method.Name() == "onReduce" {
 			s.hasOnReduce = true
 			continue
@@ -448,46 +467,99 @@ func (s *parserGenState) ParseGo() {
 	}
 }
 
-func getParserObj(scope *gotypes.Scope) (gotypes.Object, error) {
-	loxStateTypeObj := scope.Lookup(parserStateTypeName)
-	if loxStateTypeObj == nil {
+// lookupParserType finds the parser struct Named type that has the form:
+//
+//	// Must be a top level package object (can't be embedded).
+//	// The name does not matter.
+//	// But it can't have type parameters (non-generic).
+//	type myParser struct {
+//	  // Must embed the "lox" generated type.
+//	  // This contains the parser state.
+//	  lox
+//
+//	  // Can have other fields
+//	  whatever int
+//	}
+func (s *parserGen) lookupParserType(scope *gotypes.Scope) *gotypes.Named {
+	loxObj := scope.Lookup(parserStateTypeName)
+	if loxObj == nil {
+		// This type is generated so this should always succeed.
 		panic(fmt.Errorf("could not find type %q", parserStateTypeName))
 	}
-	loxStateType := loxStateTypeObj.Type()
+	loxType := loxObj.Type()
 
-	obj := scope.Lookup(parserTypeName)
-	if obj == nil {
-		return nil, fmt.Errorf("no type named %v", parserTypeName)
-	}
-	namedType, ok := obj.Type().(*gotypes.Named)
-	if !ok {
-		return nil, fmt.Errorf("%v is not a struct", parserTypeName)
-	}
-	structType, ok := namedType.Underlying().(*gotypes.Struct)
-	if !ok {
-		return nil, fmt.Errorf("%v is not a struct", parserTypeName)
-	}
-	foundLoxState := false
-	for i := 0; i < structType.NumFields(); i++ {
-		field := structType.Field(i)
-		if field.Embedded() && field.Type() == loxStateType {
-			foundLoxState = true
-			break
+	// Iterate through all objects in this scope.
+	var parserObj *gotypes.Named
+	names := scope.Names()
+	for _, name := range names {
+		obj := scope.Lookup(name)
+
+		namedType, ok := obj.Type().(*gotypes.Named)
+		if !ok {
+			continue
 		}
+
+		// It must be a struct.
+		structType, ok := namedType.Underlying().(*gotypes.Struct)
+		if !ok {
+			continue
+		}
+
+		// It must embed the "lox" type.
+		foundLox := false
+		for i := 0; i < structType.NumFields(); i++ {
+			field := structType.Field(i)
+			if field.Embedded() && field.Type() == loxType {
+				foundLox = true
+				break
+			}
+		}
+		if !foundLox {
+			continue
+		}
+
+		// Can't have type parameters (non-generic).
+		if obj.Type().(*gotypes.Named).TypeParams().Len() != 0 {
+			s.errs.Errorf(
+				s.fset.Position(obj.Pos()),
+				"parser %v cannot have type parameters",
+				namedType.Obj().Name())
+			return nil
+		}
+
+		// There can be only one.
+		if parserObj != nil {
+			s.errs.Errorf(
+				s.fset.Position(obj.Pos()),
+				"there can only be one parser struct")
+			s.errs.Infof(
+				s.fset.Position(parserObj.Obj().Pos()),
+				"here is the other one")
+			return nil
+		}
+
+		parserObj = namedType
 	}
-	if !foundLoxState {
-		return nil, fmt.Errorf(
-			"%v does not embed %v", parserTypeName, parserStateTypeName)
+
+	if parserObj == nil {
+		s.errs.Errorf(
+			gotoken.Position{},
+			"Parser struct undefined")
+		s.errs.Infof(
+			gotoken.Position{},
+			"You must define a struct for the parser that embeds \"lox\".\n"+
+				"Example:\n"+
+				"type myParser struct {\n"+
+				"  lox  // <== must embed this\n"+
+				"}")
+
+		return nil
 	}
-	if obj.Type().(*gotypes.Named).TypeParams().Len() != 0 {
-		return nil, fmt.Errorf(
-			"%v cannot have type parameters",
-			parserTypeName)
-	}
-	return obj, nil
+
+	return parserObj
 }
 
-func (s *parserGenState) assignActions() {
+func (s *parserGen) assignActions() {
 	s.reduceMap = make(map[*grammar.Prod]*actionMethod)
 	s.reduceTypes = make(map[*grammar.Rule]gotypes.Type)
 
@@ -619,7 +691,7 @@ func (s *parserGenState) assignActions() {
 	}
 }
 
-func (s *parserGenState) actionTypeForTerm(term *grammar.Term) gotypes.Type {
+func (s *parserGen) actionTypeForTerm(term *grammar.Term) gotypes.Type {
 	termSym := s.grammar.TermSymbol(term)
 	termReduceType := s.tokenType
 	if cRule, ok := termSym.(*grammar.Rule); ok {
@@ -628,7 +700,7 @@ func (s *parserGenState) actionTypeForTerm(term *grammar.Term) gotypes.Type {
 	return termReduceType
 }
 
-func (s *parserGenState) findMethodForProd(
+func (s *parserGen) findMethodForProd(
 	prod *grammar.Prod,
 	methods []*actionMethod,
 ) *actionMethod {
@@ -668,7 +740,7 @@ func (s *parserGenState) findMethodForProd(
 	return nil
 }
 
-func (s *parserGenState) actionTypeForGeneratedRule(
+func (s *parserGen) actionTypeForGeneratedRule(
 	rule *grammar.Rule,
 	prod *grammar.Prod,
 ) gotypes.Type {
@@ -729,7 +801,7 @@ func (s *parserGenState) actionTypeForGeneratedRule(
 	}
 }
 
-func (s *parserGenState) Generate() error {
+func (s *parserGen) emit() error {
 	s.imports = newImportBuilder()
 
 	vars := jet.VarMap{}
@@ -740,7 +812,7 @@ func (s *parserGenState) Generate() error {
 	vars.Set("goto", s.templGoto)
 	vars.Set("lhs", s.templLHS)
 	vars.Set("term_counts", s.templTermCounts)
-	vars.Set("parser", parserTypeName)
+	vars.Set("parser", s.parserType.Obj().Name())
 	vars.Set("grammar", s.grammar)
 	vars.Set("methods", s.reduceMap)
 	vars.Set("not_generated", grammar.NotGenerated)
@@ -772,7 +844,7 @@ func (s *parserGenState) Generate() error {
 	return nil
 }
 
-func (s *parserGenState) terminals() map[int]string {
+func (s *parserGen) terminals() map[int]string {
 	terminals := make(map[int]string)
 	for i, terminal := range s.grammar.Terminals {
 		terminals[i] = terminal.Name
@@ -780,7 +852,7 @@ func (s *parserGenState) terminals() map[int]string {
 	return terminals
 }
 
-func (s *parserGenState) templGoType(t gotypes.Type) string {
+func (s *parserGen) templGoType(t gotypes.Type) string {
 	return gotypes.TypeString(t, func(pkg *gotypes.Package) string {
 		if pkg.Path() == s.packagePath {
 			return ""
@@ -789,11 +861,11 @@ func (s *parserGenState) templGoType(t gotypes.Type) string {
 	})
 }
 
-func (s *parserGenState) templImport(path string) string {
+func (s *parserGen) templImport(path string) string {
 	return s.imports.Import(path)
 }
 
-func (s *parserGenState) templLHS() []int32 {
+func (s *parserGen) templLHS() []int32 {
 	prods := make([]int32, len(s.grammar.Prods))
 	for prodIndex, prod := range s.grammar.Prods {
 		rule := s.grammar.ProdRule(prod)
@@ -802,13 +874,13 @@ func (s *parserGenState) templLHS() []int32 {
 	return prods
 }
 
-func (s *parserGenState) templArray(arr []int32) string {
+func (s *parserGen) templArray(arr []int32) string {
 	var str strings.Builder
 	table.WriteArray(&str, arr)
 	return str.String()
 }
 
-func (s *parserGenState) templTermCounts() []int32 {
+func (s *parserGen) templTermCounts() []int32 {
 	prods := make([]int32, len(s.grammar.Prods))
 	for prodIndex, prod := range s.grammar.Prods {
 		prods[prodIndex] = int32(len(prod.Terms))
@@ -816,7 +888,7 @@ func (s *parserGenState) templTermCounts() []int32 {
 	return prods
 }
 
-func (s *parserGenState) templActions() []int32 {
+func (s *parserGen) templActions() []int32 {
 	actionTable := table.New()
 	for _, state := range s.parserTable.States.States() {
 		var row []int32
@@ -843,7 +915,7 @@ func (s *parserGenState) templActions() []int32 {
 	return actionTable.Array()
 }
 
-func (s *parserGenState) templGoto() []int32 {
+func (s *parserGen) templGoto() []int32 {
 	gotoTable := table.New()
 	for stateIndex, state := range s.parserTable.States.States() {
 		var row []int32

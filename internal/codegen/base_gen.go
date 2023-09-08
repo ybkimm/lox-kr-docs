@@ -43,23 +43,23 @@ type lexer interface {
 }
 `
 
-type LexerGenState struct {
+type baseGen struct {
 	ImplDir string
 	Grammar *grammar.AugmentedGrammar
 	imports *importBuilder
 }
 
-func NewLexerGenState(
+func newBaseGen(
 	implDir string,
 	g *grammar.AugmentedGrammar,
-) *LexerGenState {
-	return &LexerGenState{
+) *baseGen {
+	return &baseGen{
 		ImplDir: implDir,
 		Grammar: g,
 	}
 }
 
-func (s *LexerGenState) Generate() error {
+func (s *baseGen) Generate() error {
 	s.imports = newImportBuilder()
 
 	packageName, err := computePackageName(s.ImplDir)
@@ -89,6 +89,6 @@ func (s *LexerGenState) Generate() error {
 	return nil
 }
 
-func (s *LexerGenState) i(path string) string {
+func (s *baseGen) i(path string) string {
 	return s.imports.Import(path)
 }

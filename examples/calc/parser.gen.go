@@ -84,7 +84,7 @@ type lox struct {
 	_errorToken    Token
 }
 
-func (p *parser) parse(lex lexer) bool {
+func (p *calcParser) parse(lex lexer) bool {
 	const accept = 2147483647
 
 	p._lex = lex
@@ -131,15 +131,15 @@ func (p *parser) parse(lex lexer) bool {
 	return true
 }
 
-func (p *parser) errorToken() Token {
+func (p *calcParser) errorToken() Token {
 	return p._errorToken
 }
 
-func (p *parser) _ReadToken() {
+func (p *calcParser) _ReadToken() {
 	p._lookahead, p._lookaheadType = p._lex.ReadToken()
 }
 
-func (p *parser) _Recover() (int32, bool) {
+func (p *calcParser) _Recover() (int32, bool) {
 	p._errorToken = p._lookahead
 
 	for {
@@ -177,7 +177,7 @@ func (p *parser) _Recover() (int32, bool) {
 	}
 }
 
-func (p *parser) _Act(prod int32) any {
+func (p *calcParser) _Act(prod int32) any {
 	switch prod {
 	case 1:
 		return p.on_S(

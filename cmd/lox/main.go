@@ -8,6 +8,7 @@ import (
 
 	"github.com/dcaiafa/lox/internal/codegen"
 	"github.com/dcaiafa/lox/internal/errlogger"
+	"github.com/dcaiafa/lox/internal/parsergen/lr1"
 )
 
 func main() {
@@ -39,10 +40,19 @@ func realMain() error {
 		return fmt.Errorf("failed to parse grammar")
 	}
 
+	parserTable := lr1.ConstructLALR(grammar)
+	if *flagAnalyze {
+		parserTable.Print(os.Stdout)
+		return nil
+	}
+
+	// Check for conflicts.
+
 	cfg := &codegen.Config{
-		Errs:    errLogger,
-		ImplDir: dir,
-		Grammar: grammar,
+		Errs:        errLogger,
+		ImplDir:     dir,
+		Grammar:     grammar,
+		ParserTable: parserTable,
 	}
 
 	if *flagAnalyze {
