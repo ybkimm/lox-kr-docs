@@ -46,7 +46,9 @@ func realMain() error {
 		return nil
 	}
 
-	// Check for conflicts.
+	if parserTable.HasConflicts {
+		return fmt.Errorf("conflicts detected. Re-run with -analyze for details")
+	}
 
 	cfg := &codegen.Config{
 		Errs:        errLogger,

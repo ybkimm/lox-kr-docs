@@ -104,48 +104,60 @@ func createActions(pt *ParserTable) {
 }
 
 func resolveConflicts(pt *ParserTable) {
+	resolveConflict := func(state *ItemSet, sym grammar.Symbol, actionSet ActionSet, actions []Action) bool {
+		// We can only resolve shift/reduce conflicts.
+		if len(actions) != 2 {
+			return false
+		}
+
+		shift, reduce, ok := ShiftReduce(actions[0], actions[1])
+		if !ok {
+			shift, reduce, ok = ShiftReduce(actions[1], actions[0])
+			if !ok {
+				return false
+			}
+		}
+
+		shiftProd := actionSet.SingleProd(shift)
+		reduceProd := actionSet.SingleProd(reduce)
+
+		// Both Prods involved must belong to the same Rule, and must have
+		// explicit precedences.
+		haveCommonRule :=
+			pt.Grammar.ProdRule(shiftProd) == pt.Grammar.ProdRule(reduceProd)
+		if !haveCommonRule ||
+			shiftProd.Precence <= 0 ||
+			reduceProd.Precence <= 0 {
+			return false
+		}
+
+		switch {
+		case shiftProd.Precence < reduceProd.Precence:
+			pt.Actions.Remove(state, sym, shift)
+		case shiftProd.Precence > reduceProd.Precence:
+			pt.Actions.Remove(state, sym, reduce)
+		case shiftProd == reduce.Prod && shiftProd.Associativity == grammar.Right:
+			pt.Actions.Remove(state, sym, reduce)
+		default:
+			pt.Actions.Remove(state, sym, shift)
+		}
+
+		return true
+	}
+
 	pt.States.ForEach(
 		func(state *ItemSet) {
 			pt.Actions.ForEachActionSet(
 				pt.Grammar, state,
 				func(sym grammar.Symbol, actionSet ActionSet) {
 					actions := actionSet.Actions()
-					// We can only resolve shift/reduce conflicts.
-					if len(actions) != 2 {
+					if len(actions) == 1 {
 						return
 					}
-
-					shift, reduce, ok := ShiftReduce(actions[0], actions[1])
-					if !ok {
-						shift, reduce, ok = ShiftReduce(actions[1], actions[0])
-						if !ok {
-							return
-						}
+					if !resolveConflict(state, sym, actionSet, actions) {
+						pt.HasConflicts = true
 					}
-
-					shiftProd := actionSet.SingleProd(shift)
-					reduceProd := actionSet.SingleProd(reduce)
-
-					// Both Prods involved must belong to the same Rule, and must have
-					// explicit precedences.
-					haveCommonRule :=
-						pt.Grammar.ProdRule(shiftProd) == pt.Grammar.ProdRule(reduceProd)
-					if !haveCommonRule ||
-						shiftProd.Precence <= 0 ||
-						reduceProd.Precence <= 0 {
-						return
-					}
-
-					switch {
-					case shiftProd.Precence < reduceProd.Precence:
-						pt.Actions.Remove(state, sym, shift)
-					case shiftProd.Precence > reduceProd.Precence:
-						pt.Actions.Remove(state, sym, reduce)
-					case shiftProd == reduce.Prod && shiftProd.Associativity == grammar.Right:
-						pt.Actions.Remove(state, sym, reduce)
-					default:
-						pt.Actions.Remove(state, sym, shift)
-					}
-				})
+				},
+			)
 		})
 }

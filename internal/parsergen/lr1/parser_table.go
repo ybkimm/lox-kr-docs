@@ -9,10 +9,11 @@ import (
 )
 
 type ParserTable struct {
-	Grammar     *grammar.AugmentedGrammar
-	States      *StateSet
-	Transitions *TransitionMap
-	Actions     *ActionMap
+	Grammar      *grammar.AugmentedGrammar
+	States       *StateSet
+	Transitions  *TransitionMap
+	Actions      *ActionMap
+	HasConflicts bool
 }
 
 func NewParserTable(g *grammar.AugmentedGrammar) *ParserTable {

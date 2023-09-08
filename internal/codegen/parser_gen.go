@@ -286,7 +286,7 @@ func (p *{{parser}}) _Act(prod int32) any {
 `
 
 const parserGenGoName = "parser.gen.go"
-const parserStateTypeName = "lox"
+const loxTypeName = "lox"
 
 type parserGen struct {
 	implDir       string
@@ -481,10 +481,10 @@ func (s *parserGen) catalogActionMethods() {
 //	  whatever int
 //	}
 func (s *parserGen) lookupParserType(scope *gotypes.Scope) *gotypes.Named {
-	loxObj := scope.Lookup(parserStateTypeName)
+	loxObj := scope.Lookup(loxTypeName)
 	if loxObj == nil {
 		// This type is generated so this should always succeed.
-		panic(fmt.Errorf("could not find type %q", parserStateTypeName))
+		panic(fmt.Errorf("could not find type %q", loxTypeName))
 	}
 	loxType := loxObj.Type()
 
