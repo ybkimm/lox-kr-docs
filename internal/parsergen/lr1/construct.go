@@ -1,7 +1,10 @@
 package lr1
 
 import (
+	"sort"
+
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
+	"github.com/dcaiafa/lox/internal/util/set"
 )
 
 func ConstructLR(g *grammar.AugmentedGrammar) *ParserTable {
@@ -40,16 +43,24 @@ func ConstructLR(g *grammar.AugmentedGrammar) *ParserTable {
 func ConstructLALR(g *grammar.AugmentedGrammar) *ParserTable {
 	pt := NewParserTable(g)
 
+	var pending set.Set[string]
+
 	start := NewItemSet()
 	start.Add(NewItem(g, g.Sprime.Prods[0], 0, g.EOF))
 	start.Closure(g)
-	pt.States.Add(start.LR0Key(), start)
 
-	changed := true
-	for changed {
-		changed = false
-		pt.States.ForEach(func(from *ItemSet) {
+	startKey := start.LR0Key()
+	pt.States.Add(startKey, start)
+	pending.Add(startKey)
+
+	for pending.Len() > 0 {
+		pendingSorted := pending.Elements()
+		sort.Strings(pendingSorted)
+		pending.Clear()
+		for _, fromKey := range pendingSorted {
+			from := pt.States.Get(fromKey)
 			for _, sym := range from.Follow(g) {
+				changed := false
 				to := from.Goto(g, sym)
 				toKey := to.LR0Key()
 				existing := pt.States.Get(toKey)
@@ -63,8 +74,11 @@ func ConstructLALR(g *grammar.AugmentedGrammar) *ParserTable {
 					changed = true
 				}
 				pt.Transitions.Add(from, to, sym)
+				if changed {
+					pending.Add(toKey)
+				}
 			}
-		})
+		}
 	}
 
 	createActions(pt)

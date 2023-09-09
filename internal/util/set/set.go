@@ -5,6 +5,10 @@ type Set[T comparable] struct {
 	keyFn func(x T) string
 }
 
+func (s *Set[T]) Clear() {
+	s.set = nil
+}
+
 func (s *Set[T]) Add(x T) bool {
 	if s.set == nil {
 		s.set = make(map[T]bool)
