@@ -1,0 +1,52 @@
+@token 
+  ID 'identifier'
+  LITERAL 'literal'
+
+  SEMICOLON ';'
+  EQ '='
+  OR '|'
+  ARROW '->'
+  OCURLY '{'
+  CCURLY '}'
+
+  ONE_OR_ZERO '?'
+  ZERO_OR_MORE '*'
+  ONE_OR_MORE '+'
+  ZERO_OR_MORE_NG '*?'
+  ONE_OR_MORE_NG '+?'
+
+  SKIP   '@skip'
+  MACRO  '@macro'
+  FRAG   '@frag'
+  MODE   '@mode'
+  ;
+
+spec = rule_or_mode* ;
+
+rule_or_mode = rule | mode ;
+
+rule = token_rule
+     | frag_rule
+     | macro_rule ;
+
+mode = MODE ID '{' rule* '}' ;
+
+token_rule = ID '=' expr action_part? ';' ;
+
+frag_rule = FRAG expr action_part? ';' ;
+
+macro_rule = MACRO ID '=' expr ';' ;
+
+expr = expr '|' factor
+     | factor ;
+
+factor = term card? ;
+
+term = LITERAL
+     | ID ;
+
+card = '?' | '*' | '+' | '*?' | '+?' ;
+
+action_part = '->' action+ ;
+
+action = SKIP ;
