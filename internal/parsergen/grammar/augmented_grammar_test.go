@@ -104,12 +104,13 @@ func TestFirst2(t *testing.T) {
 			{Name: "+"},
 			{Name: "-"},
 			{Name: "*"},
+			{Name: "/"},
 		},
 		Rules: []*Rule{
 			{
 				Name: "X",
 				Prods: []*Prod{
-					{Terms: []*Term{{Name: "Y"}, {Name: "Z"}, {Name: "*"}}},
+					{Terms: []*Term{{Name: "Y"}, {Name: "Z"}, {Name: "*"}, {Name: "/"}}},
 				},
 			},
 			{

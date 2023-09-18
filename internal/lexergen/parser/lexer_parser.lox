@@ -1,6 +1,7 @@
 @token 
   ID 'identifier'
   LITERAL 'literal'
+  CHAR 'character' //
 
   SEMICOLON ';'
   EQ '='
@@ -8,8 +9,15 @@
   ARROW '->'
   OCURLY '{'
   CCURLY '}'
+  DASH '-'
+  HAT '^'
+  TILDE '~'
+  OBRACKET '['
+  CBRACKET ']'
+  OPAREN '('
+  CPAREN ')'
 
-  ONE_OR_ZERO '?'
+  ZERO_OR_ONE '?'
   ZERO_OR_MORE '*'
   ONE_OR_MORE '+'
   ZERO_OR_MORE_NG '*?'
@@ -19,11 +27,13 @@
   MACRO  '@macro'
   FRAG   '@frag'
   MODE   '@mode'
+  PUSH_MODE '@push_mode'
+  POP_MODE '@pop_mode'
   ;
 
-spec = rule_or_mode* ;
+spec = statement* ;
 
-rule_or_mode = rule | mode ;
+statement = rule | mode ;
 
 rule = token_rule
      | frag_rule
@@ -31,22 +41,30 @@ rule = token_rule
 
 mode = MODE ID '{' rule* '}' ;
 
-token_rule = ID '=' expr action_part? ';' ;
+token_rule  = ID '=' expr actions? ';' ;
+frag_rule   = FRAG expr actions? ';' ;
+macro_rule  = MACRO ID '=' expr ';' ;
 
-frag_rule = FRAG expr action_part? ';' ;
+expr = @list(factor, '|') ;
 
-macro_rule = MACRO ID '=' expr ';' ;
+factor    = term_card+ ;
+term_card = term card? ;
+card      = '?' | '*' | '+' | '*?' | '+?' ;
 
-expr = expr '|' factor
-     | factor ;
+term   = LITERAL
+       | ID
+       | char_class 
+       | '(' expr ')' ;
 
-factor = term card? ;
+char_class      = '~'? '[' char_class_item+ ']' ;
 
-term = LITERAL
-     | ID ;
+char_class_item = CHAR '-' CHAR
+                | CHAR;
 
-card = '?' | '*' | '+' | '*?' | '+?' ;
-
-action_part = '->' action+ ;
-
-action = SKIP ;
+actions          = '->' action+ ;
+action           = action_skip
+                 | action_push_mode
+                 | action_pop_mode ;
+action_skip      = SKIP ;
+action_push_mode = PUSH_MODE '(' ID ')' ;
+action_pop_mode  = POP_MODE ;
