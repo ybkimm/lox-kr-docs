@@ -217,9 +217,15 @@ func (g *AugmentedGrammar) first(s Symbol) *set.Set[*Terminal] {
 		for _, prod := range s.Prods {
 			if len(prod.Terms) == 0 {
 				firstSet.Add(epsilon)
-			} else {
-				termSym := g.TermSymbol(prod.Terms[0])
-				firstSet.AddSet(g.first(termSym))
+				continue
+			}
+			for _, term := range prod.Terms {
+				termSym := g.TermSymbol(term)
+				termFirst := g.first(termSym)
+				firstSet.AddSet(termFirst)
+				if !termFirst.Has(epsilon) {
+					break
+				}
 			}
 		}
 		return firstSet
