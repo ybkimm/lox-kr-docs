@@ -36,7 +36,7 @@ func (b *ItemSet) Add(item Item) bool {
 //
 //	For each item [A -> α.Bβ, a]:
 //	 If there is a B -> γ:
-//	   For each x in FIRST(β):
+//	   For each x in FIRST(βa):
 //	     Add [B -> .γ, x]
 func (b *ItemSet) Closure(g *grammar.AugmentedGrammar) {
 	changed := true

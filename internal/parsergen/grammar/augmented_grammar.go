@@ -224,6 +224,7 @@ func (g *AugmentedGrammar) first(s Symbol) *set.Set[*Terminal] {
 				termFirst := g.first(termSym)
 				firstSet.AddSet(termFirst)
 				if !termFirst.Has(epsilon) {
+					firstSet.Remove(epsilon)
 					break
 				}
 			}
