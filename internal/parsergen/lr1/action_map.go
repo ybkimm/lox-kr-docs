@@ -96,11 +96,6 @@ func (s ActionSet) Actions() []Action {
 	return actions
 }
 
-func (s ActionSet) SingleProd(a Action) *grammar.Prod {
-	prodSet := s[a]
-	prods := prodSet.Elements()
-	if len(prods) > 1 {
-		return nil
-	}
-	return prods[0]
+func (s ActionSet) ProdsForAction(a Action) []*grammar.Prod {
+	return s[a].Elements()
 }

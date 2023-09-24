@@ -3,6 +3,7 @@ package lr1
 import (
 	"sort"
 
+	"github.com/dcaiafa/lox/internal/assert"
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
 	"github.com/dcaiafa/lox/internal/util/set"
 )
@@ -132,25 +133,42 @@ func resolveConflicts(pt *ParserTable) {
 			}
 		}
 
-		shiftProd := actionSet.SingleProd(shift)
-		reduceProd := actionSet.SingleProd(reduce)
+		shiftProds := actionSet.ProdsForAction(shift)
+		var shiftRule *grammar.Rule
+		var shiftPrec int
+		for i, shiftProd := range shiftProds {
+			rule := pt.Grammar.ProdRule(shiftProd)
+			if i == 0 {
+				shiftRule = rule
+				shiftPrec = shiftProd.Precence
+			} else if shiftRule != rule || shiftPrec != shiftProd.Precence {
+				return false
+			}
+		}
+
+		reduceProds := actionSet.ProdsForAction(reduce)
+		assert.True(len(reduceProds) == 1)
+		reduceProd := reduceProds[0]
+		assert.True(reduceProd == reduce.Prod)
+		reducePrec := reduceProd.Precence
 
 		// Both Prods involved must belong to the same Rule, and must have
 		// explicit precedences.
-		haveCommonRule :=
-			pt.Grammar.ProdRule(shiftProd) == pt.Grammar.ProdRule(reduceProd)
+		haveCommonRule := shiftRule == pt.Grammar.ProdRule(reduceProd)
 		if !haveCommonRule ||
-			shiftProd.Precence <= 0 ||
+			shiftPrec <= 0 ||
 			reduceProd.Precence <= 0 {
 			return false
 		}
 
 		switch {
-		case shiftProd.Precence < reduceProd.Precence:
+		case shiftPrec < reducePrec:
 			pt.Actions.Remove(state, sym, shift)
-		case shiftProd.Precence > reduceProd.Precence:
+		case shiftPrec > reducePrec:
 			pt.Actions.Remove(state, sym, reduce)
-		case shiftProd == reduce.Prod && shiftProd.Associativity == grammar.Right:
+		case len(shiftProds) == 1 &&
+			shiftProds[0] == reduce.Prod &&
+			shiftProds[0].Associativity == grammar.Right:
 			pt.Actions.Remove(state, sym, reduce)
 		default:
 			pt.Actions.Remove(state, sym, shift)

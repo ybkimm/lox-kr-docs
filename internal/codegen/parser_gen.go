@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/CloudyKit/jet/v6"
+	"github.com/dcaiafa/lox/internal/assert"
 	"github.com/dcaiafa/lox/internal/codegen/table"
 	"github.com/dcaiafa/lox/internal/errlogger"
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
@@ -586,7 +587,7 @@ func (s *parserGen) assignActions() {
 					reduceMethod.Name)
 			}
 		}
-		assert(reduceMethod != nil && reduceMethod.ReturnType != nil)
+		assert.True(reduceMethod != nil && reduceMethod.ReturnType != nil)
 		rule, ok := s.grammar.GetSymbol(ruleName).(*grammar.Rule)
 		if !ok {
 			s.errs.Errorf(
@@ -613,7 +614,7 @@ func (s *parserGen) assignActions() {
 			}
 			existing := s.reduceTypes[rule]
 			if existing != nil {
-				assert(gotypes.Identical(existing, typ))
+				assert.True(gotypes.Identical(existing, typ))
 				continue
 			}
 			s.reduceTypes[rule] = typ

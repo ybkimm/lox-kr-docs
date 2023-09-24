@@ -58,8 +58,12 @@ term   = LITERAL
 
 char_class      = '~'? '[' char_class_item+ ']' ;
 
-char_class_item = CHAR '-' CHAR
-                | CHAR;
+char_class_item = CHAR '-' CHAR  @left(1)
+                | CHAR '-' '-'   @left(1)
+                | '-'  '-' CHAR  @left(1)
+                | '-'  '-' '-'   @left(1)
+                | CHAR           @left(1)
+                ;
 
 actions          = '->' action+ ;
 action           = action_skip
