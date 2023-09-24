@@ -158,5 +158,5 @@ func TestFirst2(t *testing.T) {
 		return g.GetSymbol(name)
 	}
 
-	assertTerminalSetEq(t, g.first(sym("X")), "+", "-", "*", "ε")
+	assertTerminalSetEq(t, g.first(sym("X")), "+", "-", "*")
 }
