@@ -5,10 +5,13 @@ import (
 	"fmt"
 	gotoken "go/token"
 	"os"
+	"path/filepath"
 	"runtime/pprof"
 
 	"github.com/dcaiafa/lox/internal/codegen"
 	"github.com/dcaiafa/lox/internal/errlogger"
+	last "github.com/dcaiafa/lox/internal/lexergen/ast"
+	lparser "github.com/dcaiafa/lox/internal/lexergen/parser"
 	"github.com/dcaiafa/lox/internal/parsergen/lr1"
 )
 
@@ -23,6 +26,7 @@ func main() {
 func realMain() error {
 	var (
 		flagAnalyze = flag.Bool("analyze", false, "")
+		flagLex     = flag.Bool("lex", false, "")
 		flagProf    = flag.String("cpu-prof", "", "")
 	)
 
@@ -45,6 +49,13 @@ func realMain() error {
 	fset := gotoken.NewFileSet()
 
 	errLogger := errlogger.New()
+
+	if *flagLex {
+		doLexer(fset, errLogger, dir)
+		if errLogger.HasError() {
+			return fmt.Errorf("errors occurred")
+		}
+	}
 
 	grammar := codegen.ParseGrammar(fset, dir, errLogger)
 	if errLogger.HasError() {
@@ -76,8 +87,39 @@ func realMain() error {
 	codegen.Generate(cfg)
 
 	if cfg.Errs.HasError() {
-		return fmt.Errorf("errors ocurred")
+		return fmt.Errorf("errors occurred")
 	}
 
 	return nil
+}
+
+func doLexer(fset *gotoken.FileSet, errs *errlogger.ErrLogger, dir string) {
+	spec := new(last.Spec)
+
+	matches, err := filepath.Glob(filepath.Join(dir, "*.loxl"))
+	if err != nil {
+		errs.Errorf(gotoken.Position{}, "failed to read directory: %v", err)
+		return
+	}
+
+	for _, match := range matches {
+		data, err := os.ReadFile(match)
+		if err != nil {
+			errs.Errorf(gotoken.Position{}, "%v", err)
+			return
+		}
+
+		file := fset.AddFile(match, -1, len(data))
+		unit := lparser.Parse(file, data, errs)
+		if errs.HasError() {
+			return
+		}
+
+		spec.Units = append(spec.Units, unit)
+	}
+
+	last.Analyze(spec, fset, errs)
+	if errs.HasError() {
+		return
+	}
 }

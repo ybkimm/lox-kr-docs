@@ -16,29 +16,31 @@ CHAR = '\'' (ESCAPE_CHAR | ~['\r\n\\]+) '\'';
 @macro ESCAPE_CHAR = '\\' [nrt'\\] ;
 
 @macro HEX_DIGIT = [a-fA-F0-9] ;
+@macro ID_CHAR = [a-zA-Z_-] ;
+@macro ID_CHAR2 = [\u0041-\u005A\u0061-\u007a\u002d\u005f] ;
 
-COMMENT = '#' ~[\n]* -> @skip ;
+COMMENT = '#' ~[\n]* @skip ;
 WS      = [ \t] ;
 
-OCURLY = '{' -> @push_mode(DEFAULT) ;
-CCURLY = '}' -> @pop_mode ;
+OCURLY = '{'   @push_mode(DEFAULT) ;
+CCURLY = '}'   @pop_mode ;
 
-EXEC_PREFIX = 'e\'' -> @push_mode(EXEC) ;
+EXEC_PREFIX = 'e\''  @push_mode(EXEC) ;
 
 @mode EXEC {
-	@frag '"' -> @push_mode(EXEC_DQUOTE) ;
+	@frag '"'   @push_mode(EXEC_DQUOTE) ;
 
-	EXEC_WS      = [ \t\r\n]+ ; 
+	EXEC_WS      = [ \t\r\n]+ ;
   EXEC_HOME    = '~' ;
   EXEC_LITERAL = ~[ \t\r\n~{"']+ ;
-	EXEC_OCURLY  = '{' -> @push_mode(DEFAULT) ;
-  EXEC_SUFFIX  = '\'' -> @pop_mode ;
+	EXEC_OCURLY  = '{'  @push_mode(DEFAULT) ;
+  EXEC_SUFFIX  = '\'' @pop_mode ;
 }
 
 @mode EXEC_DQUOTE {
 	@frag ~["\r\n\\] ;
 	@frag '\\' ([nrt"\\] | ('x' HEX_DIGIT HEX_DIGIT)) ;
-	EXEC_DQUOTE_LITERAL = '"' -> @pop_mode ;
+	EXEC_DQUOTE_LITERAL = '"' @pop_mode ;
 }
 
 `

@@ -1,7 +1,7 @@
 @token 
-  ID 'identifier'
-  LITERAL 'literal'
-  CHAR 'character' //
+  ID 
+  LITERAL 
+  CLASS_CHAR 
 
   SEMICOLON ';'
   EQ '='
@@ -33,7 +33,7 @@
 
 spec = statement* ;
 
-statement = rule | mode ;
+statement = mode | rule ;
 
 rule = token_rule
      | frag_rule
@@ -41,31 +41,25 @@ rule = token_rule
 
 mode = MODE ID '{' rule* '}' ;
 
-token_rule  = ID '=' expr actions? ';' ;
-frag_rule   = FRAG expr actions? ';' ;
+token_rule  = ID '=' expr action* ';' ;
+frag_rule   = FRAG expr action* ';' ;
 macro_rule  = MACRO ID '=' expr ';' ;
 
 expr = @list(factor, '|') ;
 
 factor    = term_card+ ;
 term_card = term card? ;
-card      = '?' | '*' | '+' | '*?' | '+?' ;
+card      = '?' | '*' | '+' ;
 
 term   = LITERAL
        | ID
        | char_class 
        | '(' expr ')' ;
 
-char_class      = '~'? '[' char_class_item+ ']' ;
+char_class = '~'? '[' char_class_item+ ']' ;
 
-char_class_item = CHAR '-' CHAR  @left(1)
-                | CHAR '-' '-'   @left(1)
-                | '-'  '-' CHAR  @left(1)
-                | '-'  '-' '-'   @left(1)
-                | CHAR           @left(1)
-                ;
+char_class_item = CLASS_CHAR | '-' ;
 
-actions          = '->' action+ ;
 action           = action_skip
                  | action_push_mode
                  | action_pop_mode ;

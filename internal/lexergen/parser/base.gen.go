@@ -7,7 +7,7 @@ const (
 	ERROR           TokenType = 1
 	ID              TokenType = 2
 	LITERAL         TokenType = 3
-	CHAR            TokenType = 4
+	CLASS_CHAR      TokenType = 4
 	SEMICOLON       TokenType = 5
 	EQ              TokenType = 6
 	OR              TokenType = 7
@@ -41,11 +41,11 @@ func (t TokenType) String() string {
 	case ERROR:
 		return "error"
 	case ID:
-		return "identifier"
+		return "ID"
 	case LITERAL:
-		return "literal"
-	case CHAR:
-		return "character"
+		return "LITERAL"
+	case CLASS_CHAR:
+		return "CLASS_CHAR"
 	case SEMICOLON:
 		return ";"
 	case EQ:

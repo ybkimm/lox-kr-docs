@@ -17,7 +17,7 @@ type Token struct {
 
 func (t Token) String() string {
 	switch t.Type {
-	case LITERAL:
+	case LITERAL, CLASS_CHAR:
 		return t.Type.String() + ` '` + t.Str + `'`
 	case ID:
 		return t.Type.String() + ` "` + t.Str + `"`
@@ -215,17 +215,21 @@ func (l *lex) modeCharClass() {
 		l.tok.Type = CBRACKET
 		l.mode = l.modeDefault
 	case '\\':
+		l.buf.Reset()
 		l.consumeEscapedChar()
-		l.tok.Type = CHAR
+		l.tok.Type = CLASS_CHAR
+		l.tok.Str = l.buf.String()
 	case '-':
 		l.advance()
 		l.tok.Type = DASH
 	case '\r', '\n', '\t':
 		l.unexpectedChar()
 	default:
+		l.buf.Reset()
 		l.buf.WriteRune(r)
 		l.advance()
-		l.tok.Type = CHAR
+		l.tok.Type = CLASS_CHAR
+		l.tok.Str = l.buf.String()
 	}
 }
 
@@ -253,6 +257,7 @@ func (l *lex) consumeEscapedChar() {
 		l.buf.WriteRune('\\')
 		l.advance()
 	case 'u':
+		l.advance()
 		var buf [4]byte
 		for i := 0; i < 4; i++ {
 			r := l.peek()
@@ -261,6 +266,7 @@ func (l *lex) consumeEscapedChar() {
 				return
 			}
 			buf[i] = byte(r)
+			l.advance()
 		}
 		ru, _ := strconv.ParseUint(string(buf[:]), 16, 16)
 		l.buf.WriteRune(rune(ru))
@@ -304,6 +310,9 @@ func (l *lex) scanLiteral() {
 			switch r {
 			case '\'', '\\':
 				l.buf.WriteRune(r)
+				l.advance()
+			case 'n':
+				l.buf.WriteRune('\n')
 				l.advance()
 			default:
 				l.errLogger.Errorf(

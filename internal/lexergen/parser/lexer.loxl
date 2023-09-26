@@ -1,0 +1,33 @@
+COMMENT = '//' ~[\n]* '\n' ;
+
+SKIP      = '@skip' ;
+MACRO     = '@macro' ;
+MODE      = '@mode' ;
+PUSH_MODE = '@push_mode' ;
+FRAG      = '@frag' ;
+
+EQ           = '=' ;
+OR           = '|' ;
+SEMICOLON    = ';' ;
+ZERO_OR_MORE = '*' ;
+ONE_OR_MORE  = '+' ;
+ZERO_OR_ONE  = '?' ;
+TILDE        = '~' ;
+OPAREN       = '(' ;
+CPAREN       = ')' ;
+OCURLY       = '{' ;
+CCURLY       = '}' ;
+OBRACKET     = '[' ;
+CBRACKET     = ']' ;
+
+@macro LETTER = [A-Za-z] ;
+@macro DIGIT  = [0-9] ;
+
+ID = [A-Za-z_][A-Za-z0-9_]* ;
+
+@frag '\'' @push_mode(STRING_LITERAL_MODE) ;
+@mode STRING_LITERAL_MODE {
+  STRING_LITERAL = '\'' ;
+  @frag '\\' [nrt'\\] ;
+  @frag ~['\n\\]* ;
+}
