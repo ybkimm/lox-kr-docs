@@ -6,10 +6,10 @@ import (
 	"testing"
 )
 
-func requireEqual[T any](t *testing.T, a, b T) {
+func requireEqual[T any](t *testing.T, actual, expected T) {
 	t.Helper()
-	if !reflect.DeepEqual(a, b) {
-		t.Fatalf("not equal:\nexpected:\n%v\nactual:\n%v", b, a)
+	if !reflect.DeepEqual(actual, expected) {
+		t.Fatalf("not equal:\nexpected:\n%v\nactual:\n%v", expected, actual)
 	}
 }
 

@@ -1,34 +1,14 @@
 package ast_test
 
 import (
-	gotoken "go/token"
-	"os"
+	"strings"
 	"testing"
 
-	"github.com/dcaiafa/lox/internal/errlogger"
 	"github.com/dcaiafa/lox/internal/lexergen/ast"
-	"github.com/dcaiafa/lox/internal/lexergen/parser"
 )
 
-func parse(t *testing.T, input string) (*ast.Spec, *ast.Context) {
-	fset := gotoken.NewFileSet()
-	errs := errlogger.New()
-	file := fset.AddFile("input.lox", -1, len(input))
-	unit := parser.Parse(file, []byte(input), errs)
-	if errs.HasError() {
-		t.Fatalf("Failed to parse")
-	}
-	spec := new(ast.Spec)
-	spec.Units = []*ast.Unit{unit}
-	ctx := ast.NewContext(fset, errs)
-	if !ctx.Analyze(spec) {
-		t.Fatalf("Failed to analyze")
-	}
-	return spec, ctx
-}
-
 func TestTermLiteral(t *testing.T) {
-	spec, ctx := parse(t, `
+	spec, ctx := parseAndAnalyze(t, `
 @macro foo = 'abc' ;
 	`)
 
@@ -38,7 +18,18 @@ func TestTermLiteral(t *testing.T) {
 		t.Fatalf("Failed to generate NFACons")
 	}
 
-	nfa := ctx.Mode().NFA
-	nfa.Start = nfaCons.B
-	ctx.Mode().NFA.Print(os.Stdout)
+	var nfaStr strings.Builder
+	nfaCons.B.Print(&nfaStr)
+	requireEqualStr(t, nfaStr.String(), `
+digraph G {
+  rankdir="LR";
+  0 -> 1 [label="a"];
+  1 -> 2 [label="b"];
+  2 -> 3 [label="c"];
+  0 [label="0", shape="circle"];
+  1 [label="1", shape="circle"];
+  2 [label="2", shape="circle"];
+  3 [label="3", shape="circle"];
+}
+	`)
 }

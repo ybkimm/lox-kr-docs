@@ -37,7 +37,7 @@ func (t *TermLiteral) NFACons(ctx *Context) *mode.NFAComposite {
 		r, size := utf8.DecodeRuneInString(str)
 		str = str[size:]
 		s := nfa.NewState()
-		nfa.AddTransition(nfaCons.E, s, mode.Range{B: r, E: r})
+		nfaCons.E.AddTransition(s, mode.Range{B: r, E: r})
 		nfaCons.E = s
 	}
 	return nfaCons
