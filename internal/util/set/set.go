@@ -1,8 +1,13 @@
 package set
 
 type Set[T comparable] struct {
-	set   map[T]bool
-	keyFn func(x T) string
+	set map[T]bool
+}
+
+func New[T comparable](xs ...T) Set[T] {
+	var set Set[T]
+	set.AddSlice(xs)
+	return set
 }
 
 func (s *Set[T]) Clear() {
@@ -77,8 +82,8 @@ func (s *Set[T]) ForEach(fn func(e T)) {
 	}
 }
 
-func (s *Set[T]) Clone() *Set[T] {
-	c := new(Set[T])
+func (s *Set[T]) Clone() Set[T] {
+	var c Set[T]
 	c.set = make(map[T]bool, len(s.set))
 	for e := range s.set {
 		c.set[e] = true
