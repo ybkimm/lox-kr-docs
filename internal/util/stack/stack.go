@@ -22,3 +22,7 @@ func (s *Stack[T]) Pop() T {
 	s.elems = s.elems[:l-1]
 	return elem
 }
+
+func (s *Stack[T]) Peek() T {
+	return s.elems[len(s.elems)-1]
+}

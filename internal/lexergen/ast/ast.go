@@ -2,6 +2,9 @@ package ast
 
 import (
 	gotoken "go/token"
+
+	"github.com/dcaiafa/lox/internal/lexergen/mode"
+	"github.com/dcaiafa/lox/internal/lexergen/nfadfa"
 )
 
 type Pass int
@@ -9,11 +12,13 @@ type Pass int
 const (
 	CreateNames Pass = iota
 	Check
+	BuildNFA
 )
 
 var passes = []Pass{
 	CreateNames,
 	Check,
+	BuildNFA,
 }
 
 type Bounds struct {
@@ -22,7 +27,7 @@ type Bounds struct {
 }
 
 type AST interface {
-	RunPass(ctx *context, pass Pass)
+	RunPass(ctx *Context, pass Pass)
 	SetBounds(b Bounds)
 	Bounds() Bounds
 }
@@ -45,7 +50,7 @@ type Spec struct {
 	Units []*Unit
 }
 
-func (s *Spec) RunPass(ctx *context, pass Pass) {
+func (s *Spec) RunPass(ctx *Context, pass Pass) {
 	RunPass(ctx, s.Units, pass)
 }
 
@@ -55,7 +60,7 @@ type Unit struct {
 	Statements []Statement
 }
 
-func (u *Unit) RunPass(ctx *context, pass Pass) {
+func (u *Unit) RunPass(ctx *Context, pass Pass) {
 	RunPass(ctx, u.Statements, pass)
 }
 
@@ -77,7 +82,7 @@ type Mode struct {
 	Rules []Statement
 }
 
-func (m *Mode) RunPass(ctx *context, pass Pass) {
+func (m *Mode) RunPass(ctx *Context, pass Pass) {
 	if pass == CreateNames {
 		if !ctx.RegisterName(m.Name, m) {
 			return
@@ -94,7 +99,7 @@ type TokenRule struct {
 	Actions []Action
 }
 
-func (r *TokenRule) RunPass(ctx *context, pass Pass) {
+func (r *TokenRule) RunPass(ctx *Context, pass Pass) {
 	if pass == CreateNames {
 		if !ctx.RegisterName(r.Name, r) {
 			return
@@ -110,7 +115,7 @@ type FragRule struct {
 	Actions []Action
 }
 
-func (r *FragRule) RunPass(ctx *context, pass Pass) {
+func (r *FragRule) RunPass(ctx *Context, pass Pass) {
 	r.Expr.RunPass(ctx, pass)
 	RunPass(ctx, r.Actions, pass)
 }
@@ -119,9 +124,13 @@ type MacroRule struct {
 	baseStatement
 	Name string
 	Expr *Expr
+
+	cachedNFACons *mode.NFAComposite
 }
 
-func (r *MacroRule) RunPass(ctx *context, pass Pass) {
+var cycleDetect = &mode.NFAComposite{}
+
+func (r *MacroRule) RunPass(ctx *Context, pass Pass) {
 	if pass == CreateNames {
 		if !ctx.RegisterName(r.Name, r) {
 			return
@@ -130,24 +139,78 @@ func (r *MacroRule) RunPass(ctx *context, pass Pass) {
 	r.Expr.RunPass(ctx, pass)
 }
 
+func (r *MacroRule) NFACons(ctx *Context) *mode.NFAComposite {
+	if r.cachedNFACons == cycleDetect {
+		ctx.Errs.Errorf(ctx.Position(r), "macro cycle detected")
+	} else if r.cachedNFACons == nil {
+		r.cachedNFACons = cycleDetect
+		r.cachedNFACons = r.Expr.NFACons(ctx)
+	}
+	return r.cachedNFACons
+}
+
 type Expr struct {
-	baseTerm
+	baseAST
 
 	Factors []*Factor
 }
 
-func (e *Expr) RunPass(ctx *context, pass Pass) {
+func (e *Expr) RunPass(ctx *Context, pass Pass) {
 	RunPass(ctx, e.Factors, pass)
+}
+
+func (e *Expr) NFACons(ctx *Context) *mode.NFAComposite {
+	// Build the following NFACons{b,e}:
+	//        ε                      ε
+	//      +----> F0b --> ... F0e -----+
+	//      | ε                      ε  |
+	//  b --+----> F1b --> ... F1e -----+--> e
+	//      | ε                      ε  |
+	//      +----> F2b --> ... F2e -----+
+	//
+	// For all {Fnb, Fne} where Fn ∈ Factors.
+	nfa := ctx.Mode().NFA
+	nfaCons := &mode.NFAComposite{}
+	nfaCons.B = nfa.NewState()
+	nfaCons.E = nfa.NewState()
+	for _, f := range e.Factors {
+		fc := f.NFACons(ctx)
+		nfa.AddTransition(nfaCons.B, fc.B, nfadfa.Epsilon)
+		nfa.AddTransition(fc.B, nfaCons.E, nfadfa.Epsilon)
+	}
+	return nfaCons
 }
 
 type Factor struct {
 	baseAST
-
 	Terms []*TermCard
 }
 
-func (f *Factor) RunPass(ctx *context, pass Pass) {
+func (f *Factor) RunPass(ctx *Context, pass Pass) {
 	RunPass(ctx, f.Terms, pass)
+}
+
+func (f *Factor) NFACons(ctx *Context) *mode.NFAComposite {
+	// Build the following NFACons{b,e}:
+	//
+	//    ε                   ε                  ε       ε
+	//  b ->  T0b -...-> T0e  -> T1b -...-> T1e  -> ...  -> e
+	//
+	// For all {Tnb, Tne} where Tn ∈ Terms.
+	nfa := ctx.Mode().NFA
+	nfaCons := &mode.NFAComposite{}
+	nfaCons.B = nfa.NewState()
+	nfaCons.E = nfa.NewState()
+
+	tip := nfaCons.B
+	for _, t := range f.Terms {
+		tc := t.NFACons(ctx)
+		nfa.AddTransition(tip, tc.B, nfadfa.Epsilon)
+		tip = tc.E
+	}
+
+	nfa.AddTransition(tip, nfaCons.E, nfadfa.Epsilon)
+	return nfaCons
 }
 
 type TermCard struct {
@@ -157,38 +220,31 @@ type TermCard struct {
 	Card Card
 }
 
-func (t *TermCard) RunPass(ctx *context, pass Pass) {
+func (t *TermCard) RunPass(ctx *Context, pass Pass) {
 	t.Term.RunPass(ctx, pass)
+}
+
+func (t *TermCard) NFACons(ctx *Context) *mode.NFAComposite {
+	if t.Card != One {
+		panic("not implemented")
+	}
+	return t.Term.NFACons(ctx)
 }
 
 type Term interface {
 	AST
-	isTerm()
+	NFACons(ctx *Context) *mode.NFAComposite
 }
-
-type baseTerm struct {
-	baseAST
-}
-
-func (t *baseTerm) isTerm() {}
-
-type TermLiteral struct {
-	baseTerm
-
-	Literal string
-}
-
-func (t *TermLiteral) RunPass(ctx *context, pass Pass) {}
 
 type TermRef struct {
-	baseTerm
+	baseAST
 
 	Ref string
 
-	refAST AST
+	refMacro *MacroRule
 }
 
-func (t *TermRef) RunPass(ctx *context, pass Pass) {
+func (t *TermRef) RunPass(ctx *Context, pass Pass) {
 	switch pass {
 	case Check:
 		ast := ctx.Lookup(t.Ref)
@@ -196,34 +252,39 @@ func (t *TermRef) RunPass(ctx *context, pass Pass) {
 			ctx.Errs.Errorf(ctx.Position(t), "undefined: %v", t.Ref)
 			return
 		}
-
-		switch ast.(type) {
-		case *MacroRule:
-		default:
+		macro, ok := ast.(*MacroRule)
+		if !ok {
 			ctx.Errs.Errorf(ctx.Position(t), "invalid term: %v", t.Ref)
 			return
 		}
-		t.refAST = ast
+		t.refMacro = macro
 	}
 }
 
+func (t *TermRef) NFACons(ctx *Context) *mode.NFAComposite {
+	return t.refMacro.NFACons(ctx)
+}
+
 type TermCharClass struct {
-	baseTerm
+	baseAST
 
 	Neg            bool
 	CharClassItems []*CharClassItem
 }
 
-func (t *TermCharClass) RunPass(ctx *context, pass Pass) {}
+func (t *TermCharClass) RunPass(ctx *Context, pass Pass) {}
+
+func (t *TermCharClass) NFACons(ctx *Context) *mode.NFAComposite {
+	panic("not implemented")
+}
 
 type CharClassItem struct {
 	baseAST
-
 	From rune
 	To   rune
 }
 
-func (i *CharClassItem) RunPass(ctx *context, pass Pass) {}
+func (i *CharClassItem) RunPass(ctx *Context, pass Pass) {}
 
 type Card int
 
@@ -249,7 +310,7 @@ type ActionSkip struct {
 	baseAction
 }
 
-func (a *ActionSkip) RunPass(ctx *context, pass Pass) {}
+func (a *ActionSkip) RunPass(ctx *Context, pass Pass) {}
 
 type ActionPushMode struct {
 	baseAction
@@ -258,7 +319,7 @@ type ActionPushMode struct {
 	modeAST *Mode
 }
 
-func (a *ActionPushMode) RunPass(ctx *context, pass Pass) {
+func (a *ActionPushMode) RunPass(ctx *Context, pass Pass) {
 	switch pass {
 	case Check:
 		ast := ctx.Lookup(a.Mode)
@@ -279,5 +340,5 @@ type ActionPopMode struct {
 	baseAction
 }
 
-func (a *ActionPopMode) RunPass(ctx *context, pass Pass) {
+func (a *ActionPopMode) RunPass(ctx *Context, pass Pass) {
 }

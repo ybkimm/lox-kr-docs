@@ -118,8 +118,8 @@ func doLexer(fset *gotoken.FileSet, errs *errlogger.ErrLogger, dir string) {
 		spec.Units = append(spec.Units, unit)
 	}
 
-	last.Analyze(spec, fset, errs)
-	if errs.HasError() {
+	ctx := last.NewContext(fset, errs)
+	if !ctx.Analyze(spec) {
 		return
 	}
 }
