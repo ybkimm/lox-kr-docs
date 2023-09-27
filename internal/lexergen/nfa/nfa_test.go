@@ -77,6 +77,7 @@ digraph G {
   3 -> 6 [label="ε"];
   4 -> 5 [label="b"];
   5 -> 6 [label="ε"];
+  6 -> 1 [label="ε"];
   6 -> 7 [label="ε"];
   7 -> 8 [label="a"];
   8 -> 9 [label="b"];
