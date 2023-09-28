@@ -33,7 +33,7 @@ func (s *Set[T]) AddSlice(xs []T) bool {
 	return changed
 }
 
-func (s *Set[T]) AddSet(o *Set[T]) bool {
+func (s *Set[T]) AddSet(o Set[T]) bool {
 	changed := false
 	for x := range o.set {
 		changed = s.Add(x) || changed

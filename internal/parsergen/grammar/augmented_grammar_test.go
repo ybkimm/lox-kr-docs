@@ -66,7 +66,7 @@ func TestFirst1(t *testing.T) {
 		t.Fatalf("ToAugmentedGrammar failed")
 	}
 
-	assertTerminalSetEq := func(t *testing.T, symSet *set.Set[*Terminal], symNames ...string) {
+	assertTerminalSetEq := func(t *testing.T, symSet set.Set[*Terminal], symNames ...string) {
 		t.Helper()
 
 		expected := new(set.Set[string])
@@ -137,7 +137,7 @@ func TestFirst2(t *testing.T) {
 		t.Fatalf("ToAugmentedGrammar failed")
 	}
 
-	assertTerminalSetEq := func(t *testing.T, symSet *set.Set[*Terminal], symNames ...string) {
+	assertTerminalSetEq := func(t *testing.T, symSet set.Set[*Terminal], symNames ...string) {
 		t.Helper()
 
 		expected := new(set.Set[string])

@@ -24,7 +24,9 @@ type AugmentedGrammar struct {
 	prodToIndex     map[*Prod]int
 	prodToRule      map[*Prod]*Rule
 	ruleToIndex     map[*Rule]int
-	firstSets       map[*Rule]*set.Set[*Terminal]
+	firstSets       map[*Rule]set.Set[*Terminal]
+
+	firstVisited set.Set[*Rule]
 }
 
 func (g *Grammar) ToAugmentedGrammar(errs *errlogger.ErrLogger) *AugmentedGrammar {
@@ -36,7 +38,7 @@ func (g *Grammar) ToAugmentedGrammar(errs *errlogger.ErrLogger) *AugmentedGramma
 		prodToIndex:     make(map[*Prod]int),
 		prodToRule:      make(map[*Prod]*Rule),
 		ruleToIndex:     make(map[*Rule]int),
-		firstSets:       make(map[*Rule]*set.Set[*Terminal]),
+		firstSets:       make(map[*Rule]set.Set[*Terminal]),
 	}
 
 	ag.EOF = &Terminal{Name: "EOF", Alias: "end-of-file"}
@@ -177,8 +179,9 @@ func (g *AugmentedGrammar) assignIndex() {
 	}
 }
 
-func (g *AugmentedGrammar) First(syms []Symbol) *set.Set[*Terminal] {
-	var fullSet *set.Set[*Terminal]
+func (g *AugmentedGrammar) First(syms []Symbol) set.Set[*Terminal] {
+	g.firstVisited.Clear()
+	var fullSet set.Set[*Terminal]
 	for i, sym := range syms {
 		symSet := g.first(sym)
 		if i == 0 {
@@ -194,26 +197,27 @@ func (g *AugmentedGrammar) First(syms []Symbol) *set.Set[*Terminal] {
 			break
 		}
 	}
-	if fullSet == nil {
-		fullSet = new(set.Set[*Terminal])
-	}
 	return fullSet
 }
 
-func (g *AugmentedGrammar) first(s Symbol) *set.Set[*Terminal] {
+func (g *AugmentedGrammar) first(s Symbol) set.Set[*Terminal] {
 	switch s := s.(type) {
 	case *Terminal:
-		terminalSet := new(set.Set[*Terminal])
-		terminalSet.Add(s)
-		return terminalSet
+		return set.New[*Terminal](s)
 	case *Rule:
+		// Productions can contain recursion. E.g.
+		// xs = xs x | x
+		if g.firstVisited.Has(s) {
+			return set.Set[*Terminal]{}
+		}
+		g.firstVisited.Add(s)
+
 		rule := s
-		firstSet := g.firstSets[rule]
-		if firstSet != nil {
+		firstSet, ok := g.firstSets[rule]
+		if ok {
 			return firstSet
 		}
-		firstSet = new(set.Set[*Terminal])
-		g.firstSets[rule] = firstSet
+		firstSet = set.Set[*Terminal]{}
 		for _, prod := range s.Prods {
 			if len(prod.Terms) == 0 {
 				firstSet.Add(epsilon)
@@ -229,6 +233,7 @@ func (g *AugmentedGrammar) first(s Symbol) *set.Set[*Terminal] {
 				}
 			}
 		}
+		g.firstSets[rule] = firstSet
 		return firstSet
 	default:
 		panic("not-reached")
