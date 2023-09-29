@@ -139,13 +139,11 @@ func (p *parser) on_char_class(neg Token, _ Token, chars []Token, _ Token) *ast.
 	}
 
 	for i := 0; i < len(chars); i++ {
-		if chars[i].Type == CLASS_CHAR {
-			if i+2 > len(chars)-1 || chars[i+1].Type != DASH {
-				addItem(chars[i], chars[i])
-			} else {
-				addItem(chars[i], chars[i+2])
-				i++
-			}
+		if i+2 > len(chars)-1 || chars[i+1].Type != DASH {
+			addItem(chars[i], chars[i])
+		} else {
+			addItem(chars[i], chars[i+2])
+			i += 2
 		}
 	}
 

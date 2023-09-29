@@ -11,13 +11,11 @@ type Pass int
 const (
 	CreateNames Pass = iota
 	Check
-	BuildNFA
 )
 
 var passes = []Pass{
 	CreateNames,
 	Check,
-	BuildNFA,
 }
 
 type Bounds struct {
@@ -123,27 +121,6 @@ type Term interface {
 	AST
 	NFACons(ctx *Context) *mode.NFAComposite
 }
-
-type TermCharClass struct {
-	baseAST
-
-	Neg            bool
-	CharClassItems []*CharClassItem
-}
-
-func (t *TermCharClass) RunPass(ctx *Context, pass Pass) {}
-
-func (t *TermCharClass) NFACons(ctx *Context) *mode.NFAComposite {
-	panic("not implemented")
-}
-
-type CharClassItem struct {
-	baseAST
-	From rune
-	To   rune
-}
-
-func (i *CharClassItem) RunPass(ctx *Context, pass Pass) {}
 
 type Card int
 

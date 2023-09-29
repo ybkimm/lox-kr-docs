@@ -220,8 +220,12 @@ func (l *lex) modeCharClass() {
 		l.tok.Type = CLASS_CHAR
 		l.tok.Str = l.buf.String()
 	case '-':
+		// Parser expects DASH to have a Str value.
+		l.buf.Reset()
+		l.buf.WriteRune('-')
 		l.advance()
 		l.tok.Type = DASH
+		l.tok.Str = l.buf.String()
 	case '\r', '\n', '\t':
 		l.unexpectedChar()
 	default:

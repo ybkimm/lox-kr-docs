@@ -4,6 +4,18 @@ type Stack[T any] struct {
 	elems []T
 }
 
+func (s *Stack[T]) SetCapacity(c int) {
+	if cap(s.elems) < c {
+		newElems := make([]T, len(s.elems), c)
+		copy(newElems, s.elems)
+		s.elems = newElems
+	}
+}
+
+func (s *Stack[T]) Elements() []T {
+	return s.elems
+}
+
 func (s *Stack[T]) Len() int {
 	return len(s.elems)
 }

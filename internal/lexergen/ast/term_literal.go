@@ -19,8 +19,6 @@ func (t *TermLiteral) RunPass(ctx *Context, pass Pass) {
 			ctx.Errs.Errorf(ctx.Position(t), "literal cannot be empty")
 			return
 		}
-
-	case BuildNFA:
 	}
 }
 
