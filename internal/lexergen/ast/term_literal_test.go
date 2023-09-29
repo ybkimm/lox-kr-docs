@@ -12,7 +12,7 @@ func TestTermLiteral(t *testing.T) {
 @macro foo = 'abc' ;
 	`)
 
-	term := spec.Units[0].Statements[0].(*ast.MacroRule).Expr.Factors[0].Terms[0].Term.(*ast.TermLiteral)
+	term := spec.Units[0].Statements[0].(*ast.MacroRule).Expr.Factors[0].Terms[0].Term.(*ast.LexerTermLiteral)
 	nfaCons := term.NFACons(ctx)
 	if ctx.Errs.HasError() {
 		t.Fatalf("Failed to generate NFACons")

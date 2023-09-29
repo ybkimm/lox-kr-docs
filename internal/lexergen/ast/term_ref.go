@@ -2,13 +2,13 @@ package ast
 
 import "github.com/dcaiafa/lox/internal/lexergen/mode"
 
-type TermRef struct {
+type LexerTermRef struct {
 	baseAST
 	Ref      string
 	refMacro *MacroRule
 }
 
-func (t *TermRef) RunPass(ctx *Context, pass Pass) {
+func (t *LexerTermRef) RunPass(ctx *Context, pass Pass) {
 	switch pass {
 	case Check:
 		ast := ctx.Lookup(t.Ref)
@@ -25,6 +25,6 @@ func (t *TermRef) RunPass(ctx *Context, pass Pass) {
 	}
 }
 
-func (t *TermRef) NFACons(ctx *Context) *mode.NFAComposite {
+func (t *LexerTermRef) NFACons(ctx *Context) *mode.NFAComposite {
 	return t.refMacro.NFACons(ctx)
 }

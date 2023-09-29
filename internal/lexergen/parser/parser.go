@@ -36,7 +36,7 @@ func (p *parser) on_statement(s ast.Statement) ast.Statement {
 	return s
 }
 
-func (p *parser) on_rule(r ast.Statement) ast.Statement {
+func (p *parser) on_lexer_rule(r ast.Statement) ast.Statement {
 	return r
 }
 
@@ -47,7 +47,7 @@ func (p *parser) on_mode(_ Token, name Token, _ Token, rules []ast.Statement, _ 
 	}
 }
 
-func (p *parser) on_token_rule(id Token, _ Token, expr *ast.Expr, actions []ast.Action, _ Token) *ast.TokenRule {
+func (p *parser) on_token_rule(id Token, _ Token, expr *ast.LexerExpr, actions []ast.Action, _ Token) *ast.TokenRule {
 	return &ast.TokenRule{
 		Name:    id.Str,
 		Expr:    expr,
@@ -55,40 +55,40 @@ func (p *parser) on_token_rule(id Token, _ Token, expr *ast.Expr, actions []ast.
 	}
 }
 
-func (p *parser) on_frag_rule(_ Token, expr *ast.Expr, actions []ast.Action, _ Token) *ast.FragRule {
+func (p *parser) on_frag_rule(_ Token, expr *ast.LexerExpr, actions []ast.Action, _ Token) *ast.FragRule {
 	return &ast.FragRule{
 		Expr:    expr,
 		Actions: actions,
 	}
 }
 
-func (p *parser) on_macro_rule(_ Token, name Token, _ Token, expr *ast.Expr, _ Token) *ast.MacroRule {
+func (p *parser) on_macro_rule(_ Token, name Token, _ Token, expr *ast.LexerExpr, _ Token) *ast.MacroRule {
 	return &ast.MacroRule{
 		Name: name.Str,
 		Expr: expr,
 	}
 }
 
-func (p *parser) on_expr(factors []*ast.Factor) *ast.Expr {
-	return &ast.Expr{
+func (p *parser) on_lexer_expr(factors []*ast.LexerFactor) *ast.LexerExpr {
+	return &ast.LexerExpr{
 		Factors: factors,
 	}
 }
 
-func (p *parser) on_factor(terms []*ast.TermCard) *ast.Factor {
-	return &ast.Factor{
+func (p *parser) on_lexer_factor(terms []*ast.LexerTermCard) *ast.LexerFactor {
+	return &ast.LexerFactor{
 		Terms: terms,
 	}
 }
 
-func (p *parser) on_term_card(term ast.Term, card ast.Card) *ast.TermCard {
-	return &ast.TermCard{
+func (p *parser) on_lexer_term_card(term ast.LexerTerm, card ast.Card) *ast.LexerTermCard {
+	return &ast.LexerTermCard{
 		Term: term,
 		Card: card,
 	}
 }
 
-func (p *parser) on_card(c Token) ast.Card {
+func (p *parser) on_lexer_card(c Token) ast.Card {
 	switch c.Type {
 	case ZERO_OR_ONE:
 		return ast.ZeroOrOne
@@ -101,14 +101,14 @@ func (p *parser) on_card(c Token) ast.Card {
 	}
 }
 
-func (p *parser) on_term__tok(tok Token) ast.Term {
+func (p *parser) on_lexer_term__tok(tok Token) ast.LexerTerm {
 	switch tok.Type {
 	case LITERAL:
-		return &ast.TermLiteral{
+		return &ast.LexerTermLiteral{
 			Literal: tok.Str,
 		}
 	case ID:
-		return &ast.TermRef{
+		return &ast.LexerTermRef{
 			Ref: tok.Str,
 		}
 	default:
@@ -116,15 +116,15 @@ func (p *parser) on_term__tok(tok Token) ast.Term {
 	}
 }
 
-func (p *parser) on_term__char_class(charClass *ast.TermCharClass) ast.Term {
+func (p *parser) on_lexer_term__char_class(charClass *ast.LexerTermCharClass) ast.LexerTerm {
 	return charClass
 }
 
-func (p *parser) on_term__expr(_ Token, expr *ast.Expr, _ Token) ast.Term {
+func (p *parser) on_lexer_term__expr(_ Token, expr *ast.LexerExpr, _ Token) ast.LexerTerm {
 	return expr
 }
 
-func (p *parser) on_char_class(neg Token, _ Token, chars []Token, _ Token) *ast.TermCharClass {
+func (p *parser) on_char_class(neg Token, _ Token, chars []Token, _ Token) *ast.LexerTermCharClass {
 	items := make([]*ast.CharClassItem, 0, len(chars))
 
 	toRune := func(t Token) rune {
@@ -139,7 +139,7 @@ func (p *parser) on_char_class(neg Token, _ Token, chars []Token, _ Token) *ast.
 	}
 
 	for i := 0; i < len(chars); i++ {
-		if i+2 > len(chars)-1 || chars[i+1].Type != DASH {
+		if i+2 > len(chars)-1 || chars[i+1].Type != CLASS_DASH {
 			addItem(chars[i], chars[i])
 		} else {
 			addItem(chars[i], chars[i+2])
@@ -147,7 +147,7 @@ func (p *parser) on_char_class(neg Token, _ Token, chars []Token, _ Token) *ast.
 		}
 	}
 
-	return &ast.TermCharClass{
+	return &ast.LexerTermCharClass{
 		Neg:            neg.Type != EOF,
 		CharClassItems: items,
 	}

@@ -6,13 +6,13 @@ import (
 	"github.com/dcaiafa/lox/internal/lexergen/mode"
 )
 
-type TermLiteral struct {
+type LexerTermLiteral struct {
 	baseAST
 
 	Literal string
 }
 
-func (t *TermLiteral) RunPass(ctx *Context, pass Pass) {
+func (t *LexerTermLiteral) RunPass(ctx *Context, pass Pass) {
 	switch pass {
 	case Check:
 		if len(t.Literal) == 0 {
@@ -22,7 +22,7 @@ func (t *TermLiteral) RunPass(ctx *Context, pass Pass) {
 	}
 }
 
-func (t *TermLiteral) NFACons(ctx *Context) *mode.NFAComposite {
+func (t *LexerTermLiteral) NFACons(ctx *Context) *mode.NFAComposite {
 	// For a literal "foo", build the NFACons:
 	//     f      o      o
 	//  B --> s1 --> s2 --> E

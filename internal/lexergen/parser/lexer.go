@@ -174,9 +174,6 @@ func (l *lex) modeDefault() {
 	case '}':
 		l.advance()
 		l.tok.Type = CCURLY
-	case '^':
-		l.advance()
-		l.tok.Type = HAT
 	case '~':
 		l.advance()
 		l.tok.Type = TILDE
@@ -224,7 +221,7 @@ func (l *lex) modeCharClass() {
 		l.buf.Reset()
 		l.buf.WriteRune('-')
 		l.advance()
-		l.tok.Type = DASH
+		l.tok.Type = CLASS_DASH
 		l.tok.Str = l.buf.String()
 	case '\r', '\n', '\t':
 		l.unexpectedChar()

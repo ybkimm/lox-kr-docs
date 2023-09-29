@@ -9,8 +9,7 @@
   ARROW '->'
   OCURLY '{'
   CCURLY '}'
-  DASH '-'
-  HAT '^'
+  CLASS_DASH '-'
   TILDE '~'
   OBRACKET '['
   CBRACKET ']'
@@ -33,28 +32,28 @@
 
 spec = statement* ;
 
-statement = mode | rule ;
+statement = mode | lexer_rule ;
 
-rule = token_rule
-     | frag_rule
-     | macro_rule ;
+lexer_rule = token_rule
+           | frag_rule
+           | macro_rule ;
 
-mode = MODE ID '{' rule* '}' ;
+mode = MODE ID '{' lexer_rule* '}' ;
 
-token_rule  = ID '=' expr action* ';' ;
-frag_rule   = FRAG expr action* ';' ;
-macro_rule  = MACRO ID '=' expr ';' ;
+token_rule  = ID '=' lexer_expr action* ';' ;
+frag_rule   = FRAG lexer_expr action* ';' ;
+macro_rule  = MACRO ID '=' lexer_expr ';' ;
 
-expr = @list(factor, '|') ;
+lexer_expr = @list(lexer_factor, '|') ;
 
-factor    = term_card+ ;
-term_card = term card? ;
-card      = '?' | '*' | '+' ;
+lexer_factor    = lexer_term_card+ ;
+lexer_term_card = lexer_term lexer_card? ;
+lexer_card      = '?' | '*' | '+' ;
 
-term   = LITERAL
+lexer_term   = LITERAL
        | ID
        | char_class 
-       | '(' expr ')' ;
+       | '(' lexer_expr ')' ;
 
 char_class = '~'? '[' char_class_item+ ']' ;
 

@@ -92,7 +92,7 @@ type TokenRule struct {
 	baseStatement
 
 	Name    string
-	Expr    *Expr
+	Expr    *LexerExpr
 	Actions []Action
 }
 
@@ -108,7 +108,7 @@ func (r *TokenRule) RunPass(ctx *Context, pass Pass) {
 
 type FragRule struct {
 	baseStatement
-	Expr    *Expr
+	Expr    *LexerExpr
 	Actions []Action
 }
 
@@ -117,7 +117,7 @@ func (r *FragRule) RunPass(ctx *Context, pass Pass) {
 	RunPass(ctx, r.Actions, pass)
 }
 
-type Term interface {
+type LexerTerm interface {
 	AST
 	NFACons(ctx *Context) *mode.NFAComposite
 }

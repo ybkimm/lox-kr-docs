@@ -14,24 +14,23 @@ const (
 	ARROW           TokenType = 8
 	OCURLY          TokenType = 9
 	CCURLY          TokenType = 10
-	DASH            TokenType = 11
-	HAT             TokenType = 12
-	TILDE           TokenType = 13
-	OBRACKET        TokenType = 14
-	CBRACKET        TokenType = 15
-	OPAREN          TokenType = 16
-	CPAREN          TokenType = 17
-	ZERO_OR_ONE     TokenType = 18
-	ZERO_OR_MORE    TokenType = 19
-	ONE_OR_MORE     TokenType = 20
-	ZERO_OR_MORE_NG TokenType = 21
-	ONE_OR_MORE_NG  TokenType = 22
-	SKIP            TokenType = 23
-	MACRO           TokenType = 24
-	FRAG            TokenType = 25
-	MODE            TokenType = 26
-	PUSH_MODE       TokenType = 27
-	POP_MODE        TokenType = 28
+	CLASS_DASH      TokenType = 11
+	TILDE           TokenType = 12
+	OBRACKET        TokenType = 13
+	CBRACKET        TokenType = 14
+	OPAREN          TokenType = 15
+	CPAREN          TokenType = 16
+	ZERO_OR_ONE     TokenType = 17
+	ZERO_OR_MORE    TokenType = 18
+	ONE_OR_MORE     TokenType = 19
+	ZERO_OR_MORE_NG TokenType = 20
+	ONE_OR_MORE_NG  TokenType = 21
+	SKIP            TokenType = 22
+	MACRO           TokenType = 23
+	FRAG            TokenType = 24
+	MODE            TokenType = 25
+	PUSH_MODE       TokenType = 26
+	POP_MODE        TokenType = 27
 )
 
 func (t TokenType) String() string {
@@ -58,10 +57,8 @@ func (t TokenType) String() string {
 		return "{"
 	case CCURLY:
 		return "}"
-	case DASH:
+	case CLASS_DASH:
 		return "-"
-	case HAT:
-		return "^"
 	case TILDE:
 		return "~"
 	case OBRACKET:

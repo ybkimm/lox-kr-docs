@@ -5,7 +5,7 @@ import "github.com/dcaiafa/lox/internal/lexergen/mode"
 type MacroRule struct {
 	baseStatement
 	Name string
-	Expr *Expr
+	Expr *LexerExpr
 
 	cycleDetect bool
 }

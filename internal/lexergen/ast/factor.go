@@ -6,16 +6,16 @@ import (
 	"github.com/dcaiafa/lox/internal/lexergen/nfa"
 )
 
-type Factor struct {
+type LexerFactor struct {
 	baseAST
-	Terms []*TermCard
+	Terms []*LexerTermCard
 }
 
-func (f *Factor) RunPass(ctx *Context, pass Pass) {
+func (f *LexerFactor) RunPass(ctx *Context, pass Pass) {
 	RunPass(ctx, f.Terms, pass)
 }
 
-func (f *Factor) NFACons(ctx *Context) *mode.NFAComposite {
+func (f *LexerFactor) NFACons(ctx *Context) *mode.NFAComposite {
 	assert.True(len(f.Terms) > 0)
 
 	// Build the following NFACons{b,e}:

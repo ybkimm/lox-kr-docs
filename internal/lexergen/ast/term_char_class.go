@@ -5,16 +5,16 @@ import (
 	"github.com/dcaiafa/lox/internal/lexergen/nfa"
 )
 
-type TermCharClass struct {
+type LexerTermCharClass struct {
 	baseAST
 
 	Neg            bool
 	CharClassItems []*CharClassItem
 }
 
-func (t *TermCharClass) RunPass(ctx *Context, pass Pass) {}
+func (t *LexerTermCharClass) RunPass(ctx *Context, pass Pass) {}
 
-func (t *TermCharClass) NFACons(ctx *Context) *mode.NFAComposite {
+func (t *LexerTermCharClass) NFACons(ctx *Context) *mode.NFAComposite {
 	ranges := make([]mode.Range, len(t.CharClassItems))
 	for i, item := range t.CharClassItems {
 		ranges[i] = mode.Range{

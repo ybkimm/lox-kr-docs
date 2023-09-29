@@ -5,18 +5,18 @@ import (
 	"github.com/dcaiafa/lox/internal/lexergen/nfa"
 )
 
-type TermCard struct {
+type LexerTermCard struct {
 	baseAST
 
-	Term Term
+	Term LexerTerm
 	Card Card
 }
 
-func (t *TermCard) RunPass(ctx *Context, pass Pass) {
+func (t *LexerTermCard) RunPass(ctx *Context, pass Pass) {
 	t.Term.RunPass(ctx, pass)
 }
 
-func (t *TermCard) NFACons(ctx *Context) *mode.NFAComposite {
+func (t *LexerTermCard) NFACons(ctx *Context) *mode.NFAComposite {
 	nfaFactory := ctx.Mode().NFA
 
 	switch t.Card {

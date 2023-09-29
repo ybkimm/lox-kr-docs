@@ -6,17 +6,17 @@ import (
 	"github.com/dcaiafa/lox/internal/lexergen/nfa"
 )
 
-type Expr struct {
+type LexerExpr struct {
 	baseAST
 
-	Factors []*Factor
+	Factors []*LexerFactor
 }
 
-func (e *Expr) RunPass(ctx *Context, pass Pass) {
+func (e *LexerExpr) RunPass(ctx *Context, pass Pass) {
 	RunPass(ctx, e.Factors, pass)
 }
 
-func (e *Expr) NFACons(ctx *Context) *mode.NFAComposite {
+func (e *LexerExpr) NFACons(ctx *Context) *mode.NFAComposite {
 	assert.True(len(e.Factors) > 0)
 
 	if len(e.Factors) == 1 {
