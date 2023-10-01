@@ -11,11 +11,15 @@ type Pass int
 const (
 	CreateNames Pass = iota
 	Check
+	Normalize
+
+	Print
 )
 
 var passes = []Pass{
 	CreateNames,
 	Check,
+	Normalize,
 }
 
 type Bounds struct {
@@ -51,16 +55,6 @@ func (s *Spec) RunPass(ctx *Context, pass Pass) {
 	RunPass(ctx, s.Units, pass)
 }
 
-type Unit struct {
-	baseAST
-
-	Statements []Statement
-}
-
-func (u *Unit) RunPass(ctx *Context, pass Pass) {
-	RunPass(ctx, u.Statements, pass)
-}
-
 type Statement interface {
 	AST
 	isStatement()
@@ -86,24 +80,6 @@ func (m *Mode) RunPass(ctx *Context, pass Pass) {
 		}
 	}
 	RunPass(ctx, m.Rules, pass)
-}
-
-type TokenRule struct {
-	baseStatement
-
-	Name    string
-	Expr    *LexerExpr
-	Actions []Action
-}
-
-func (r *TokenRule) RunPass(ctx *Context, pass Pass) {
-	if pass == CreateNames {
-		if !ctx.RegisterName(r.Name, r) {
-			return
-		}
-	}
-	r.Expr.RunPass(ctx, pass)
-	RunPass(ctx, r.Actions, pass)
 }
 
 type FragRule struct {

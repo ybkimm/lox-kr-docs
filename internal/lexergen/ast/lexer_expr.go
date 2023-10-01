@@ -13,6 +13,13 @@ type LexerExpr struct {
 }
 
 func (e *LexerExpr) RunPass(ctx *Context, pass Pass) {
+	switch pass {
+	case Print:
+		printer := ctx.CurrentPrinter.Peek()
+		printer.Printf("LexerExpr:")
+		ctx.CurrentPrinter.Push(printer.WithIndent(2))
+		defer ctx.CurrentPrinter.Pop()
+	}
 	RunPass(ctx, e.Factors, pass)
 }
 

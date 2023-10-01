@@ -2,6 +2,7 @@ package ast
 
 import (
 	gotoken "go/token"
+	"io"
 
 	"github.com/dcaiafa/lox/internal/errlogger"
 	"github.com/dcaiafa/lox/internal/lexergen/mode"
@@ -11,6 +12,11 @@ import (
 type Context struct {
 	FSet *gotoken.FileSet
 	Errs *errlogger.ErrLogger
+
+	CurrentUnit       stack.Stack[*Unit]
+	CurrentParserRule stack.Stack[*ParserRule]
+	CurrentParserProd stack.Stack[*ParserProd]
+	CurrentPrinter    stack.Stack[*Printer]
 
 	names   map[string]AST
 	aliases map[string]*TokenRule
@@ -66,6 +72,12 @@ func (c *Context) Position(ast AST) gotoken.Position {
 
 func (c *Context) Mode() *mode.Mode {
 	return c.modes.Peek()
+}
+
+func (c *Context) Print(ast AST, out io.Writer) {
+	c.CurrentPrinter.Push(NewPrinter(out))
+	ast.RunPass(c, Print)
+	c.CurrentPrinter.Pop()
 }
 
 func RunPass[T AST](ctx *Context, asts []T, pass Pass) {

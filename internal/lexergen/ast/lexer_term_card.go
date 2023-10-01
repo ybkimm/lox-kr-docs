@@ -13,6 +13,14 @@ type LexerTermCard struct {
 }
 
 func (t *LexerTermCard) RunPass(ctx *Context, pass Pass) {
+	switch pass {
+	case Print:
+		printer := ctx.CurrentPrinter.Peek()
+		printer.Printf("LexerTermCard:")
+		ctx.CurrentPrinter.Push(printer.WithIndent(2))
+		defer ctx.CurrentPrinter.Pop()
+	}
+
 	t.Term.RunPass(ctx, pass)
 }
 

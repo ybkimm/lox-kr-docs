@@ -12,6 +12,14 @@ type LexerFactor struct {
 }
 
 func (f *LexerFactor) RunPass(ctx *Context, pass Pass) {
+	switch pass {
+	case Print:
+		printer := ctx.CurrentPrinter.Peek()
+		printer.Printf("LexerFactor:")
+		ctx.CurrentPrinter.Push(printer.WithIndent(2))
+		defer ctx.CurrentPrinter.Pop()
+	}
+
 	RunPass(ctx, f.Terms, pass)
 }
 

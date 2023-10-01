@@ -19,6 +19,10 @@ func (t *LexerTermLiteral) RunPass(ctx *Context, pass Pass) {
 			ctx.Errs.Errorf(ctx.Position(t), "literal cannot be empty")
 			return
 		}
+
+	case Print:
+		printer := ctx.CurrentPrinter.Peek()
+		printer.Printf("LexerTermLiteral: %q", t.Literal)
 	}
 }
 
