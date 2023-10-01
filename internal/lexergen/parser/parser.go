@@ -56,63 +56,63 @@ func (p *parser) on_parser_statement(s ast.Statement) ast.Statement {
 	return s
 }
 
-func (p *parser) on_parser_rule(name Token, _ Token, prods []*ast.Prod, _ Token) *ast.Rule {
-	return &ast.Rule{
+func (p *parser) on_parser_rule(name Token, _ Token, prods []*ast.ParserProd, _ Token) *ast.ParserRule {
+	return &ast.ParserRule{
 		Name:  name.Str,
 		Prods: prods,
 	}
 }
 
-func (p *parser) on_parser_prod(terms []*ast.Term, qualif *ast.ProdQualifier) *ast.Prod {
-	return &ast.Prod{
+func (p *parser) on_parser_prod(terms []*ast.ParserTerm, qualif *ast.ProdQualifier) *ast.ParserProd {
+	return &ast.ParserProd{
 		Terms:     terms,
 		Qualifier: qualif,
 	}
 }
 
-func (p *parser) on_parser_term_card(term *ast.Term, typ ast.TermType) *ast.Term {
-	if typ == ast.Simple || typ == ast.Error {
+func (p *parser) on_parser_term_card(term *ast.ParserTerm, typ ast.ParserTermType) *ast.ParserTerm {
+	if typ == ast.ParserTermSimple || typ == ast.ParserTermError {
 		return term
 	}
-	return &ast.Term{
+	return &ast.ParserTerm{
 		Type:  typ,
 		Child: term,
 	}
 }
 
-func (p *parser) on_parser_term__token(tok Token) *ast.Term {
+func (p *parser) on_parser_term__token(tok Token) *ast.ParserTerm {
 	switch tok.Type {
 	case ID:
-		return &ast.Term{Name: tok.Str}
+		return &ast.ParserTerm{Name: tok.Str}
 	case LITERAL:
-		return &ast.Term{Alias: tok.Str}
+		return &ast.ParserTerm{Alias: tok.Str}
 	case ERROR_KEYWORD:
-		return &ast.Term{Type: ast.Error}
+		return &ast.ParserTerm{Type: ast.ParserTermError}
 	default:
 		panic("not-reached")
 	}
 }
 
-func (p *parser) on_parser_term__list(listTerm *ast.Term) *ast.Term {
+func (p *parser) on_parser_term__list(listTerm *ast.ParserTerm) *ast.ParserTerm {
 	return listTerm
 }
 
-func (p *parser) on_parser_list(_, _ Token, elem *ast.Term, _ Token, sep *ast.Term, _ Token) *ast.Term {
-	return &ast.Term{
-		Type:  ast.List,
+func (p *parser) on_parser_list(_, _ Token, elem *ast.ParserTerm, _ Token, sep *ast.ParserTerm, _ Token) *ast.ParserTerm {
+	return &ast.ParserTerm{
+		Type:  ast.ParserTermList,
 		Child: elem,
 		Sep:   sep,
 	}
 }
 
-func (p *parser) on_parser_card(card Token) ast.TermType {
+func (p *parser) on_parser_card(card Token) ast.ParserTermType {
 	switch card.Type {
 	case ZERO_OR_MORE:
-		return ast.TermZeroOrMore
+		return ast.ParserTermZeroOrMore
 	case ONE_OR_MORE:
-		return ast.TermOneOrMore
+		return ast.ParserTermOneOrMore
 	case ZERO_OR_ONE:
-		return ast.TermZeroOrOne
+		return ast.ParserTermZeroOrOne
 	default:
 		panic("unreachable")
 	}

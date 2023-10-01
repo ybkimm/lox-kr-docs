@@ -1,29 +1,29 @@
 package ast
 
-type TermType int
+type ParserTermType int
 
 const (
-	Simple         TermType = iota
-	TermZeroOrMore          // *
-	TermOneOrMore           // +
-	TermZeroOrOne           // ?
-	List                    // @list
-	Error                   // @error
+	ParserTermSimple     ParserTermType = iota
+	ParserTermZeroOrMore                // *
+	ParserTermOneOrMore                 // +
+	ParserTermZeroOrOne                 // ?
+	ParserTermList                      // @list
+	ParserTermError                     // @error
 )
 
-type Term struct {
+type ParserTerm struct {
 	baseAST
-	Type  TermType
+	Type  ParserTermType
 	Name  string
 	Alias string
-	Child *Term
-	Sep   *Term
+	Child *ParserTerm
+	Sep   *ParserTerm
 
-	refRule  *Rule
+	refRule  *ParserRule
 	refToken *TokenRule
 }
 
-func (t *Term) RunPass(ctx *Context, pass Pass) {
+func (t *ParserTerm) RunPass(ctx *Context, pass Pass) {
 	switch pass {
 	case Check:
 		if t.Name != "" {
@@ -33,7 +33,7 @@ func (t *Term) RunPass(ctx *Context, pass Pass) {
 				return
 			}
 			switch ast := ast.(type) {
-			case *Rule:
+			case *ParserRule:
 				t.refRule = ast
 			case *TokenRule:
 				t.refToken = ast

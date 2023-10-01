@@ -1,13 +1,13 @@
 package ast
 
-type Rule struct {
+type ParserRule struct {
 	baseStatement
 
 	Name  string
-	Prods []*Prod
+	Prods []*ParserProd
 }
 
-func (r *Rule) RunPass(ctx *Context, pass Pass) {
+func (r *ParserRule) RunPass(ctx *Context, pass Pass) {
 	switch pass {
 	case CreateNames:
 		if !ctx.RegisterName(r.Name, r) {

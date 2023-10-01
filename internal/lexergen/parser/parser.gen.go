@@ -352,18 +352,18 @@ func (p *parser) _Act(prod int32) any {
 		return p.on_parser_rule(
 			_cast[Token](p._sym.Peek(3)),
 			_cast[Token](p._sym.Peek(2)),
-			_cast[[]*_i1.Prod](p._sym.Peek(1)),
+			_cast[[]*_i1.ParserProd](p._sym.Peek(1)),
 			_cast[Token](p._sym.Peek(0)),
 		)
 	case 7:
 		return p.on_parser_prod(
-			_cast[[]*_i1.Term](p._sym.Peek(1)),
+			_cast[[]*_i1.ParserTerm](p._sym.Peek(1)),
 			_cast[*_i1.ProdQualifier](p._sym.Peek(0)),
 		)
 	case 8:
 		return p.on_parser_term_card(
-			_cast[*_i1.Term](p._sym.Peek(1)),
-			_cast[_i1.TermType](p._sym.Peek(0)),
+			_cast[*_i1.ParserTerm](p._sym.Peek(1)),
+			_cast[_i1.ParserTermType](p._sym.Peek(0)),
 		)
 	case 9:
 		return p.on_parser_term__token(
@@ -379,15 +379,15 @@ func (p *parser) _Act(prod int32) any {
 		)
 	case 12:
 		return p.on_parser_term__list(
-			_cast[*_i1.Term](p._sym.Peek(0)),
+			_cast[*_i1.ParserTerm](p._sym.Peek(0)),
 		)
 	case 13:
 		return p.on_parser_list(
 			_cast[Token](p._sym.Peek(5)),
 			_cast[Token](p._sym.Peek(4)),
-			_cast[*_i1.Term](p._sym.Peek(3)),
+			_cast[*_i1.ParserTerm](p._sym.Peek(3)),
 			_cast[Token](p._sym.Peek(2)),
-			_cast[*_i1.Term](p._sym.Peek(1)),
+			_cast[*_i1.ParserTerm](p._sym.Peek(1)),
 			_cast[Token](p._sym.Peek(0)),
 		)
 	case 14:
@@ -573,21 +573,21 @@ func (p *parser) _Act(prod int32) any {
 		}
 	case 52: // List
 		return append(
-			_cast[[]*_i1.Prod](p._sym.Peek(2)),
-			_cast[*_i1.Prod](p._sym.Peek(0)),
+			_cast[[]*_i1.ParserProd](p._sym.Peek(2)),
+			_cast[*_i1.ParserProd](p._sym.Peek(0)),
 		)
 	case 53: // List
-		return []*_i1.Prod{
-			_cast[*_i1.Prod](p._sym.Peek(0)),
+		return []*_i1.ParserProd{
+			_cast[*_i1.ParserProd](p._sym.Peek(0)),
 		}
 	case 54: // OneOrMore
 		return append(
-			_cast[[]*_i1.Term](p._sym.Peek(1)),
-			_cast[*_i1.Term](p._sym.Peek(0)),
+			_cast[[]*_i1.ParserTerm](p._sym.Peek(1)),
+			_cast[*_i1.ParserTerm](p._sym.Peek(0)),
 		)
 	case 55: // OneOrMore
-		return []*_i1.Term{
-			_cast[*_i1.Term](p._sym.Peek(0)),
+		return []*_i1.ParserTerm{
+			_cast[*_i1.ParserTerm](p._sym.Peek(0)),
 		}
 	case 56: // ZeroOrOne
 		return _cast[*_i1.ProdQualifier](p._sym.Peek(0))
@@ -597,10 +597,10 @@ func (p *parser) _Act(prod int32) any {
 			return zero
 		}
 	case 58: // ZeroOrOne
-		return _cast[_i1.TermType](p._sym.Peek(0))
+		return _cast[_i1.ParserTermType](p._sym.Peek(0))
 	case 59: // ZeroOrOne
 		{
-			var zero _i1.TermType
+			var zero _i1.ParserTermType
 			return zero
 		}
 	case 60: // ZeroOrOne
