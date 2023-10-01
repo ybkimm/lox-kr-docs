@@ -10,6 +10,7 @@ import (
 func TestTermCard(t *testing.T) {
 	t.Run("one", func(t *testing.T) {
 		spec, ctx := parseAndAnalyze(t, `
+@lexer
 FOOBAR = 'foo' ;
 `)
 		it := spec.Units[0].Statements[0].(*ast.TokenRule).Expr.Factors[0].Terms[0]
@@ -36,6 +37,7 @@ digraph G {
 
 	t.Run("zero_or_one", func(t *testing.T) {
 		spec, ctx := parseAndAnalyze(t, `
+@lexer
 FOOBAR = 'foo'? ;
 `)
 		it := spec.Units[0].Statements[0].(*ast.TokenRule).Expr.Factors[0].Terms[0]
@@ -67,6 +69,7 @@ digraph G {
 
 	t.Run("zero_or_more", func(t *testing.T) {
 		spec, ctx := parseAndAnalyze(t, `
+@lexer
 FOOBAR = 'foo'* ;
 `)
 		it := spec.Units[0].Statements[0].(*ast.TokenRule).Expr.Factors[0].Terms[0]
@@ -99,6 +102,7 @@ digraph G {
 
 	t.Run("one_or_more", func(t *testing.T) {
 		spec, ctx := parseAndAnalyze(t, `
+@lexer
 FOOBAR = 'foo'+ ;
 `)
 		it := spec.Units[0].Statements[0].(*ast.TokenRule).Expr.Factors[0].Terms[0]

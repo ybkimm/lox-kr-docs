@@ -8,6 +8,7 @@ import (
 )
 
 var testInput = `
+@lexer
 
 INFO = 'info' ;
 EQ   = '==' ;
@@ -42,7 +43,6 @@ EXEC_PREFIX = 'e\''  @push_mode(EXEC) ;
 	@frag '\\' ([nrt"\\] | ('x' HEX_DIGIT HEX_DIGIT)) ;
 	EXEC_DQUOTE_LITERAL = '"' @pop_mode ;
 }
-
 `
 
 func TestParser(t *testing.T) {

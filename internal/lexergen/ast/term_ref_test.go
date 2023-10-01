@@ -10,6 +10,7 @@ import (
 func TestTermRef(t *testing.T) {
 	t.Run("simple1", func(t *testing.T) {
 		spec, ctx := parseAndAnalyze(t, `
+@lexer
 @macro FOO = 'foo' ;
 FOOBAR = FOO 'bar' ;
 `)
@@ -44,6 +45,7 @@ digraph G {
 	})
 	t.Run("undefined", func(t *testing.T) {
 		spec, ctx := parse(t, `
+@lexer
 @macro FOO = 'foo' ;
 FOOBAR = FO0 'bar' ;
 `)
@@ -54,6 +56,7 @@ FOOBAR = FO0 'bar' ;
 	})
 	t.Run("not-macro", func(t *testing.T) {
 		spec, ctx := parse(t, `
+@lexer
 FOO = 'foo' ;
 FOOBAR = FOO 'bar' ;
 `)

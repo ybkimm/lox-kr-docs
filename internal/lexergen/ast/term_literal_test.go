@@ -9,6 +9,7 @@ import (
 
 func TestTermLiteral(t *testing.T) {
 	spec, ctx := parseAndAnalyze(t, `
+@lexer
 @macro foo = 'abc' ;
 	`)
 

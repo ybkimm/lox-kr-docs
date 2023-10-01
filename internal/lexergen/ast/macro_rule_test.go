@@ -10,6 +10,7 @@ import (
 func TestMacroRule(t *testing.T) {
 	t.Run("simple1", func(t *testing.T) {
 		spec, ctx := parseAndAnalyze(t, `
+@lexer
 @macro FOO = 'foo' ;
 @macro BAR = 'bar' ;
 FOOBAR = FOO | BAR ;
@@ -50,6 +51,7 @@ digraph G {
 	})
 	t.Run("simple2", func(t *testing.T) {
 		spec, ctx := parseAndAnalyze(t, `
+@lexer
 @macro FOOBAR_MACRO = 'foo' | BAR ;
 @macro BAR = 'bar' ;
 FOOBAR = FOOBAR_MACRO ;
@@ -91,6 +93,7 @@ digraph G {
 
 	t.Run("cycle", func(t *testing.T) {
 		spec, ctx := parseAndAnalyze(t, `
+@lexer
 @macro FOO = 'yay' | BAR ;
 @macro BAR = BAZ | 'stuff' ;
 @macro BAZ = FOO ;

@@ -2,6 +2,7 @@ package parser
 
 import (
 	gotoken "go/token"
+	"strconv"
 	"unicode/utf8"
 
 	"github.com/dcaiafa/lox/internal/errlogger"
@@ -25,14 +26,130 @@ func Parse(file *gotoken.File, data []byte, errs *errlogger.ErrLogger) *ast.Unit
 	return p.unit
 }
 
-func (p *parser) on_spec(stmts []ast.Statement) *ast.Unit {
+func (p *parser) on_spec(sections [][]ast.Statement) *ast.Unit {
+	n := 0
+	for _, section := range sections {
+		n += len(section)
+	}
+	stmts := make([]ast.Statement, 0, n)
+	for _, section := range sections {
+		stmts = append(stmts, section...)
+	}
 	p.unit = &ast.Unit{
 		Statements: stmts,
 	}
 	return p.unit
 }
 
-func (p *parser) on_statement(s ast.Statement) ast.Statement {
+func (p *parser) on_section(sectionStmts []ast.Statement) []ast.Statement {
+	return sectionStmts
+}
+
+// Parser
+// ======
+
+func (p *parser) on_parser_section(_ Token, stmts []ast.Statement) []ast.Statement {
+	return stmts
+}
+
+func (p *parser) on_parser_statement(s ast.Statement) ast.Statement {
+	return s
+}
+
+func (p *parser) on_parser_rule(name Token, _ Token, prods []*ast.Prod, _ Token) *ast.Rule {
+	return &ast.Rule{
+		Name:  name.Str,
+		Prods: prods,
+	}
+}
+
+func (p *parser) on_parser_prod(terms []*ast.Term, qualif *ast.ProdQualifier) *ast.Prod {
+	return &ast.Prod{
+		Terms:     terms,
+		Qualifier: qualif,
+	}
+}
+
+func (p *parser) on_parser_term_card(term *ast.Term, typ ast.TermType) *ast.Term {
+	if typ == ast.Simple || typ == ast.Error {
+		return term
+	}
+	return &ast.Term{
+		Type:  typ,
+		Child: term,
+	}
+}
+
+func (p *parser) on_parser_term__token(tok Token) *ast.Term {
+	switch tok.Type {
+	case ID:
+		return &ast.Term{Name: tok.Str}
+	case LITERAL:
+		return &ast.Term{Alias: tok.Str}
+	case ERROR_KEYWORD:
+		return &ast.Term{Type: ast.Error}
+	default:
+		panic("not-reached")
+	}
+}
+
+func (p *parser) on_parser_term__list(listTerm *ast.Term) *ast.Term {
+	return listTerm
+}
+
+func (p *parser) on_parser_list(_, _ Token, elem *ast.Term, _ Token, sep *ast.Term, _ Token) *ast.Term {
+	return &ast.Term{
+		Type:  ast.List,
+		Child: elem,
+		Sep:   sep,
+	}
+}
+
+func (p *parser) on_parser_card(card Token) ast.TermType {
+	switch card.Type {
+	case ZERO_OR_MORE:
+		return ast.TermZeroOrMore
+	case ONE_OR_MORE:
+		return ast.TermOneOrMore
+	case ZERO_OR_ONE:
+		return ast.TermZeroOrOne
+	default:
+		panic("unreachable")
+	}
+}
+
+func (p *parser) on_parser_qualif(assoc Token, _ Token, prec Token, _ Token) *ast.ProdQualifier {
+	q := &ast.ProdQualifier{}
+
+	switch assoc.Type {
+	case LEFT:
+		q.Associativity = ast.Left
+	case RIGHT:
+		q.Associativity = ast.Right
+	default:
+		panic("not-reached")
+	}
+
+	var err error
+	q.Precedence, err = strconv.Atoi(prec.Str)
+	if err != nil {
+		panic(err)
+	}
+	if q.Precedence <= 0 {
+		panic("not-reached")
+	}
+
+	return q
+}
+
+// Lexer
+// =====
+
+func (p *parser) on_lexer_section(_ Token, stmts []ast.Statement) []ast.Statement {
+	return stmts
+}
+
+func (p *parser) on_lexer_statement(s ast.Statement) ast.Statement {
 	return s
 }
 

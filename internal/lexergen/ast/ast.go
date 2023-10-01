@@ -178,3 +178,16 @@ type ActionPopMode struct {
 
 func (a *ActionPopMode) RunPass(ctx *Context, pass Pass) {
 }
+
+type Associativity int
+
+const (
+	Left  Associativity = 0
+	Right Associativity = 1
+)
+
+type ProdQualifier struct {
+	baseAST
+	Precedence    int
+	Associativity Associativity
+}

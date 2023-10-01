@@ -12,15 +12,17 @@ type Context struct {
 	FSet *gotoken.FileSet
 	Errs *errlogger.ErrLogger
 
-	names map[string]AST
-	modes stack.Stack[*mode.Mode]
+	names   map[string]AST
+	aliases map[string]*TokenRule
+	modes   stack.Stack[*mode.Mode]
 }
 
 func NewContext(fset *gotoken.FileSet, errs *errlogger.ErrLogger) *Context {
 	c := &Context{
-		FSet:  fset,
-		Errs:  errs,
-		names: make(map[string]AST),
+		FSet:    fset,
+		Errs:    errs,
+		names:   make(map[string]AST),
+		aliases: make(map[string]*TokenRule),
 	}
 	defaultMode := mode.New("")
 	c.modes.Push(defaultMode)
@@ -40,6 +42,22 @@ func (c *Context) RegisterName(name string, ast AST) bool {
 
 func (c *Context) Lookup(name string) AST {
 	return c.names[name]
+}
+
+var AmbiguousAlias = &TokenRule{}
+
+func (c *Context) CreateAlias(name string, t *TokenRule) {
+	existing := c.aliases[name]
+	if existing != nil {
+		// Can't use aliases if there is more than one token with the same literal.
+		c.aliases[name] = AmbiguousAlias
+		return
+	}
+	c.aliases[name] = t
+}
+
+func (c *Context) LookupAlias(name string) *TokenRule {
+	return c.aliases[name]
 }
 
 func (c *Context) Position(ast AST) gotoken.Position {

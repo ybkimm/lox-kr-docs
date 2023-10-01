@@ -27,12 +27,14 @@ func (t Token) String() string {
 }
 
 var keywords = map[string]TokenType{
-	"@skip":      SKIP,
+	"@frag":      FRAG,
+	"@lexer":     LEXER,
 	"@macro":     MACRO,
 	"@mode":      MODE,
-	"@push_mode": PUSH_MODE,
+	"@parser":    PARSER,
 	"@pop_mode":  POP_MODE,
-	"@frag":      FRAG,
+	"@push_mode": PUSH_MODE,
+	"@skip":      SKIP,
 }
 
 func isNumber(r rune) bool {

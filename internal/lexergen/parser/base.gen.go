@@ -8,29 +8,37 @@ const (
 	ID              TokenType = 2
 	LITERAL         TokenType = 3
 	CLASS_CHAR      TokenType = 4
-	SEMICOLON       TokenType = 5
-	EQ              TokenType = 6
-	OR              TokenType = 7
-	ARROW           TokenType = 8
-	OCURLY          TokenType = 9
-	CCURLY          TokenType = 10
-	CLASS_DASH      TokenType = 11
-	TILDE           TokenType = 12
-	OBRACKET        TokenType = 13
-	CBRACKET        TokenType = 14
-	OPAREN          TokenType = 15
-	CPAREN          TokenType = 16
-	ZERO_OR_ONE     TokenType = 17
-	ZERO_OR_MORE    TokenType = 18
-	ONE_OR_MORE     TokenType = 19
-	ZERO_OR_MORE_NG TokenType = 20
-	ONE_OR_MORE_NG  TokenType = 21
-	SKIP            TokenType = 22
-	MACRO           TokenType = 23
-	FRAG            TokenType = 24
-	MODE            TokenType = 25
-	PUSH_MODE       TokenType = 26
-	POP_MODE        TokenType = 27
+	NUM             TokenType = 5
+	SEMICOLON       TokenType = 6
+	COMMA           TokenType = 7
+	EQ              TokenType = 8
+	OR              TokenType = 9
+	ARROW           TokenType = 10
+	OCURLY          TokenType = 11
+	CCURLY          TokenType = 12
+	CLASS_DASH      TokenType = 13
+	TILDE           TokenType = 14
+	OBRACKET        TokenType = 15
+	CBRACKET        TokenType = 16
+	OPAREN          TokenType = 17
+	CPAREN          TokenType = 18
+	ZERO_OR_ONE     TokenType = 19
+	ZERO_OR_MORE    TokenType = 20
+	ONE_OR_MORE     TokenType = 21
+	ZERO_OR_MORE_NG TokenType = 22
+	ONE_OR_MORE_NG  TokenType = 23
+	PARSER          TokenType = 24
+	LEXER           TokenType = 25
+	SKIP            TokenType = 26
+	MACRO           TokenType = 27
+	FRAG            TokenType = 28
+	MODE            TokenType = 29
+	PUSH_MODE       TokenType = 30
+	POP_MODE        TokenType = 31
+	ERROR_KEYWORD   TokenType = 32
+	LEFT            TokenType = 33
+	LIST            TokenType = 34
+	RIGHT           TokenType = 35
 )
 
 func (t TokenType) String() string {
@@ -45,8 +53,12 @@ func (t TokenType) String() string {
 		return "LITERAL"
 	case CLASS_CHAR:
 		return "CLASS_CHAR"
+	case NUM:
+		return "NUM"
 	case SEMICOLON:
 		return ";"
+	case COMMA:
+		return ","
 	case EQ:
 		return "="
 	case OR:
@@ -79,6 +91,10 @@ func (t TokenType) String() string {
 		return "*?"
 	case ONE_OR_MORE_NG:
 		return "+?"
+	case PARSER:
+		return "@parser"
+	case LEXER:
+		return "@lexer"
 	case SKIP:
 		return "@skip"
 	case MACRO:
@@ -91,6 +107,14 @@ func (t TokenType) String() string {
 		return "@push_mode"
 	case POP_MODE:
 		return "@pop_mode"
+	case ERROR_KEYWORD:
+		return "@error"
+	case LEFT:
+		return "@left"
+	case LIST:
+		return "@list"
+	case RIGHT:
+		return "@right"
 	default:
 		return "???"
 	}

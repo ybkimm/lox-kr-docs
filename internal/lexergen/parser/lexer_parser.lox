@@ -1,9 +1,20 @@
+//
+//     __         ______     __  __
+//    /\ \       /\  __ \   /\_\_\_\
+//    \ \ \____  \ \ \/\ \  \/_/\_\/_
+//     \ \_____\  \ \_____\   /\_\/\_\
+//      \/_____/   \/_____/   \/_/\/_/
+//
+//
+
 @token 
   ID 
   LITERAL 
   CLASS_CHAR 
+  NUM 
 
   SEMICOLON ';'
+  COMMA ','
   EQ '='
   OR '|'
   ARROW '->'
@@ -22,17 +33,44 @@
   ZERO_OR_MORE_NG '*?'
   ONE_OR_MORE_NG '+?'
 
+  PARSER '@parser'
+  LEXER  '@lexer'
   SKIP   '@skip'
   MACRO  '@macro'
   FRAG   '@frag'
   MODE   '@mode'
   PUSH_MODE '@push_mode'
   POP_MODE '@pop_mode'
+  ERROR_KEYWORD '@error'
+  LEFT          '@left'
+  LIST          '@list'
+  RIGHT         '@right'
   ;
 
-spec = statement* ;
+spec    = section* ;
+section = parser_section | lexer_section ;
 
-statement = mode | lexer_rule ;
+// Parser
+// ======
+
+parser_section   = PARSER parser_statement* ;
+parser_statement = parser_rule ;
+
+parser_rule      = ID '=' @list(parser_prod, '|') ';' ;
+parser_prod      = parser_term_card+ parser_qualif? ;
+parser_term_card = parser_term parser_card? ;
+parser_term      = ID | LITERAL | '@error' | parser_list ;
+parser_list      = '@list' '(' parser_term ',' parser_term ')' ;
+parser_card      = '*' | '+' | '?' ;
+parser_qualif    = '@left' '(' NUM ')'
+                 | '@right' '(' NUM ')' ;
+
+// Lexer
+// =====
+
+lexer_section = LEXER lexer_statement* ;
+
+lexer_statement = mode | lexer_rule ;
 
 lexer_rule = token_rule
            | frag_rule
