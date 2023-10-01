@@ -35,6 +35,7 @@ var keywords = map[string]TokenType{
 	"@pop_mode":  POP_MODE,
 	"@push_mode": PUSH_MODE,
 	"@skip":      SKIP,
+	"@list":      LIST,
 }
 
 func isNumber(r rune) bool {
@@ -139,6 +140,9 @@ func (l *lex) modeDefault() {
 	case '=':
 		l.advance()
 		l.tok.Type = EQ
+	case ',':
+		l.advance()
+		l.tok.Type = COMMA
 	case ';':
 		l.advance()
 		l.tok.Type = SEMICOLON
