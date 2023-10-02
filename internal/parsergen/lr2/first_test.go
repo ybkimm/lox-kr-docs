@@ -61,12 +61,12 @@ func TestFirst(t *testing.T) {
 		g.AddProd(rF, tOP, rE, tCP)
 		g.AddProd(rF, tId)
 
-		assertTerminalSetEq(t, g, g.First([]int{rE}), tOP, tId)
-		assertTerminalSetEq(t, g, g.First([]int{rEp}), tA, Epsilon)
-		assertTerminalSetEq(t, g, g.First([]int{rTp}), tM, Epsilon)
-		assertTerminalSetEq(t, g, g.First([]int{rEp, rE}), tA, tOP, tId)
-		assertTerminalSetEq(t, g, g.First([]int{rEp, rTp}), tA, tM, Epsilon)
-		assertTerminalSetEq(t, g, g.First([]int{rEp, tId}), tA, tId)
+		assertTerminalSetEq(t, g, First(g, []int{rE}), tOP, tId)
+		assertTerminalSetEq(t, g, First(g, []int{rEp}), tA, Epsilon)
+		assertTerminalSetEq(t, g, First(g, []int{rTp}), tM, Epsilon)
+		assertTerminalSetEq(t, g, First(g, []int{rEp, rE}), tA, tOP, tId)
+		assertTerminalSetEq(t, g, First(g, []int{rEp, rTp}), tA, tM, Epsilon)
+		assertTerminalSetEq(t, g, First(g, []int{rEp, tId}), tA, tId)
 
 		g.Print(os.Stdout)
 	})
@@ -94,7 +94,7 @@ func TestFirst(t *testing.T) {
 		g.AddProd(rZ, tS)
 		g.AddProd(rZ /* ε */)
 
-		assertTerminalSetEq(t, g, g.First([]int{rX}), tA, tS, tM)
+		assertTerminalSetEq(t, g, First(g, []int{rX}), tA, tS, tM)
 	})
 
 	t.Run("3", func(t *testing.T) {
@@ -114,7 +114,7 @@ func TestFirst(t *testing.T) {
 		g.AddProd(rXS, rX)
 		g.AddProd(rX, tA)
 
-		assertTerminalSetEq(t, g, g.First([]int{rXS}), tA)
+		assertTerminalSetEq(t, g, First(g, []int{rXS}), tA)
 	})
 
 	t.Run("4", func(t *testing.T) {
@@ -152,8 +152,8 @@ func TestFirst(t *testing.T) {
 		g.AddProd(rD /* ε */)
 		g.AddProd(rE, tDlr)
 
-		assertTerminalSetEq(t, g, g.First([]int{rB}), tSub, Epsilon)
-		assertTerminalSetEq(t, g, g.First([]int{rB, tMul}), tSub, tMul)
-		assertTerminalSetEq(t, g, g.First([]int{rA}), tSub, tDiv, tRem, tMul, tAdd, Epsilon)
+		assertTerminalSetEq(t, g, First(g, []int{rB}), tSub, Epsilon)
+		assertTerminalSetEq(t, g, First(g, []int{rB, tMul}), tSub, tMul)
+		assertTerminalSetEq(t, g, First(g, []int{rA}), tSub, tDiv, tRem, tMul, tAdd, Epsilon)
 	})
 }

@@ -52,6 +52,10 @@ func (s *Set[T]) Has(v T) bool {
 	return s.set[v]
 }
 
+func (s *Set[T]) Empty() bool {
+	return len(s.set) == 0
+}
+
 func (s *Set[T]) Len() int {
 	return len(s.set)
 }

@@ -2,6 +2,7 @@ package lr2
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -35,4 +36,21 @@ func (i Item) ToString(g *Grammar) string {
 	str.WriteString(", ")
 	str.WriteString(g.GetSymbolName(i.Lookahead))
 	return str.String()
+}
+
+func SortItems(items []Item) {
+	sort.Slice(items, func(i, j int) bool {
+		switch {
+		case items[i].Prod < items[j].Prod:
+			return true
+		case items[i].Prod > items[j].Prod:
+			return false
+		case items[i].Dot < items[j].Dot:
+			return true
+		case items[i].Dot > items[j].Dot:
+			return false
+		default:
+			return items[i].Lookahead < items[j].Lookahead
+		}
+	})
 }
