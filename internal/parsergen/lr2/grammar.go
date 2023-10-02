@@ -14,6 +14,8 @@ const (
 	Error   = 1
 	Epsilon = math.MaxInt
 	SPrime  = -1
+
+	sprimeProd = 0
 )
 
 func IsTerminal(sym int) bool {
@@ -71,19 +73,21 @@ func NewGrammar() *Grammar {
 	assert.True(n == EOF)
 	n = g.AddTerminal("ERROR")
 	assert.True(n == Error)
+
 	n = g.AddRule("S'")
 	assert.True(n == SPrime)
+	n = g.AddProd(SPrime)
+	assert.True(n == sprimeProd)
+
 	return g
 }
 
 // SetStart sets the Start rule for a grammar. This is the actual thing we are
 // trying to derive. If a Rule is not in the transitive closure of things
-// derivable from the start rule, it will never be derived. SetStart must be
-// called once and only once.
+// derivable from the start rule, it will never be derived.
 func (g *Grammar) SetStart(ruleIndex int) {
-	assert.True(len(g.GetRule(SPrime).Prods) == 0) // start can only be called once
 	assert.True(IsRule(ruleIndex))
-	g.AddProd(SPrime, ruleIndex)
+	g.prods[sprimeProd].Terms = []int{ruleIndex, EOF}
 }
 
 // AddTerminal adds a Terminal to the grammar, and returns its symbol index.
