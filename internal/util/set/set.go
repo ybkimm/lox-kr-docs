@@ -64,7 +64,7 @@ func (s *Set[T]) Elements() []T {
 	return r
 }
 
-func (s *Set[T]) Equal(o *Set[T]) bool {
+func (s *Set[T]) Equal(o Set[T]) bool {
 	if len(s.set) != len(o.set) {
 		return false
 	}

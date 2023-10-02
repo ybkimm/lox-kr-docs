@@ -76,7 +76,7 @@ func TestFirst1(t *testing.T) {
 			actual.Add(terminal.Name)
 		})
 
-		if !actual.Equal(expected) {
+		if !actual.Equal(*expected) {
 			t.Log("Expected: ", expected.Elements())
 			t.Log("Actual: ", actual.Elements())
 			t.Fatalf("Terminal set did not match expectation")
@@ -147,7 +147,7 @@ func TestFirst2(t *testing.T) {
 			actual.Add(terminal.Name)
 		})
 
-		if !actual.Equal(expected) {
+		if !actual.Equal(*expected) {
 			t.Log("Expected: ", expected.Elements())
 			t.Log("Actual: ", actual.Elements())
 			t.Fatalf("Terminal set did not match expectation")
