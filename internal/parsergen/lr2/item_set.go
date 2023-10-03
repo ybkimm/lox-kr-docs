@@ -1,12 +1,15 @@
 package lr2
 
 import (
+	"encoding/binary"
 	"strings"
 
 	"github.com/dcaiafa/lox/internal/util/set"
 )
 
 type ItemSet struct {
+	Index int
+
 	set         set.Set[Item]
 	cachedItems []Item
 }
@@ -62,4 +65,26 @@ func (s *ItemSet) ToString(g *Grammar) string {
 		str.WriteString(item.ToString(g))
 	}
 	return str.String()
+}
+
+func (s *ItemSet) LR0Key() string {
+	type lr0Item struct {
+		Prod uint32
+		Dot  uint32
+	}
+	var seen set.Set[lr0Item]
+	key := make([]byte, 0, s.set.Len())
+	for _, i := range s.Items() {
+		if !i.IsKernel() {
+			continue
+		}
+		lr0Key := lr0Item{Prod: uint32(i.Prod), Dot: uint32(i.Dot)}
+		if seen.Has(lr0Key) {
+			continue
+		}
+		seen.Add(lr0Key)
+		key = binary.BigEndian.AppendUint32(key, lr0Key.Prod)
+		key = binary.BigEndian.AppendUint32(key, lr0Key.Dot)
+	}
+	return string(key)
 }
