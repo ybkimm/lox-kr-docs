@@ -32,6 +32,10 @@ func (s *ItemSet) AddSet(o ItemSet) bool {
 	return changed
 }
 
+func (s *ItemSet) ForEach(f func(i Item)) {
+	s.set.ForEach(f)
+}
+
 func (s *ItemSet) Empty() bool {
 	return s.set.Empty()
 }

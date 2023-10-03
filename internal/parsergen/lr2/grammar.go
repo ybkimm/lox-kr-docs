@@ -156,6 +156,14 @@ func (g *Grammar) GetSymbolName(symIndex int) string {
 	}
 }
 
+func (g *Grammar) GetSymbolNames(symIndex []int) []string {
+	names := make([]string, len(symIndex))
+	for i, symIndex := range symIndex {
+		names[i] = g.GetSymbolName(symIndex)
+	}
+	return names
+}
+
 func (g *Grammar) GetProd(prodIndex int) *Prod {
 	return g.prods[prodIndex]
 }

@@ -1,7 +1,6 @@
 package lr2
 
 import (
-	"os"
 	"sort"
 	"testing"
 
@@ -67,8 +66,6 @@ func TestFirst(t *testing.T) {
 		assertTerminalSetEq(t, g, First(g, []int{rEp, rE}), tA, tOP, tId)
 		assertTerminalSetEq(t, g, First(g, []int{rEp, rTp}), tA, tM, Epsilon)
 		assertTerminalSetEq(t, g, First(g, []int{rEp, tId}), tA, tId)
-
-		g.Print(os.Stdout)
 	})
 
 	t.Run("2", func(t *testing.T) {
