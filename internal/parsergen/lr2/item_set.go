@@ -23,7 +23,7 @@ func (s *ItemSet) Add(item Item) bool {
 	return true
 }
 
-func (s *ItemSet) AddSet(o ItemSet) bool {
+func (s *ItemSet) AddSet(o *ItemSet) bool {
 	changed := false
 	o.set.ForEach(func(i Item) {
 		if s.set.Has(i) {

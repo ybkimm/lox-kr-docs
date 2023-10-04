@@ -1,6 +1,7 @@
 package nfa
 
 import (
+	"cmp"
 	"fmt"
 	"io"
 	"sort"
@@ -115,10 +116,11 @@ func (n *State) Print(out io.Writer) {
 		fmt.Fprintf(out, "  %v -> %v [label=%q];\n", e.from.ID, e.to.ID, inputStr)
 	}
 
-	states := visited.Elements()
-	sort.Slice(states, func(i, j int) bool {
-		return states[i].ID < states[j].ID
-	})
+	states := set.SortedElementsFunc(
+		visited,
+		func(a, b *State) int {
+			return cmp.Compare(a.ID, b.ID)
+		})
 
 	for _, state := range states {
 		shape := "circle"

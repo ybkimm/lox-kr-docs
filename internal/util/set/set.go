@@ -1,5 +1,10 @@
 package set
 
+import (
+	"cmp"
+	"slices"
+)
+
 type Set[T comparable] struct {
 	set map[T]bool
 }
@@ -93,4 +98,17 @@ func (s *Set[T]) Clone() Set[T] {
 		c.set[e] = true
 	}
 	return c
+}
+
+func SortedElements[T cmp.Ordered](s Set[T]) []T {
+	return SortedElementsFunc(s, cmp.Compare[T])
+}
+
+func SortedElementsFunc[E comparable](s Set[E], cmp func(a, b E) int) []E {
+	r := make([]E, 0, len(s.set))
+	for x := range s.set {
+		r = append(r, x)
+	}
+	slices.SortFunc(r, cmp)
+	return r
 }

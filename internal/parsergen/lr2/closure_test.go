@@ -26,9 +26,9 @@ func TestClosure(t *testing.T) {
 	t.Run("1", func(t *testing.T) {
 		var i ItemSet
 		i.Add(Item{Prod: sprimeProd, Dot: 0, Lookahead: EOF})
-		result := Closure(g, i)
+		result := Closure(g, &i)
 		testutil.RequireEqualStr(t, result.ToString(g), `
-S' = .S EOF, EOF
+S' = .S, EOF
 S = .C C, EOF
 C = .c C, c
 C = .c C, d
@@ -41,7 +41,7 @@ C = .d, d
 		var i ItemSet
 		i.Add(Item{Prod: g.GetRule(C).Prods[0], Dot: 1, Lookahead: c})
 		i.Add(Item{Prod: g.GetRule(C).Prods[0], Dot: 1, Lookahead: d})
-		result := Closure(g, i)
+		result := Closure(g, &i)
 		testutil.RequireEqualStr(t, result.ToString(g), `
 C = .c C, c
 C = .c C, d

@@ -1,38 +1,46 @@
 package lr2
 
-import (
-	"sort"
-
-	"github.com/dcaiafa/lox/internal/util/set"
-)
+import "github.com/dcaiafa/lox/internal/util/set"
 
 func ConstructLALR(g *Grammar) *ParserTable {
 	pt := NewParserTable(g)
 
-	var pending set.Set[string]
 	start := new(ItemSet)
 	start.Add(Item{Prod: sprimeProd, Dot: 0, Lookahead: EOF})
-	*start = Closure(g, *start)
+	start = Closure(g, start)
+	startKey := start.LR0Key()
+	pt.States.Add(startKey, start)
 
-	for !pending.Empty() {
-		pendingSorted := pending.Elements()
-		sort.Strings(pendingSorted)
-		pending.Clear()
-		for _, fromKey := range pendingSorted {
+	pendingSet := set.New[string](startKey)
+	for !pendingSet.Empty() {
+		pending := set.SortedElements(pendingSet)
+		pendingSet.Clear()
+		for _, fromKey := range pending {
 			from, fromIndex := pt.States.GetStateByKey(fromKey)
 			for _, sym := range Next(g, *from) {
 				changed := false
-				to := Goto(g, *from, sym)
+				to := Goto(g, from, sym)
 				toKey := to.LR0Key()
-				existing, _ := pt.States.GetStateByKey(toKey)
-				if existing != nil {
-					for _, item := range to.Items() {
-						changed = existing.Add(item) || changed
-					}
-					to = existing
-				}
 
+				// The destination state might already exist in which case we might
+				// need to complement its lookaheads.
+				existingTo, existingToIndex := pt.States.GetStateByKey(toKey)
+				if existingTo != nil {
+					for _, item := range to.Items() {
+						changed = existingTo.Add(item) || changed
+					}
+					pt.States.AddTransition(fromIndex, sym, existingToIndex)
+				} else {
+					toIndex := pt.States.Add(toKey, to)
+					pt.States.AddTransition(fromIndex, sym, toIndex)
+					changed = true
+				}
+				if changed {
+					pendingSet.Add(toKey)
+				}
 			}
 		}
 	}
+
+	return pt
 }

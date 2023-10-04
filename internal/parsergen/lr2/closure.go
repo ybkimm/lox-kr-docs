@@ -7,7 +7,7 @@ package lr2
 //	 If there is a B -> γ:
 //	   For each x in FIRST(βa):
 //	     Add [B -> .γ, x]
-func Closure(g *Grammar, i ItemSet) ItemSet {
+func Closure(g *Grammar, i *ItemSet) *ItemSet {
 	var result ItemSet
 	result.AddSet(i)
 	var pending ItemSet
@@ -38,5 +38,5 @@ func Closure(g *Grammar, i ItemSet) ItemSet {
 			}
 		}
 	}
-	return result
+	return &result
 }

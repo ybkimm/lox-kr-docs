@@ -29,12 +29,13 @@ func (c *StateSet) GetStateByIndex(stateIndex int) *ItemSet {
 	return c.states[stateIndex]
 }
 
-func (c *StateSet) Add(key string, s *ItemSet) {
+func (c *StateSet) Add(key string, s *ItemSet) int {
 	if _, ok := c.stateMap[key]; ok {
 		panic("state already exists")
 	}
 	c.states = append(c.states, s)
 	c.stateMap[key] = len(c.states) - 1
+	return len(c.states) - 1
 }
 
 func (c *StateSet) AddTransition(from, symbol, to int) {
@@ -44,4 +45,12 @@ func (c *StateSet) AddTransition(from, symbol, to int) {
 		c.transitions[from] = transMap
 	}
 	transMap.Add(symbol, to)
+}
+
+func (c *StateSet) GetTransitions(from int) *TransitionMap {
+	ts := c.transitions[from]
+	if ts == nil {
+		ts = new(TransitionMap)
+	}
+	return ts
 }

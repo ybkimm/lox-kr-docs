@@ -86,7 +86,7 @@ func NewGrammar() *Grammar {
 // derivable from the start rule, it will never be derived.
 func (g *Grammar) SetStart(ruleIndex int) {
 	assert.True(IsRule(ruleIndex))
-	g.prods[sprimeProd].Terms = []int{ruleIndex, EOF}
+	g.prods[sprimeProd].Terms = []int{ruleIndex}
 }
 
 // AddTerminal adds a Terminal to the grammar, and returns its symbol index.

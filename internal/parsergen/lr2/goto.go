@@ -1,7 +1,7 @@
 package lr2
 
-func Goto(g *Grammar, from ItemSet, sym int) ItemSet {
-	var to ItemSet
+func Goto(g *Grammar, from *ItemSet, sym int) *ItemSet {
+	to := new(ItemSet)
 	from.ForEach(func(i Item) {
 		prod := g.GetProd(i.Prod)
 		if i.Dot == len(prod.Terms) {

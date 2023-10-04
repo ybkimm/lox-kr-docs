@@ -38,19 +38,19 @@ func TestGoto(t *testing.T) {
 		is.Add(Item{Prod: g.GetRule(C).Prods[1], Dot: 0, Lookahead: c})
 		is.Add(Item{Prod: g.GetRule(C).Prods[1], Dot: 0, Lookahead: d})
 
-		gS := Goto(g, is, S)
+		gS := Goto(g, &is, S)
 		testutil.RequireEqualStr(t, gS.ToString(g), `
-S' = S .EOF, EOF
+S' = S., EOF
 		`)
 
-		gC := Goto(g, is, C)
+		gC := Goto(g, &is, C)
 		testutil.RequireEqualStr(t, gC.ToString(g), `
 S = C .C, EOF
 C = .c C, EOF
 C = .d, EOF
 		`)
 
-		gc := Goto(g, is, c)
+		gc := Goto(g, &is, c)
 		testutil.RequireEqualStr(t, gc.ToString(g), `
 C = .c C, c
 C = .c C, d
@@ -60,7 +60,7 @@ C = .d, c
 C = .d, d
 		`)
 
-		gd := Goto(g, is, d)
+		gd := Goto(g, &is, d)
 		testutil.RequireEqualStr(t, gd.ToString(g), `
 C = d., c
 C = d., d

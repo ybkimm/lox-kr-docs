@@ -58,7 +58,7 @@ func TestItem(t *testing.T) {
 		if !i.IsKernel() {
 			t.Fatalf("[%v] should be a kernel", i.ToString(g))
 		}
-		const expected = "S' = .XS EOF, EOF"
+		const expected = "S' = .XS, EOF"
 		result := i.ToString(g)
 		if result != expected {
 			t.Fatalf("Expected: [%v] Actual: [%v]", expected, result)
