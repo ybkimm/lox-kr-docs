@@ -26,10 +26,10 @@ func (t *ParserTable) Print(w io.Writer) {
 		l.Logf("I%d:", stateIndex)
 		l = l.WithIndent()
 		l.Logf("%v", state.ToString(t.Grammar))
-		transitions := t.States.GetTransitions(stateIndex)
+		transitions := t.States.Transitions(stateIndex)
 		for _, input := range transitions.Inputs() {
 			if IsRule(input) {
-				to, _ := transitions.Get(input)
+				to := transitions.Get(input)
 				l.Logf("on %v: goto I%v", t.Grammar.GetSymbolName(input), to)
 			}
 		}
@@ -47,9 +47,9 @@ func (t *ParserTable) PrintGraph(w io.Writer) {
 			fmt.Sprintf("I%d\n%v", stateIndex, state.ToString(t.Grammar)))
 	}
 	for stateIndex := range t.States.States() {
-		transitions := t.States.GetTransitions(stateIndex)
+		transitions := t.States.Transitions(stateIndex)
 		for _, input := range transitions.Inputs() {
-			toIndex, _ := transitions.Get(input)
+			toIndex := transitions.Get(input)
 			li.Logf(
 				"I%d -> I%d [label=%q];",
 				stateIndex,

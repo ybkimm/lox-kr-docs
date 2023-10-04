@@ -29,10 +29,10 @@ func ConstructLALR(g *Grammar) *ParserTable {
 					for _, item := range to.Items() {
 						changed = existingTo.Add(item) || changed
 					}
-					t.States.AddTransition(fromIndex, sym, existingToIndex)
+					t.States.Transitions(fromIndex).Add(sym, existingToIndex)
 				} else {
 					toIndex := t.States.Add(toKey, to)
-					t.States.AddTransition(fromIndex, sym, toIndex)
+					t.States.Transitions(fromIndex).Add(sym, toIndex)
 					changed = true
 				}
 				if changed {
@@ -42,22 +42,32 @@ func ConstructLALR(g *Grammar) *ParserTable {
 		}
 	}
 
+	createActions(t)
+
 	return t
 }
 
-/*
-func creteActions(t *ParserTable) {
+func createActions(t *ParserTable) {
 	g := t.Grammar
 	for stateIndex, state := range t.States.States() {
 		for _, item := range state.Items() {
 			prod := g.GetProd(item.Prod)
-
-			// A -> γ., x
 			if item.Dot == len(prod.Terms) {
-				rule := t.Grammar.GetRule(prod.Rule)
-
+				// A -> γ., x
+				if item.Prod == sprimeProd {
+					t.States.Actions(stateIndex).
+						AddAccept(item.Lookahead)
+				} else {
+					t.States.Actions(stateIndex).
+						AddReduce(item.Lookahead, item.Prod)
+				}
+			} else if terminal := prod.Terms[item.Dot]; IsTerminal(terminal) {
+				// A -> α.xβ where x is a Terminal
+				terminal := prod.Terms[item.Dot]
+				shiftState := t.States.Transitions(stateIndex).Get(terminal)
+				t.States.Actions(stateIndex).
+					AddShift(terminal, shiftState, item.Prod)
 			}
 		}
 	}
 }
-*/

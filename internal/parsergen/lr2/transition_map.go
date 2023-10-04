@@ -13,9 +13,12 @@ func (m *TransitionMap) Add(symbol, to int) {
 	m.transitions[symbol] = to
 }
 
-func (m *TransitionMap) Get(input int) (int, bool) {
+func (m *TransitionMap) Get(input int) int {
 	to, ok := m.transitions[input]
-	return to, ok
+	if !ok {
+		panic("no transition for input")
+	}
+	return to
 }
 
 func (m *TransitionMap) Inputs() []int {
