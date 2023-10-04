@@ -21,6 +21,8 @@ func runConstructTest(t *testing.T, name string, g *Grammar) {
 
 func TestConstruct(t *testing.T) {
 	{
+		// S = C C
+		// C = c C | d
 		var (
 			g = NewGrammar()
 			c = g.AddTerminal("c")
@@ -33,5 +35,27 @@ func TestConstruct(t *testing.T) {
 		g.AddProd(C, c, C)
 		g.AddProd(C, d)
 		runConstructTest(t, "1", g)
+	}
+
+	{
+		// S = L '=' R | R
+		// L = '*' R | id
+		// R = L
+		var (
+			g   = NewGrammar()
+			eq  = g.AddTerminal("=")
+			mul = g.AddTerminal("*")
+			id  = g.AddTerminal("id")
+			S   = g.AddRule("S")
+			L   = g.AddRule("L")
+			R   = g.AddRule("R")
+		)
+		g.SetStart(S)
+		g.AddProd(S, L, eq, R)
+		g.AddProd(S, R)
+		g.AddProd(L, mul, R)
+		g.AddProd(L, id)
+		g.AddProd(R, L)
+		runConstructTest(t, "2", g)
 	}
 }

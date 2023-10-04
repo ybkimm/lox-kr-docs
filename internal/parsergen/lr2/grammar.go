@@ -53,7 +53,7 @@ type Rule struct {
 //	         ^
 //	       term
 type Prod struct {
-	Rule     *Rule
+	Rule     int
 	Terms    []int
 	UserData any
 }
@@ -117,7 +117,7 @@ func (g *Grammar) AddProd(ruleIndex int, terms ...int) int {
 	rule := g.GetRule(ruleIndex)
 
 	p := &Prod{
-		Rule: rule,
+		Rule: ruleIndex,
 	}
 
 	g.prods = append(g.prods, p)

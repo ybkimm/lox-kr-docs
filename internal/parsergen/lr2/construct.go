@@ -3,20 +3,20 @@ package lr2
 import "github.com/dcaiafa/lox/internal/util/set"
 
 func ConstructLALR(g *Grammar) *ParserTable {
-	pt := NewParserTable(g)
+	t := NewParserTable(g)
 
 	start := new(ItemSet)
 	start.Add(Item{Prod: sprimeProd, Dot: 0, Lookahead: EOF})
 	start = Closure(g, start)
 	startKey := start.LR0Key()
-	pt.States.Add(startKey, start)
+	t.States.Add(startKey, start)
 
 	pendingSet := set.New[string](startKey)
 	for !pendingSet.Empty() {
 		pending := set.SortedElements(pendingSet)
 		pendingSet.Clear()
 		for _, fromKey := range pending {
-			from, fromIndex := pt.States.GetStateByKey(fromKey)
+			from, fromIndex := t.States.GetStateByKey(fromKey)
 			for _, sym := range Next(g, *from) {
 				changed := false
 				to := Goto(g, from, sym)
@@ -24,15 +24,15 @@ func ConstructLALR(g *Grammar) *ParserTable {
 
 				// The destination state might already exist in which case we might
 				// need to complement its lookaheads.
-				existingTo, existingToIndex := pt.States.GetStateByKey(toKey)
+				existingTo, existingToIndex := t.States.GetStateByKey(toKey)
 				if existingTo != nil {
 					for _, item := range to.Items() {
 						changed = existingTo.Add(item) || changed
 					}
-					pt.States.AddTransition(fromIndex, sym, existingToIndex)
+					t.States.AddTransition(fromIndex, sym, existingToIndex)
 				} else {
-					toIndex := pt.States.Add(toKey, to)
-					pt.States.AddTransition(fromIndex, sym, toIndex)
+					toIndex := t.States.Add(toKey, to)
+					t.States.AddTransition(fromIndex, sym, toIndex)
 					changed = true
 				}
 				if changed {
@@ -42,5 +42,22 @@ func ConstructLALR(g *Grammar) *ParserTable {
 		}
 	}
 
-	return pt
+	return t
 }
+
+/*
+func creteActions(t *ParserTable) {
+	g := t.Grammar
+	for stateIndex, state := range t.States.States() {
+		for _, item := range state.Items() {
+			prod := g.GetProd(item.Prod)
+
+			// A -> γ., x
+			if item.Dot == len(prod.Terms) {
+				rule := t.Grammar.GetRule(prod.Rule)
+
+			}
+		}
+	}
+}
+*/
