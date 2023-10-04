@@ -5,15 +5,20 @@ I0:
   C = .c C, d
   C = .d, c
   C = .d, d
-  on C: goto I1
-  on S: goto I2
+    on c shift I3
+    on d shift I4
+    on C goto I1
+    on S goto I2
 I1:
   S = C .C, EOF
   C = .c C, EOF
   C = .d, EOF
-  on C: goto I5
+    on c shift I3
+    on d shift I4
+    on C goto I5
 I2:
   S' = S., EOF
+    on EOF accept
 I3:
   C = .c C, EOF
   C = .c C, c
@@ -24,17 +29,26 @@ I3:
   C = .d, EOF
   C = .d, c
   C = .d, d
-  on C: goto I6
+    on c shift I3
+    on d shift I4
+    on C goto I6
 I4:
   C = d., EOF
   C = d., c
   C = d., d
+    on EOF reduce C
+    on c reduce C
+    on d reduce C
 I5:
   S = C C., EOF
+    on EOF reduce S
 I6:
   C = c C., EOF
   C = c C., c
   C = c C., d
+    on EOF reduce C
+    on c reduce C
+    on d reduce C
 
 digraph G {
   I0 [label="I0\nS' = .S, EOF\nS = .C C, EOF\nC = .c C, c\nC = .c C, d\nC = .d, c\nC = .d, d"];

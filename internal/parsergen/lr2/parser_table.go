@@ -26,11 +26,27 @@ func (t *ParserTable) Print(w io.Writer) {
 		l.Logf("I%d:", stateIndex)
 		l = l.WithIndent()
 		l.Logf("%v", state.ToString(t.Grammar))
+		l = l.WithIndent()
+		actionMap := t.States.Actions(stateIndex)
+		for _, sym := range actionMap.Terminals() {
+			actions := actionMap.Get(sym)
+			conflict := ""
+			if actions.Len() > 1 {
+				conflict = " <== CONFLICT"
+			}
+			for _, action := range actions.Elements() {
+				l.Logf(
+					"on %v %v%v",
+					t.Grammar.GetSymbolName(sym),
+					action.ToString(t.Grammar),
+					conflict)
+			}
+		}
 		transitions := t.States.Transitions(stateIndex)
 		for _, input := range transitions.Inputs() {
 			if IsRule(input) {
 				to := transitions.Get(input)
-				l.Logf("on %v: goto I%v", t.Grammar.GetSymbolName(input), to)
+				l.Logf("on %v goto I%v", t.Grammar.GetSymbolName(input), to)
 			}
 		}
 	}

@@ -7,16 +7,22 @@ I0:
   L = .id, EOF
   L = .id, =
   R = .L, EOF
-  on R: goto I1
-  on L: goto I2
-  on S: goto I3
+    on * shift I4
+    on id shift I5
+    on R goto I1
+    on L goto I2
+    on S goto I3
 I1:
   S = R., EOF
+    on EOF reduce S
 I2:
   S = L .= R, EOF
   R = L., EOF
+    on EOF reduce R
+    on = shift I6
 I3:
   S' = S., EOF
+    on EOF accept
 I4:
   L = .* R, EOF
   L = .* R, =
@@ -26,26 +32,37 @@ I4:
   L = .id, =
   R = .L, EOF
   R = .L, =
-  on R: goto I7
-  on L: goto I8
+    on * shift I4
+    on id shift I5
+    on R goto I7
+    on L goto I8
 I5:
   L = id., EOF
   L = id., =
+    on EOF reduce L
+    on = reduce L
 I6:
   S = L = .R, EOF
   L = .* R, EOF
   L = .id, EOF
   R = .L, EOF
-  on R: goto I9
-  on L: goto I8
+    on * shift I4
+    on id shift I5
+    on R goto I9
+    on L goto I8
 I7:
   L = * R., EOF
   L = * R., =
+    on EOF reduce L
+    on = reduce L
 I8:
   R = L., EOF
   R = L., =
+    on EOF reduce R
+    on = reduce R
 I9:
   S = L = R., EOF
+    on EOF reduce S
 
 digraph G {
   I0 [label="I0\nS' = .S, EOF\nS = .L = R, EOF\nS = .R, EOF\nL = .* R, EOF\nL = .* R, =\nL = .id, EOF\nL = .id, =\nR = .L, EOF"];
