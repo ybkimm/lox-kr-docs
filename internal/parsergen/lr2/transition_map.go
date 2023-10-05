@@ -3,7 +3,7 @@ package lr2
 import "slices"
 
 type TransitionMap struct {
-	transitions map[int]int // key: symbol_index value: state_index
+	transitions map[int]int // symbol => state
 }
 
 func (m *TransitionMap) Add(symbol, to int) {

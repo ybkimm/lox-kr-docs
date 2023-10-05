@@ -13,6 +13,9 @@ func (s *Stack[T]) SetCapacity(c int) {
 }
 
 func (s *Stack[T]) Elements() []T {
+	if s == nil {
+		return nil
+	}
 	return s.elems
 }
 
