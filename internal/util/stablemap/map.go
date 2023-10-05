@@ -1,18 +1,5 @@
 package stablemap
 
-type node[K comparable, V any] struct {
-	next, prev *node[K, V]
-	key        K
-	value      V
-}
-
-func insertAfter[K comparable, V any](n, o *node[K, V]) {
-	n.prev = o
-	n.next = o.next
-	o.next.prev = n
-	o.next = n
-}
-
 type Map[K comparable, V any] struct {
 	nodes map[K]*node[K, V]
 	list  *node[K, V]
@@ -28,6 +15,13 @@ func initMap[K comparable, V any](m *Map[K, V]) {
 	m.list.next = m.list
 }
 
+func Len[K comparable, V any](m *Map[K, V]) int {
+	if m.nodes == nil {
+		return 0
+	}
+	return len(m.nodes)
+}
+
 func Has[K comparable, V any](m *Map[K, V], k K) bool {
 	if m.nodes == nil {
 		return false
@@ -36,12 +30,13 @@ func Has[K comparable, V any](m *Map[K, V], k K) bool {
 	return n != nil
 }
 
-func Add[K comparable, V any](m *Map[K, V], k K, v V) {
+func Put[K comparable, V any](m *Map[K, V], k K, v V) {
 	initMap(m)
 	n := m.nodes[k]
 	if n == nil {
 		n = &node[K, V]{key: k}
-		insertAfter(n, m.list.prev)
+		insertNodeAfter(n, m.list.prev)
+		m.nodes[k] = n
 	}
 	n.value = v
 }
@@ -56,6 +51,18 @@ func Get[K comparable, V any](m *Map[K, V], k K) (V, bool) {
 		return v, false
 	}
 	return n.value, true
+}
+
+func Remove[K comparable, V any](m *Map[K, V], k K) {
+	if m.nodes == nil {
+		return
+	}
+	n := m.nodes[k]
+	if n == nil {
+		return
+	}
+	removeNode(n)
+	delete(m.nodes, k)
 }
 
 func ForEach[K comparable, V any](m *Map[K, V], f func(key K, value V)) {
