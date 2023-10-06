@@ -50,6 +50,7 @@ func ConstructLALR(g *Grammar) *ParserTable {
 	}
 
 	createActions(t)
+	resolveConflicts(t)
 
 	return t
 }
@@ -154,12 +155,10 @@ func resolveConflicts(t *ParserTable) {
 		for _, terminal := range actionMap.Terminals() {
 			actions := actionMap.Get(terminal)
 			assert.True(!actions.Empty())
-			if actions.Len() == 1 {
-				// Every state should have a single action for each actionable terminal.
-				return
-			}
-			if !resolveConflict(state, terminal, actions) {
-				t.HasConflicts = true
+			if actions.Len() != 1 {
+				if !resolveConflict(state, terminal, actions) {
+					t.HasConflicts = true
+				}
 			}
 		}
 	}

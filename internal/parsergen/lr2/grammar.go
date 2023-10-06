@@ -137,6 +137,10 @@ func (g *Grammar) AddProd(ruleIndex int, terms ...int) int {
 	return prodIndex
 }
 
+func (g *Grammar) LastProd() *Prod {
+	return g.prods[len(g.prods)-1]
+}
+
 // GetTerminal returns the `Terminal` referenced by a symbol index.
 // symIndex must reference a Terminal, not a Rule.
 func (g *Grammar) GetTerminal(symIndex int) *Terminal {

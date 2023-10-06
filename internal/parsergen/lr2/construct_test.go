@@ -58,4 +58,28 @@ func TestConstruct(t *testing.T) {
 		g.AddProd(R, L)
 		runConstructTest(t, "2", g)
 	}
+
+	{
+		// E -> E + E
+		//    | E - E
+		//    | E * E
+		//    | num
+		var (
+			g   = NewGrammar()
+			mul = g.AddTerminal("*")
+			add = g.AddTerminal("+")
+			sub = g.AddTerminal("-")
+			num = g.AddTerminal("num")
+			E   = g.AddRule("E")
+		)
+		g.SetStart(E)
+		g.AddProd(E, E, add, E)
+		g.LastProd().Precendence = 1
+		g.AddProd(E, E, sub, E)
+		g.LastProd().Precendence = 1
+		g.AddProd(E, E, mul, E)
+		g.LastProd().Precendence = 2
+		g.AddProd(E, num)
+		runConstructTest(t, "precedence", g)
+	}
 }
