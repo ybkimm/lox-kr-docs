@@ -1,6 +1,10 @@
 package lr2
 
-import "github.com/dcaiafa/lox/internal/util/set"
+import (
+	"slices"
+
+	"github.com/dcaiafa/lox/internal/util/set"
+)
 
 func ConstructLALR(g *Grammar) *ParserTable {
 	t := NewParserTable(g)
@@ -13,7 +17,8 @@ func ConstructLALR(g *Grammar) *ParserTable {
 
 	pendingSet := set.New[string](startKey)
 	for !pendingSet.Empty() {
-		pending := set.SortedElements(pendingSet)
+		pending := pendingSet.Elements()
+		slices.Sort(pending)
 		pendingSet.Clear()
 		for _, fromKey := range pending {
 			from, fromIndex := t.GetStateByKey(fromKey)

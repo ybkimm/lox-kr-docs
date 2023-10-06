@@ -4,9 +4,11 @@ import (
 	"cmp"
 	"fmt"
 	"io"
-	"sort"
+	"slices"
 
+	"github.com/dcaiafa/lox/internal/util/array"
 	"github.com/dcaiafa/lox/internal/util/set"
+	"github.com/dcaiafa/lox/internal/util/stablemap"
 	"github.com/dcaiafa/lox/internal/util/stack"
 )
 
@@ -29,7 +31,7 @@ type State struct {
 
 	// Transitions of the state.
 	// Transitions should only be added using NFA.AddTransitions.
-	Transitions map[any][]*State
+	Transitions stablemap.Map[any, *array.Array[*State]]
 
 	// Accept indicates that the state machine should accept/recognize the input.
 	// You set this yourself.
@@ -43,10 +45,12 @@ type State struct {
 // AddTransition adds a transition between two states on a given input.
 // The input can be any comparable data, including Epsilon.
 func (s *State) AddTransition(to *State, input any) {
-	if s.Transitions == nil {
-		s.Transitions = make(map[any][]*State)
+	states, ok := s.Transitions.Get(input)
+	if !ok {
+		states = new(array.Array[*State])
+		s.Transitions.Put(input, states)
 	}
-	s.Transitions[input] = append(s.Transitions[input], to)
+	states.Add(to)
 }
 
 // NFA represents a Nondeterministic Finite Automaton.
@@ -91,8 +95,8 @@ func (n *State) Print(out io.Writer) {
 			continue
 		}
 		visited.Add(state)
-		for input, destStates := range state.Transitions {
-			for _, destState := range destStates {
+		state.Transitions.ForEach(func(input any, destStates *array.Array[*State]) {
+			for _, destState := range destStates.Elements() {
 				edges = append(edges, Edge{
 					from:  state,
 					to:    destState,
@@ -100,15 +104,15 @@ func (n *State) Print(out io.Writer) {
 				})
 				stack.Push(destState)
 			}
-		}
+		})
 	}
 
-	sort.SliceStable(edges, func(i, j int) bool {
-		if edges[i].from.ID == edges[j].from.ID {
-			return edges[i].to.ID < edges[j].to.ID
-		} else {
-			return edges[i].from.ID < edges[j].from.ID
+	slices.SortStableFunc(edges, func(a, b Edge) int {
+		c := cmp.Compare(a.from.ID, b.from.ID)
+		if c == 0 {
+			c = cmp.Compare(a.to.ID, b.to.ID)
 		}
+		return c
 	})
 
 	for _, e := range edges {
@@ -116,11 +120,11 @@ func (n *State) Print(out io.Writer) {
 		fmt.Fprintf(out, "  %v -> %v [label=%q];\n", e.from.ID, e.to.ID, inputStr)
 	}
 
-	states := set.SortedElementsFunc(
-		visited,
-		func(a, b *State) int {
-			return cmp.Compare(a.ID, b.ID)
-		})
+	states := visited.Elements()
+	slices.SortFunc(states, func(a, b *State) int {
+		return cmp.Compare(a.ID, b.ID)
+
+	})
 
 	for _, state := range states {
 		shape := "circle"
@@ -130,16 +134,4 @@ func (n *State) Print(out io.Writer) {
 		fmt.Fprintf(out, "  %v [label=\"%v\", shape=%q];\n", state.ID, state.ID, shape)
 	}
 	fmt.Fprintf(out, "}\n")
-}
-
-func getInputs(nfaStates []*State) map[any]bool {
-	inputs := map[any]bool{}
-	for _, nfaState := range nfaStates {
-		for input := range nfaState.Transitions {
-			if input != Epsilon {
-				inputs[input] = true
-			}
-		}
-	}
-	return inputs
 }

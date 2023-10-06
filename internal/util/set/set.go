@@ -1,12 +1,11 @@
 package set
 
 import (
-	"cmp"
-	"slices"
+	"github.com/dcaiafa/lox/internal/util/stablemap"
 )
 
 type Set[T comparable] struct {
-	set map[T]bool
+	set stablemap.Map[T, bool]
 }
 
 func New[T comparable](xs ...T) Set[T] {
@@ -16,17 +15,14 @@ func New[T comparable](xs ...T) Set[T] {
 }
 
 func (s *Set[T]) Clear() {
-	s.set = nil
+	s.set.Clear()
 }
 
 func (s *Set[T]) Add(x T) bool {
-	if s.set == nil {
-		s.set = make(map[T]bool)
-	}
-	if s.set[x] {
+	if s.set.Has(x) {
 		return false
 	}
-	s.set[x] = true
+	s.set.Put(x, true)
 	return true
 }
 
@@ -40,75 +36,53 @@ func (s *Set[T]) AddSlice(xs []T) bool {
 
 func (s *Set[T]) AddSet(o Set[T]) bool {
 	changed := false
-	for x := range o.set {
-		changed = s.Add(x) || changed
-	}
+	o.set.ForEach(func(k T, v bool) {
+		changed = s.Add(k) || changed
+	})
 	return changed
 }
 
 func (s *Set[T]) Remove(x T) {
-	delete(s.set, x)
+	s.set.Remove(x)
 }
 
 func (s *Set[T]) Has(v T) bool {
-	if s.set == nil {
-		return false
-	}
-	return s.set[v]
+	return s.set.Has(v)
 }
 
 func (s *Set[T]) Empty() bool {
-	return len(s.set) == 0
+	return s.set.Len() == 0
 }
 
 func (s *Set[T]) Len() int {
-	return len(s.set)
+	return s.set.Len()
 }
 
 func (s *Set[T]) Elements() []T {
-	r := make([]T, 0, len(s.set))
-	for x := range s.set {
-		r = append(r, x)
-	}
-	return r
+	return s.set.Keys()
 }
 
 func (s *Set[T]) Equal(o Set[T]) bool {
-	if len(s.set) != len(o.set) {
+	if s.Len() != o.Len() {
 		return false
 	}
-	for e := range s.set {
-		if !o.set[e] {
-			return false
-		}
-	}
+	isEqual := true
+	s.ForEach(func(x T) {
+		isEqual = isEqual && o.Has(x)
+	})
 	return true
 }
 
 func (s *Set[T]) ForEach(fn func(e T)) {
-	for e := range s.set {
-		fn(e)
-	}
+	s.set.ForEach(func(k T, _ bool) {
+		fn(k)
+	})
 }
 
 func (s *Set[T]) Clone() Set[T] {
 	var c Set[T]
-	c.set = make(map[T]bool, len(s.set))
-	for e := range s.set {
-		c.set[e] = true
-	}
+	s.ForEach(func(e T) {
+		c.Add(e)
+	})
 	return c
-}
-
-func SortedElements[T cmp.Ordered](s Set[T]) []T {
-	return SortedElementsFunc(s, cmp.Compare[T])
-}
-
-func SortedElementsFunc[E comparable](s Set[E], cmp func(a, b E) int) []E {
-	r := make([]E, 0, len(s.set))
-	for x := range s.set {
-		r = append(r, x)
-	}
-	slices.SortFunc(r, cmp)
-	return r
 }

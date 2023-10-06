@@ -1,29 +1,30 @@
 package dfa
 
 import (
+	"cmp"
 	"encoding/binary"
 	"fmt"
 	"io"
+	"slices"
 	"sort"
 
 	"github.com/dcaiafa/lox/internal/lexergen/nfa"
+	"github.com/dcaiafa/lox/internal/util/array"
 	"github.com/dcaiafa/lox/internal/util/set"
+	"github.com/dcaiafa/lox/internal/util/stablemap"
 	"github.com/dcaiafa/lox/internal/util/stack"
 )
 
 type State struct {
 	ID          uint32
-	Transitions map[any]*State
+	Transitions stablemap.Map[any, *State]
 	Accept      bool
 	NFAStates   []*nfa.State
 	Data        any
 }
 
 func (s *State) AddTransition(toState *State, input any) {
-	if s.Transitions == nil {
-		s.Transitions = make(map[any]*State)
-	}
-	s.Transitions[input] = toState
+	s.Transitions.Put(input, toState)
 }
 
 func (s *State) sig() string {
@@ -54,22 +55,22 @@ func (n *State) Print(out io.Writer) {
 			continue
 		}
 		visited.Add(state)
-		for input, destState := range state.Transitions {
+		state.Transitions.ForEach(func(input any, destState *State) {
 			edges = append(edges, Edge{
 				from:  state,
 				to:    destState,
 				input: input,
 			})
 			stack.Push(destState)
-		}
+		})
 	}
 
-	sort.SliceStable(edges, func(i, j int) bool {
-		if edges[i].from.ID == edges[j].from.ID {
-			return edges[i].to.ID < edges[j].to.ID
-		} else {
-			return edges[i].from.ID < edges[j].from.ID
+	slices.SortStableFunc(edges, func(a, b Edge) int {
+		c := cmp.Compare(a.from.ID, b.from.ID)
+		if c == 0 {
+			c = cmp.Compare(a.to.ID, b.to.ID)
 		}
+		return c
 	})
 
 	for _, e := range edges {
@@ -114,7 +115,7 @@ func NFAToDFA(n *nfa.State) *State {
 			// composing 'from', using 'input'.
 			var subset set.Set[*nfa.State]
 			for _, fromNFA := range from.NFAStates {
-				for _, toNFA := range fromNFA.Transitions[input] {
+				for _, toNFA := range fromNFA.Transitions.GetOrZero(input).Elements() {
 					subset.Add(toNFA)
 				}
 			}
@@ -158,8 +159,8 @@ func eClosure(nfaStates set.Set[*nfa.State]) *State {
 
 	for !stack.Empty() {
 		state := stack.Pop()
-		eTransitions := state.Transitions[nfa.Epsilon]
-		for _, to := range eTransitions {
+		eTransitions := state.Transitions.GetOrZero(nfa.Epsilon)
+		for _, to := range eTransitions.Elements() {
 			if _, ok := closure[to.ID]; !ok {
 				closure[to.ID] = to
 				stack.Push(to)
@@ -182,11 +183,11 @@ func eClosure(nfaStates set.Set[*nfa.State]) *State {
 func getInputs(nfaStates []*nfa.State) set.Set[any] {
 	var inputs set.Set[any]
 	for _, nfaState := range nfaStates {
-		for input := range nfaState.Transitions {
+		nfaState.Transitions.ForEach(func(input any, _ *array.Array[*nfa.State]) {
 			if input != nfa.Epsilon {
 				inputs.Add(input)
 			}
-		}
+		})
 	}
 	return inputs
 }
@@ -202,10 +203,7 @@ func assignIDs(s *State) {
 		s = pending.Pop()
 		s.ID = nextID
 		nextID++
-		dests := make([]*State, 0, len(s.Transitions))
-		for _, to := range s.Transitions {
-			dests = append(dests, to)
-		}
+		dests := s.Transitions.Values()
 		sort.Slice(dests, func(i, j int) bool {
 			return dests[i].ID < dests[j].ID
 		})

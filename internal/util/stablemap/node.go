@@ -6,6 +6,11 @@ type node[K comparable, V any] struct {
 	value      V
 }
 
+func initList[K comparable, V any](l *node[K, V]) {
+	l.prev = l
+	l.next = l
+}
+
 // insertNodeAfter inserts list node n after node o.
 func insertNodeAfter[K comparable, V any](n, o *node[K, V]) {
 	n.prev = o

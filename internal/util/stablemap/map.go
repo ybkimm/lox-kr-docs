@@ -11,18 +11,17 @@ func initMap[K comparable, V any](m *Map[K, V]) {
 	}
 	m.nodes = make(map[K]*node[K, V])
 	m.list = &node[K, V]{}
-	m.list.prev = m.list
-	m.list.next = m.list
+	initList(m.list)
 }
 
-func Len[K comparable, V any](m *Map[K, V]) int {
+func (m *Map[K, V]) Len() int {
 	if m.nodes == nil {
 		return 0
 	}
 	return len(m.nodes)
 }
 
-func Has[K comparable, V any](m *Map[K, V], k K) bool {
+func (m *Map[K, V]) Has(k K) bool {
 	if m.nodes == nil {
 		return false
 	}
@@ -30,7 +29,15 @@ func Has[K comparable, V any](m *Map[K, V], k K) bool {
 	return n != nil
 }
 
-func Put[K comparable, V any](m *Map[K, V], k K, v V) {
+func (m *Map[K, V]) Clear() {
+	if m.nodes == nil {
+		return
+	}
+	clear(m.nodes)
+	initList(m.list)
+}
+
+func (m *Map[K, V]) Put(k K, v V) {
 	initMap(m)
 	n := m.nodes[k]
 	if n == nil {
@@ -41,7 +48,7 @@ func Put[K comparable, V any](m *Map[K, V], k K, v V) {
 	n.value = v
 }
 
-func Get[K comparable, V any](m *Map[K, V], k K) (V, bool) {
+func (m *Map[K, V]) Get(k K) (V, bool) {
 	var v V
 	if m.nodes == nil {
 		return v, false
@@ -53,7 +60,12 @@ func Get[K comparable, V any](m *Map[K, V], k K) (V, bool) {
 	return n.value, true
 }
 
-func Remove[K comparable, V any](m *Map[K, V], k K) {
+func (m *Map[K, V]) GetOrZero(k K) V {
+	v, _ := m.Get(k)
+	return v
+}
+
+func (m *Map[K, V]) Remove(k K) {
 	if m.nodes == nil {
 		return
 	}
@@ -65,7 +77,7 @@ func Remove[K comparable, V any](m *Map[K, V], k K) {
 	delete(m.nodes, k)
 }
 
-func ForEach[K comparable, V any](m *Map[K, V], f func(key K, value V)) {
+func (m *Map[K, V]) ForEach(f func(key K, value V)) {
 	if m.list == nil {
 		return
 	}
@@ -74,10 +86,18 @@ func ForEach[K comparable, V any](m *Map[K, V], f func(key K, value V)) {
 	}
 }
 
-func Keys[K comparable, V any](m *Map[K, V]) []K {
+func (m *Map[K, V]) Keys() []K {
 	keys := make([]K, 0, len(m.nodes))
-	ForEach(m, func(k K, v V) {
+	m.ForEach(func(k K, _ V) {
 		keys = append(keys, k)
 	})
 	return keys
+}
+
+func (m *Map[K, V]) Values() []V {
+	values := make([]V, 0, len(m.nodes))
+	m.ForEach(func(_ K, v V) {
+		values = append(values, v)
+	})
+	return values
 }
