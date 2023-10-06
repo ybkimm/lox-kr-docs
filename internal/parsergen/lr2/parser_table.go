@@ -8,8 +8,10 @@ import (
 )
 
 type ParserTable struct {
-	Grammar     *Grammar
-	states      []*ItemSet             // all states
+	Grammar      *Grammar
+	HasConflicts bool
+	States       []*ItemSet
+
 	stateMap    map[string]int         // state-key => state
 	transitions map[int]*TransitionMap // state => transitions
 	actions     map[int]*ActionMap     // state => actions
@@ -24,29 +26,25 @@ func NewParserTable(g *Grammar) *ParserTable {
 	}
 }
 
-func (t *ParserTable) States() []*ItemSet {
-	return t.states
-}
-
 func (c *ParserTable) GetStateByKey(key string) (*ItemSet, int) {
 	stateIndex, ok := c.stateMap[key]
 	if !ok {
 		return nil, 0
 	}
-	return c.states[stateIndex], stateIndex
+	return c.States[stateIndex], stateIndex
 }
 
 func (c *ParserTable) GetStateByIndex(stateIndex int) *ItemSet {
-	return c.states[stateIndex]
+	return c.States[stateIndex]
 }
 
 func (c *ParserTable) AddState(key string, s *ItemSet) int {
 	if _, ok := c.stateMap[key]; ok {
 		panic("state already exists")
 	}
-	c.states = append(c.states, s)
-	c.stateMap[key] = len(c.states) - 1
-	return len(c.states) - 1
+	c.States = append(c.States, s)
+	c.stateMap[key] = len(c.States) - 1
+	return len(c.States) - 1
 }
 
 func (c *ParserTable) Transitions(from int) *TransitionMap {
@@ -69,7 +67,7 @@ func (c *ParserTable) Actions(state int) *ActionMap {
 
 func (t *ParserTable) Print(w io.Writer) {
 	l := logger.New(w)
-	for stateIndex, state := range t.States() {
+	for stateIndex, state := range t.States {
 		l := l
 		l.Logf("I%d:", stateIndex)
 		l = l.WithIndent()
@@ -104,13 +102,13 @@ func (t *ParserTable) PrintGraph(w io.Writer) {
 	l := logger.New(w)
 	l.Logf("digraph G {")
 	li := l.WithIndent()
-	for stateIndex, state := range t.States() {
+	for stateIndex, state := range t.States {
 		li.Logf(
 			"I%d [label=%q];",
 			stateIndex,
 			fmt.Sprintf("I%d\n%v", stateIndex, state.ToString(t.Grammar)))
 	}
-	for stateIndex := range t.States() {
+	for stateIndex := range t.States {
 		transitions := t.Transitions(stateIndex)
 		for _, input := range transitions.Inputs() {
 			toIndex := transitions.Get(input)

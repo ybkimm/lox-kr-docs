@@ -1,5 +1,7 @@
 package array
 
+import "slices"
+
 type Array[T any] struct {
 	elems []T
 }
@@ -33,4 +35,8 @@ func (s *Array[T]) Add(e T) {
 
 func (s *Array[T]) Get(n int) T {
 	return s.elems[n]
+}
+
+func (s *Array[T]) DeleteFunc(f func(e T) bool) {
+	s.elems = slices.DeleteFunc(s.elems, f)
 }

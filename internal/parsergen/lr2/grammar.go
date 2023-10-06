@@ -17,6 +17,13 @@ const (
 	sprimeProd = 0
 )
 
+type Associativity int
+
+const (
+	Left Associativity = iota
+	Right
+)
+
 func IsTerminal(sym int) bool {
 	return sym >= 0
 }
@@ -53,9 +60,11 @@ type Rule struct {
 //	         ^
 //	       term
 type Prod struct {
-	Rule     int
-	Terms    []int
-	UserData any
+	Rule          int
+	Terms         []int
+	Precendence   int
+	Associativity Associativity
+	UserData      any
 }
 
 // Grammar represents a LR1 grammar.
