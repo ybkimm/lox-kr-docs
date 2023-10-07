@@ -30,7 +30,7 @@ func (p *ParserProd) RunPass(ctx *Context, pass Pass) {
 		prodIndex := ctx.Grammar.AddProd(ruleIndex, terms...)
 		if p.Qualifier != nil {
 			prod := ctx.Grammar.GetProd(prodIndex)
-			prod.Precendence = p.Qualifier.Precedence
+			prod.Precedence = p.Qualifier.Precedence
 			switch p.Qualifier.Associativity {
 			case Left:
 				prod.Associativity = lr2.Left

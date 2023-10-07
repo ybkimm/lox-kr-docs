@@ -111,20 +111,20 @@ func resolveConflicts(t *ParserTable) {
 			prod := t.Grammar.GetProd(prodIndex)
 			if i == 0 {
 				shiftRule = prod.Rule
-				shiftPrec = prod.Precendence
-			} else if shiftRule != prod.Rule || shiftPrec != prod.Precendence {
+				shiftPrec = prod.Precedence
+			} else if shiftRule != prod.Rule || shiftPrec != prod.Precedence {
 				return false
 			}
 		}
 
 		assert.True(len(reduce.Prods) == 1)
 		reduceProd := t.Grammar.GetProd(reduce.Prods[0])
-		reducePrec := reduceProd.Precendence
+		reducePrec := reduceProd.Precedence
 
 		// The production(s) associated with each action must belong to the same
 		// Rule, and ust have explicit precendences.
 		haveCommonRule := shiftRule == reduceProd.Rule
-		if !haveCommonRule || shiftPrec <= 0 || reduceProd.Precendence <= 0 {
+		if !haveCommonRule || shiftPrec <= 0 || reduceProd.Precedence <= 0 {
 			return false
 		}
 

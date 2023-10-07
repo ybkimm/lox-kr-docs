@@ -63,7 +63,7 @@ type Rule struct {
 type Prod struct {
 	Rule          int
 	Terms         []int
-	Precendence   int
+	Precedence    int
 	Associativity Associativity
 	UserData      any
 }
@@ -206,12 +206,12 @@ func (g *Grammar) Print(w io.Writer) {
 		if len(p.Terms) == 0 {
 			buf.WriteString("ε")
 		}
-		if p.Precendence > 0 {
+		if p.Precedence > 0 {
 			ass := "@left"
 			if p.Associativity == Right {
 				ass = "@right"
 			}
-			fmt.Fprintf(buf, "  %v(%v)", ass, p.Precendence)
+			fmt.Fprintf(buf, "  %v(%v)", ass, p.Precedence)
 		}
 	}
 

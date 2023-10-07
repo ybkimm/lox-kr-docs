@@ -74,11 +74,11 @@ func TestConstruct(t *testing.T) {
 		)
 		g.SetStart(E)
 		g.AddProd(E, E, add, E)
-		g.LastProd().Precendence = 1
+		g.LastProd().Precedence = 1
 		g.AddProd(E, E, sub, E)
-		g.LastProd().Precendence = 1
+		g.LastProd().Precedence = 1
 		g.AddProd(E, E, mul, E)
-		g.LastProd().Precendence = 2
+		g.LastProd().Precedence = 2
 		g.AddProd(E, num)
 		runConstructTest(t, "precedence", g)
 	}
