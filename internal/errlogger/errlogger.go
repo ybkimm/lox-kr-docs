@@ -19,6 +19,17 @@ func (l *ErrLogger) HasError() bool {
 	return l.hasErrors
 }
 
+func (l *ErrLogger) GeneralError(err error) {
+	l.hasErrors = true
+	fmt.Fprintf(os.Stderr, "%v\n", err.Error())
+}
+
+func (l *ErrLogger) GeneralErrorf(msg string, args ...any) {
+	l.hasErrors = true
+	msg = fmt.Sprintf(msg, args...)
+	fmt.Fprintf(os.Stderr, "%v\n", msg)
+}
+
 func (l *ErrLogger) Errorf(pos gotoken.Position, msg string, args ...any) {
 	l.hasErrors = true
 	msg = fmt.Sprintf(msg, args...)
