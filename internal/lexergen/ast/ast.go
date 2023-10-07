@@ -60,22 +60,6 @@ type baseStatement struct {
 
 func (s *baseStatement) isStatement() {}
 
-type Mode struct {
-	baseStatement
-
-	Name  string
-	Rules []Statement
-}
-
-func (m *Mode) RunPass(ctx *Context, pass Pass) {
-	if pass == CreateNames {
-		if !ctx.RegisterName(m.Name, m) {
-			return
-		}
-	}
-	RunPass(ctx, m.Rules, pass)
-}
-
 type FragRule struct {
 	baseStatement
 	Expr    *LexerExpr

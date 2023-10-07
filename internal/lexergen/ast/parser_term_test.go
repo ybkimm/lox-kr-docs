@@ -13,7 +13,7 @@ P = '+' ;
 @parser
 b = P ;
 c = P ;
-a = b c* ;
+@start a = b c* ;
 `)
 		var str strings.Builder
 		ctx.Print(spec, &str)
@@ -53,7 +53,7 @@ P = '+' ;
 @parser
 b = P ;
 c = P ;
-a = b c+ ;
+@start a = b c+ ;
 `)
 		var str strings.Builder
 		ctx.Print(spec, &str)
@@ -89,7 +89,7 @@ P = '+' ;
 @parser
 b = P ;
 c = P ;
-a = b c? ;
+@start a = b c? ;
 `)
 		var str strings.Builder
 		ctx.Print(spec, &str)
@@ -123,7 +123,7 @@ P = '+' ;
 @parser
 b = P ;
 c = P ;
-a = b @list(c, P) ;
+@start a = b @list(c, P) ;
 `)
 		var str strings.Builder
 		ctx.Print(spec, &str)

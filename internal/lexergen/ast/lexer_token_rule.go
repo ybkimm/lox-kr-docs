@@ -37,4 +37,10 @@ func (r *TokenRule) RunPass(ctx *Context, pass Pass) {
 	}
 	r.Expr.RunPass(ctx, pass)
 	RunPass(ctx, r.Actions, pass)
+
+	switch pass {
+	case GenerateGrammar:
+		nfaCons := r.Expr.NFACons(ctx)
+		ctx.CurrentLexerMode.Peek().AddRule(*nfaCons)
+	}
 }

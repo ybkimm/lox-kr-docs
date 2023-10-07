@@ -10,20 +10,24 @@ import (
 	"github.com/dcaiafa/lox/internal/util/stack"
 )
 
+const DefaultModeName = "$default"
+
 type Context struct {
 	FSet *gotoken.FileSet
 	Errs *errlogger.ErrLogger
 
-	StartRule         *ParserRule
+	StartParserRule   *ParserRule
+	HasParserRules    bool
 	CurrentUnit       stack.Stack[*Unit]
 	CurrentParserRule stack.Stack[*ParserRule]
 	CurrentParserProd stack.Stack[*ParserProd]
 	CurrentPrinter    stack.Stack[*Printer]
+	CurrentLexerMode  stack.Stack[*mode.Mode]
 	Grammar           *lr2.Grammar
 
 	names   map[string]AST
 	aliases map[string]*TokenRule
-	modes   stack.Stack[*mode.Mode]
+	modes   map[string]*mode.Mode
 }
 
 func NewContext(fset *gotoken.FileSet, errs *errlogger.ErrLogger) *Context {
@@ -33,9 +37,10 @@ func NewContext(fset *gotoken.FileSet, errs *errlogger.ErrLogger) *Context {
 		Grammar: lr2.NewGrammar(),
 		names:   make(map[string]AST),
 		aliases: make(map[string]*TokenRule),
+		modes:   make(map[string]*mode.Mode),
 	}
 	defaultMode := mode.New("")
-	c.modes.Push(defaultMode)
+	c.CurrentLexerMode.Push(defaultMode)
 	return c
 }
 
@@ -48,6 +53,18 @@ func (c *Context) RegisterName(name string, ast AST) bool {
 	}
 	c.names[name] = ast
 	return true
+}
+
+func (c *Context) CreateMode(name string) *mode.Mode {
+	_, ok := c.modes[name]
+	if ok {
+		// This should never happen because the name conflict should have been
+		// caught already when calling CreateName.
+		panic("mode redefined")
+	}
+	m := mode.New(name)
+	c.modes[name] = m
+	return m
 }
 
 func (c *Context) Lookup(name string) AST {
@@ -75,7 +92,7 @@ func (c *Context) Position(ast AST) gotoken.Position {
 }
 
 func (c *Context) Mode() *mode.Mode {
-	return c.modes.Peek()
+	return c.CurrentLexerMode.Peek()
 }
 
 func (c *Context) Print(ast AST, out io.Writer) {

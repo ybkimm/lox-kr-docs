@@ -41,7 +41,7 @@ num = NUM
 
 	// TODO: turn this into a proper test
 	_ = spec
-	ctx.Grammar.SetStart(ctx.StartRule.RuleIndex)
+	ctx.Grammar.SetStart(ctx.StartParserRule.RuleIndex)
 	var printedGrammar strings.Builder
 	ctx.Grammar.Print(&printedGrammar)
 

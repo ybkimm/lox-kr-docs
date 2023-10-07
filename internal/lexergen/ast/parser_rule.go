@@ -46,19 +46,20 @@ func (r *ParserRule) RunPass(ctx *Context, pass Pass) {
 
 	switch pass {
 	case CreateNames:
+		ctx.HasParserRules = true
 		if !ctx.RegisterName(r.Name, r) {
 			return
 		}
 		r.RuleIndex = ctx.Grammar.AddRule(r.Name)
 		if r.IsStart {
-			if ctx.StartRule != nil {
+			if ctx.StartParserRule != nil {
 				ctx.Errs.Errorf(ctx.Position(r), "@start redefined: %v", r.Name)
 				ctx.Errs.Infof(
-					ctx.Position(ctx.StartRule), "@start previously defined: %v",
-					ctx.StartRule.Name)
+					ctx.Position(ctx.StartParserRule), "@start previously defined: %v",
+					ctx.StartParserRule.Name)
 				return
 			}
-			ctx.StartRule = r
+			ctx.StartParserRule = r
 		}
 
 	case Print:

@@ -92,15 +92,14 @@ digraph G {
 	})
 
 	t.Run("cycle", func(t *testing.T) {
-		spec, ctx := parseAndAnalyze(t, `
+		spec, ctx := parse(t, `
 @lexer
 @macro FOO = 'yay' | BAR ;
 @macro BAR = BAZ | 'stuff' ;
 @macro BAZ = FOO ;
 FOOBAR = FOO ;
 `)
-		it := spec.Units[0].Statements[3].(*ast.TokenRule).Expr
-		_ = it.NFACons(ctx)
+		ctx.Analyze(spec, ast.AllPasses)
 		if !ctx.Errs.HasError() {
 			t.Fatalf("Error expected")
 		}
