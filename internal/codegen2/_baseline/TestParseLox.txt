@@ -1,0 +1,28 @@
+Terminals
+=========
+EOF
+ERROR
+NUM
+ADD
+SUB
+MUL
+DIV
+REM
+POW
+O_PAREN
+C_PAREN
+
+Rules
+=====
+S' = ε
+S = expr
+expr = expr ADD expr  @left(1)
+  | expr SUB expr  @left(1)
+  | expr MUL expr  @left(2)
+  | expr DIV expr  @left(2)
+  | expr REM expr  @left(2)
+  | expr POW expr  @right(3)
+  | O_PAREN expr C_PAREN
+  | num
+num = NUM
+  | SUB NUM

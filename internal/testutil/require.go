@@ -35,3 +35,10 @@ func RequireFalse(t *testing.T, v bool) {
 		t.Fatalf("expected false")
 	}
 }
+
+func RequireNoError(t *testing.T, err error) {
+	t.Helper()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}

@@ -12,7 +12,7 @@ import (
 
 const LoxFileExtension = ".lox"
 
-// ParseLox parses (and analyzes) all .lox files.
+// ParseLox parses and checks all .lox files in a directory.
 func ParseLox(
 	fset *gotoken.FileSet,
 	dir string,
