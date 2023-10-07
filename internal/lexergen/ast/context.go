@@ -6,6 +6,7 @@ import (
 
 	"github.com/dcaiafa/lox/internal/errlogger"
 	"github.com/dcaiafa/lox/internal/lexergen/mode"
+	"github.com/dcaiafa/lox/internal/parsergen/lr2"
 	"github.com/dcaiafa/lox/internal/util/stack"
 )
 
@@ -13,10 +14,12 @@ type Context struct {
 	FSet *gotoken.FileSet
 	Errs *errlogger.ErrLogger
 
+	StartRule         *ParserRule
 	CurrentUnit       stack.Stack[*Unit]
 	CurrentParserRule stack.Stack[*ParserRule]
 	CurrentParserProd stack.Stack[*ParserProd]
 	CurrentPrinter    stack.Stack[*Printer]
+	Grammar           *lr2.Grammar
 
 	names   map[string]AST
 	aliases map[string]*TokenRule
@@ -27,6 +30,7 @@ func NewContext(fset *gotoken.FileSet, errs *errlogger.ErrLogger) *Context {
 	c := &Context{
 		FSet:    fset,
 		Errs:    errs,
+		Grammar: lr2.NewGrammar(),
 		names:   make(map[string]AST),
 		aliases: make(map[string]*TokenRule),
 	}
@@ -86,18 +90,15 @@ func RunPass[T AST](ctx *Context, asts []T, pass Pass) {
 	}
 }
 
-func (c *Context) Analyze(ast AST) bool {
+func (c *Context) Analyze(ast AST, untilPass Pass) bool {
 	for _, pass := range passes {
 		ast.RunPass(c, pass)
 		if c.Errs.HasError() {
 			return false
 		}
+		if pass == untilPass {
+			break
+		}
 	}
 	return true
-}
-
-func Analyze(ctx *Context, spec *Spec) {
-	for _, pass := range passes {
-		spec.RunPass(ctx, pass)
-	}
 }

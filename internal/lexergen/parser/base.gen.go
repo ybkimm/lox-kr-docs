@@ -29,16 +29,17 @@ const (
 	ONE_OR_MORE_NG  TokenType = 23
 	PARSER          TokenType = 24
 	LEXER           TokenType = 25
-	SKIP            TokenType = 26
-	MACRO           TokenType = 27
-	FRAG            TokenType = 28
-	MODE            TokenType = 29
-	PUSH_MODE       TokenType = 30
-	POP_MODE        TokenType = 31
-	ERROR_KEYWORD   TokenType = 32
-	LEFT            TokenType = 33
-	LIST            TokenType = 34
-	RIGHT           TokenType = 35
+	START           TokenType = 26
+	SKIP            TokenType = 27
+	MACRO           TokenType = 28
+	FRAG            TokenType = 29
+	MODE            TokenType = 30
+	PUSH_MODE       TokenType = 31
+	POP_MODE        TokenType = 32
+	ERROR_KEYWORD   TokenType = 33
+	LEFT            TokenType = 34
+	LIST            TokenType = 35
+	RIGHT           TokenType = 36
 )
 
 func (t TokenType) String() string {
@@ -95,6 +96,8 @@ func (t TokenType) String() string {
 		return "@parser"
 	case LEXER:
 		return "@lexer"
+	case START:
+		return "@start"
 	case SKIP:
 		return "@skip"
 	case MACRO:

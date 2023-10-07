@@ -31,7 +31,7 @@ func TestGoto(t *testing.T) {
 		// C = .d, c
 		// C = .d, d
 		var is ItemSet
-		is.Add(Item{Prod: sprimeProd, Dot: 0, Lookahead: EOF})
+		is.Add(Item{Prod: SPrimeProd, Dot: 0, Lookahead: EOF})
 		is.Add(Item{Prod: g.GetRule(S).Prods[0], Dot: 0, Lookahead: EOF})
 		is.Add(Item{Prod: g.GetRule(C).Prods[0], Dot: 0, Lookahead: c})
 		is.Add(Item{Prod: g.GetRule(C).Prods[0], Dot: 0, Lookahead: d})

@@ -4,17 +4,18 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"strings"
 
 	"github.com/dcaiafa/lox/internal/assert"
+	"github.com/dcaiafa/lox/internal/util/logger"
 )
 
 const (
-	EOF     = 0
-	Error   = 1
-	Epsilon = math.MaxInt
-	SPrime  = -1
-
-	sprimeProd = 0
+	EOF        = 0
+	Error      = 1
+	Epsilon    = math.MaxInt
+	SPrime     = -1
+	SPrimeProd = 0
 )
 
 type Associativity int
@@ -85,7 +86,7 @@ func NewGrammar() *Grammar {
 	n = g.AddRule("S'")
 	assert.True(n == SPrime)
 	n = g.AddProd(SPrime)
-	assert.True(n == sprimeProd)
+	assert.True(n == SPrimeProd)
 
 	return g
 }
@@ -95,7 +96,7 @@ func NewGrammar() *Grammar {
 // derivable from the start rule, it will never be derived.
 func (g *Grammar) SetStart(ruleIndex int) {
 	assert.True(IsRule(ruleIndex))
-	g.prods[sprimeProd].Terms = []int{ruleIndex}
+	g.prods[SPrimeProd].Terms = []int{ruleIndex}
 }
 
 // AddTerminal adds a Terminal to the grammar, and returns its symbol index.
@@ -184,29 +185,52 @@ func (g *Grammar) GetProd(prodIndex int) *Prod {
 // Print will write a visual representation of the grammar to an io.Writer for
 // debugging purposes.
 func (g *Grammar) Print(w io.Writer) {
-	fmt.Fprintf(w, "Terminals:\n")
+	l := logger.New(w)
+	l.Logf("Terminals")
+	l.Logf("=========")
 	for _, t := range g.terminals {
-		fmt.Fprintf(w, " %v\n", t.Name)
+		l.Logf("%v", t.Name)
 	}
-	fmt.Fprintf(w, "\n")
-	fmt.Fprintf(w, "Rules:\n")
-	for _, r := range g.rules {
-		fmt.Fprintf(w, " %v = ", r.Name)
-		for i, pi := range r.Prods {
-			if i != 0 {
-				fmt.Fprintf(w, " | ")
+	l.Logf("")
+	l.Logf("Rules")
+	l.Logf("=====")
+
+	writeProd := func(buf *strings.Builder, pi int) {
+		p := g.prods[pi]
+		for j, ti := range p.Terms {
+			if j != 0 {
+				buf.WriteString(" ")
 			}
-			p := g.prods[pi]
-			for j, ti := range p.Terms {
-				if j != 0 {
-					fmt.Fprintf(w, " ")
-				}
-				fmt.Fprint(w, g.GetSymbolName(ti))
-			}
-			if len(p.Terms) == 0 {
-				fmt.Fprintf(w, "ε")
-			}
+			buf.WriteString(g.GetSymbolName(ti))
 		}
-		fmt.Fprintf(w, "\n")
+		if len(p.Terms) == 0 {
+			buf.WriteString("ε")
+		}
+		if p.Precendence > 0 {
+			ass := "@left"
+			if p.Associativity == Right {
+				ass = "@right"
+			}
+			fmt.Fprintf(buf, "  %v(%v)", ass, p.Precendence)
+		}
+	}
+
+	var buf strings.Builder
+	for _, r := range g.rules {
+		buf.Reset()
+		fmt.Fprintf(&buf, "%v = ", r.Name)
+		if len(r.Prods) == 0 {
+			buf.WriteString("<rule has no prods>")
+			l.Logf("%v", buf.String())
+			continue
+		}
+		writeProd(&buf, r.Prods[0])
+		l.Logf("%v", buf.String())
+		for _, pi := range r.Prods[1:] {
+			buf.Reset()
+			buf.WriteString("| ")
+			writeProd(&buf, pi)
+			l.WithIndent().Logf("%v", buf.String())
+		}
 	}
 }

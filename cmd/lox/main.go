@@ -119,7 +119,7 @@ func doLexer(fset *gotoken.FileSet, errs *errlogger.ErrLogger, dir string) {
 	}
 
 	ctx := last.NewContext(fset, errs)
-	if !ctx.Analyze(spec) {
+	if !ctx.Analyze(spec, last.AllPasses) {
 		return
 	}
 }

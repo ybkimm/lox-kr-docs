@@ -32,9 +32,12 @@ func (g ParserRuleGenerated) String() string {
 type ParserRule struct {
 	baseStatement
 
+	IsStart   bool
 	Name      string
 	Prods     []*ParserProd
 	Generated ParserRuleGenerated
+
+	RuleIndex int
 }
 
 func (r *ParserRule) RunPass(ctx *Context, pass Pass) {
@@ -45,6 +48,17 @@ func (r *ParserRule) RunPass(ctx *Context, pass Pass) {
 	case CreateNames:
 		if !ctx.RegisterName(r.Name, r) {
 			return
+		}
+		r.RuleIndex = ctx.Grammar.AddRule(r.Name)
+		if r.IsStart {
+			if ctx.StartRule != nil {
+				ctx.Errs.Errorf(ctx.Position(r), "@start redefined: %v", r.Name)
+				ctx.Errs.Infof(
+					ctx.Position(ctx.StartRule), "@start previously defined: %v",
+					ctx.StartRule.Name)
+				return
+			}
+			ctx.StartRule = r
 		}
 
 	case Print:

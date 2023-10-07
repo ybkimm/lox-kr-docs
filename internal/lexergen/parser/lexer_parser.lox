@@ -35,6 +35,7 @@
 
   PARSER '@parser'
   LEXER  '@lexer'
+  START  '@start'
   SKIP   '@skip'
   MACRO  '@macro'
   FRAG   '@frag'
@@ -56,7 +57,7 @@ section = parser_section | lexer_section ;
 parser_section   = PARSER parser_statement* ;
 parser_statement = parser_rule ;
 
-parser_rule      = ID '=' @list(parser_prod, '|') ';' ;
+parser_rule      = '@start'? ID '=' @list(parser_prod, '|') ';' ;
 parser_prod      = parser_term_card+ parser_qualif? ;
 parser_term_card = parser_term parser_card? ;
 parser_term      = ID | LITERAL | '@error' | parser_list ;

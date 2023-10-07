@@ -25,7 +25,7 @@ func TestClosure(t *testing.T) {
 
 	t.Run("1", func(t *testing.T) {
 		var i ItemSet
-		i.Add(Item{Prod: sprimeProd, Dot: 0, Lookahead: EOF})
+		i.Add(Item{Prod: SPrimeProd, Dot: 0, Lookahead: EOF})
 		result := Closure(g, &i)
 		testutil.RequireEqualStr(t, result.ToString(g), `
 S' = .S, EOF

@@ -12,14 +12,18 @@ const (
 	CreateNames Pass = iota
 	Check
 	Normalize
-
-	Print
+	GenerateGrammar
 )
+
+const AllPasses Pass = GenerateGrammar
+
+const Print = 1000
 
 var passes = []Pass{
 	CreateNames,
 	Check,
 	Normalize,
+	GenerateGrammar,
 }
 
 type Bounds struct {
@@ -43,16 +47,6 @@ func (a *baseAST) SetBounds(b Bounds) {
 
 func (a *baseAST) Bounds() Bounds {
 	return a.bounds
-}
-
-type Spec struct {
-	baseAST
-
-	Units []*Unit
-}
-
-func (s *Spec) RunPass(ctx *Context, pass Pass) {
-	RunPass(ctx, s.Units, pass)
 }
 
 type Statement interface {

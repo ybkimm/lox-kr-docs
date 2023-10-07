@@ -36,6 +36,9 @@ var keywords = map[string]TokenType{
 	"@push_mode": PUSH_MODE,
 	"@skip":      SKIP,
 	"@list":      LIST,
+	"@left":      LEFT,
+	"@right":     RIGHT,
+	"@start":     START,
 }
 
 func isNumber(r rune) bool {
@@ -204,6 +207,8 @@ func (l *lex) modeDefault() {
 			l.advance()
 		} else if isLetter(r) || r == '_' {
 			l.scanIdentifier()
+		} else if isNumber(r) {
+			l.scanNumber()
 		} else {
 			l.unexpectedChar()
 		}
@@ -387,6 +392,16 @@ func (l *lex) scanKeyword() {
 		return
 	}
 	l.tok.Type = keyword
+	l.tok.Str = l.buf.String()
+}
+
+func (l *lex) scanNumber() {
+	l.buf.Reset()
+	for isNumber(l.peek()) {
+		l.buf.WriteRune(l.peek())
+		l.advance()
+	}
+	l.tok.Type = NUM
 	l.tok.Str = l.buf.String()
 }
 

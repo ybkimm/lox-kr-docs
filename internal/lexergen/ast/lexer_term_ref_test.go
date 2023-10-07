@@ -49,7 +49,7 @@ digraph G {
 @macro FOO = 'foo' ;
 FOOBAR = FO0 'bar' ;
 `)
-		ctx.Analyze(spec)
+		ctx.Analyze(spec, ast.AllPasses)
 		if !ctx.Errs.HasError() {
 			t.Fatalf("Errors expected")
 		}
@@ -60,7 +60,7 @@ FOOBAR = FO0 'bar' ;
 FOO = 'foo' ;
 FOOBAR = FOO 'bar' ;
 `)
-		ctx.Analyze(spec)
+		ctx.Analyze(spec, ast.AllPasses)
 		if !ctx.Errs.HasError() {
 			t.Fatalf("Errors expected")
 		}

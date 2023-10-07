@@ -56,10 +56,11 @@ func (p *parser) on_parser_statement(s ast.Statement) ast.Statement {
 	return s
 }
 
-func (p *parser) on_parser_rule(name Token, _ Token, prods []*ast.ParserProd, _ Token) *ast.ParserRule {
+func (p *parser) on_parser_rule(start Token, name Token, _ Token, prods []*ast.ParserProd, _ Token) *ast.ParserRule {
 	return &ast.ParserRule{
-		Name:  name.Str,
-		Prods: prods,
+		IsStart: start.Type == START,
+		Name:    name.Str,
+		Prods:   prods,
 	}
 }
 

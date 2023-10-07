@@ -35,7 +35,7 @@ func parse(t *testing.T, input string) (*ast.Spec, *ast.Context) {
 
 func parseAndAnalyze(t *testing.T, input string) (*ast.Spec, *ast.Context) {
 	spec, ctx := parse(t, input)
-	if !ctx.Analyze(spec) {
+	if !ctx.Analyze(spec, ast.AllPasses) {
 		t.Fatalf("Failed to analyze")
 	}
 	return spec, ctx
