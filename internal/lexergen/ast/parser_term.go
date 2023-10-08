@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dcaiafa/lox/internal/assert"
+	"github.com/dcaiafa/lox/internal/parsergen/lr2"
 )
 
 type ParserTermType int
@@ -143,7 +144,7 @@ func (t *ParserTerm) normalize(ctx *Context) {
 		// a = b a'
 		// a' = c+ | ε
 		generate(func(r *ParserRule) {
-			r.Generated = ParserRuleGeneratedZeroOrOne
+			r.Generated = lr2.GeneratedZeroOrOne
 			r.Prods = []*ParserProd{
 				{
 					Terms: []*ParserTerm{
@@ -161,7 +162,7 @@ func (t *ParserTerm) normalize(ctx *Context) {
 		// a' = a' c
 		//    | c
 		generate(func(r *ParserRule) {
-			r.Generated = ParserRuleGeneratedOneOrMore
+			r.Generated = lr2.GeneratedOneOrMore
 			r.Prods = []*ParserProd{
 				{
 					Terms: []*ParserTerm{
@@ -183,7 +184,7 @@ func (t *ParserTerm) normalize(ctx *Context) {
 		// a = b a'
 		// a' = c | ε
 		generate(func(r *ParserRule) {
-			r.Generated = ParserRuleGeneratedZeroOrOne
+			r.Generated = lr2.GeneratedZeroOrOne
 			r.Prods = []*ParserProd{
 				{
 					Terms: []*ParserTerm{
@@ -201,7 +202,7 @@ func (t *ParserTerm) normalize(ctx *Context) {
 		// a' = a' sep c
 		//    | c
 		generate(func(r *ParserRule) {
-			r.Generated = ParserRuleGeneratedList
+			r.Generated = lr2.GeneratedList
 			r.Prods = []*ParserProd{
 				{
 					Terms: []*ParserTerm{

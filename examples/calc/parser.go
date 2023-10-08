@@ -8,12 +8,12 @@ type calcParser struct {
 	result float64
 }
 
-/*
-func (p *calcParser) on_S(e float64) any {
+func (p *calcParser) on_S__foo(e float64) any {
 	p.result = e
 	return nil
 }
 
+/*
 func (p *calcParser) on_expr__binary(left float64, op Token, right float64) float64 {
 	switch op.Type {
 	case PLUS:

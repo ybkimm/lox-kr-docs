@@ -43,14 +43,42 @@ var epsilon = &Terminal{
 	Name: "ε",
 }
 
+type Generated int
+
+const (
+	NotGenerated Generated = iota
+	GeneratedSPrime
+	GeneratedZeroOrOne
+	GeneratedOneOrMore
+	GeneratedList
+)
+
+func (g Generated) String() string {
+	switch g {
+	case NotGenerated:
+		return "NotGenerated"
+	case GeneratedSPrime:
+		return "SPrime"
+	case GeneratedZeroOrOne:
+		return "ZeroOrOne"
+	case GeneratedOneOrMore:
+		return "OneOrMore"
+	case GeneratedList:
+		return "List"
+	default:
+		return "???"
+	}
+}
+
 // Rule, also known as "non-terminal", is a named collection of productions.
 // For example, the following is a rule:
 //
 //	expr = expr '+' expr @left(1) | '(' expr ')' | NUM
 type Rule struct {
-	Name     string
-	Prods    []int
-	UserData any
+	Name      string
+	Prods     []int
+	Generated Generated
+	UserData  any
 }
 
 // Prod, or production, is a ordered set of terms belonging to a Rule.
@@ -79,13 +107,17 @@ type Grammar struct {
 // NewGrammar creates a new Grammar.
 func NewGrammar() *Grammar {
 	g := &Grammar{}
+
 	n := g.AddTerminal("EOF")
 	assert.True(n == EOF)
+
 	n = g.AddTerminal("ERROR")
 	assert.True(n == Error)
 
 	n = g.AddRule("S'")
 	assert.True(n == SPrime)
+	g.GetRule(n).Generated = GeneratedSPrime
+
 	n = g.AddProd(SPrime)
 	assert.True(n == SPrimeProd)
 

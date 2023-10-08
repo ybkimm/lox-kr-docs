@@ -1,33 +1,10 @@
 package ast
 
-import "fmt"
+import (
+	"fmt"
 
-type ParserRuleGenerated int
-
-const (
-	ParserRuleNotGenerated ParserRuleGenerated = iota
-	ParserRuleGeneratedSPrime
-	ParserRuleGeneratedZeroOrOne
-	ParserRuleGeneratedOneOrMore
-	ParserRuleGeneratedList
+	"github.com/dcaiafa/lox/internal/parsergen/lr2"
 )
-
-func (g ParserRuleGenerated) String() string {
-	switch g {
-	case ParserRuleNotGenerated:
-		return "NotGenerated"
-	case ParserRuleGeneratedSPrime:
-		return "SPrime"
-	case ParserRuleGeneratedZeroOrOne:
-		return "ZeroOrOne"
-	case ParserRuleGeneratedOneOrMore:
-		return "OneOrMore"
-	case ParserRuleGeneratedList:
-		return "List"
-	default:
-		return "???"
-	}
-}
 
 type ParserRule struct {
 	baseStatement
@@ -35,7 +12,7 @@ type ParserRule struct {
 	IsStart   bool
 	Name      string
 	Prods     []*ParserProd
-	Generated ParserRuleGenerated
+	Generated lr2.Generated
 
 	RuleIndex int
 }
@@ -51,6 +28,9 @@ func (r *ParserRule) RunPass(ctx *Context, pass Pass) {
 			return
 		}
 		r.RuleIndex = ctx.Grammar.AddRule(r.Name)
+		rule := ctx.Grammar.GetRule(r.RuleIndex)
+		rule.Generated = r.Generated
+
 		if r.IsStart {
 			if ctx.StartParserRule != nil {
 				ctx.Errs.Errorf(ctx.Position(r), "@start redefined: %v", r.Name)
@@ -65,7 +45,7 @@ func (r *ParserRule) RunPass(ctx *Context, pass Pass) {
 	case Print:
 		printer := ctx.CurrentPrinter.Peek()
 		generated := ""
-		if r.Generated != ParserRuleNotGenerated {
+		if r.Generated != lr2.NotGenerated {
 			generated = fmt.Sprintf(" Generated: %v", r.Generated)
 		}
 		printer.Printf("ParserRule: Name: %v%v", r.Name, generated)

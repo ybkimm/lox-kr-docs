@@ -6,7 +6,6 @@ import (
 
 	"github.com/dcaiafa/lox/internal/errlogger"
 	"github.com/dcaiafa/lox/internal/parsergen/lr2"
-	"github.com/dcaiafa/lox/internal/util/array"
 )
 
 const (
@@ -14,13 +13,17 @@ const (
 	parserGenGo     = "parser.gen.go"
 	lexerGenGo      = "lexer.gen.go"
 	parserStateName = "lox"
+	onReduce        = "onReduce"
 )
 
 type actionMethod struct {
-	Name   string
 	Method *gotypes.Func
 	Params []gotypes.Type
 	Return gotypes.Type
+}
+
+func (m *actionMethod) Name() string {
+	return m.Method.Name()
 }
 
 type context struct {
@@ -33,5 +36,7 @@ type context struct {
 	TokenType     gotypes.Type
 	ErrorType     gotypes.Type
 	ParserType    *gotypes.Named
-	ActionMethods map[string]*array.Array[*actionMethod]
+	ActionMethods map[int]*actionMethod      // prod => method
+	ReduceGoTypes map[*lr2.Rule]gotypes.Type // rule => Go-type
+	HasOnReduce   bool
 }
