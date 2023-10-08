@@ -1,5 +1,7 @@
 package main
 
+type Token struct{}
+
 type calcParser struct {
 	lox
 	//errLogger *ErrLogger
