@@ -1,17 +1,17 @@
 package codegen2
 
 import (
-	"bytes"
-
 	"github.com/CloudyKit/jet/v6"
 )
 
 const parserPlaceholderTemplate = `
-package {{package}}
-
 type lox struct {}
 
-func (p *lox) parse(l lexer) bool {
+type _Lexer interface {
+	ReadToken() (Token, TokenType)
+}
+
+func (p *lox) parse(l _Lexer) bool {
 	panic("not-implemented")
 }
 
@@ -35,6 +35,11 @@ var _Actions = []int32 {
 
 var _Goto = []int32 {
 	{{ goto() | array }}
+}
+
+type _Bounds struct {
+	Begin Token
+	End   Token
 }
 
 type _Stack[T any] []T
@@ -71,8 +76,12 @@ func _Find(table []int32, y, x int32) (int32, bool) {
 	return 0, false
 }
 
+type _Lexer interface {
+	ReadToken() (Token, TokenType)
+}
+
 type lox struct {
-	_lex   lexer
+	_lex   _Lexer
 	_state _Stack[int32]
 	_sym   _Stack[any]
 	{{- if has_on_reduce }}
@@ -84,7 +93,7 @@ type lox struct {
 	_errorToken    Token
 }
 
-func (p *{{parser}}) parse(lex lexer) bool {
+func (p *{{parser}}) parse(lex _Lexer) bool {
   const accept = {{ accept }}
 
 	p._lex = lex
@@ -268,38 +277,18 @@ func (p *{{parser}}) _Act(prod int32) any {
 }
 `
 
-func renderTemplate(templ string, vars jet.VarMap) string {
-	loader := jet.NewInMemLoader()
-	loader.Set("lox", templ)
-
-	set := jet.NewSet(loader, jet.WithSafeWriter(nil))
-	t, err := set.GetTemplate("lox")
-	if err != nil {
-		panic(err)
-	}
-
-	body := &bytes.Buffer{}
-	err = t.Execute(body, vars, nil)
-	if err != nil {
-		panic(err)
-	}
-
-	return body.String()
-}
-
 type parserTemplateInputs struct {
 	Placeholder bool
 	Package     string
+	PackagePath string
 }
 
 func renderParserTemplate(in *parserTemplateInputs) string {
-	vars := make(jet.VarMap)
-	vars.Set("package", in.Package)
-
 	template := parserTemplate
 	if in.Placeholder {
 		template = parserPlaceholderTemplate
 	}
 
-	return renderTemplate(template, vars)
+	vars := make(jet.VarMap)
+	return renderTemplate(in.Package, in.PackagePath, template, vars)
 }

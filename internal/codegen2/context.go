@@ -8,10 +8,17 @@ import (
 	"github.com/dcaiafa/lox/internal/parsergen/lr2"
 )
 
+const (
+	baseGenGo       = "base.gen.go"
+	parserGenGo     = "parser.gen.go"
+	lexerGenGo      = "lexer.gen.go"
+	parserStateName = "lox"
+)
+
 type context struct {
+	Errs          *errlogger.ErrLogger
 	Fset          *gotoken.FileSet
 	Dir           string
-	Errs          *errlogger.ErrLogger
 	ParserGrammar *lr2.Grammar
 	GoPackageName string
 	GoPackagePath string

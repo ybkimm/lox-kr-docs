@@ -20,5 +20,7 @@ func Generate(cfg *Config) bool {
 	}
 
 	return ctx.ParseLox() &&
+		ctx.PreParseGo() &&
+		ctx.EmitBase() &&
 		ctx.ParseGo()
 }

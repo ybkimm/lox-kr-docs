@@ -19,7 +19,7 @@ func (i Item) IsKernel() bool {
 func (i Item) ToString(g *Grammar) string {
 	var str strings.Builder
 
-	prod := g.prods[i.Prod]
+	prod := g.Prods[i.Prod]
 	fmt.Fprintf(&str, "%v = ", g.GetRule(prod.Rule).Name)
 	for j, term := range prod.Terms {
 		if j != 0 {

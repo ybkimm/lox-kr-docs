@@ -2,28 +2,16 @@ package codegen2
 
 import (
 	"fmt"
-	goparser "go/parser"
 	gotoken "go/token"
 	gotypes "go/types"
-	"os"
 	"path/filepath"
 
+	"github.com/dcaiafa/lox/internal/assert"
 	"golang.org/x/tools/go/packages"
 )
 
-const (
-	parserGenGo     = "parser.gen.go"
-	lexerGenGo      = "lexer.gen.go"
-	parserStateName = "lox"
-)
-
 func (c *context) ParseGo() bool {
-	var err error
-	c.GoPackageName, err = determinePackageName(c.Dir)
-	if err != nil {
-		c.Errs.GeneralError(err)
-		return false
-	}
+	assert.True(c.GoPackageName != "")
 
 	// parser.gen.go does not exist yet (or will be excluded), but there are
 	// parts of that code that the user code is allowed to reference. To allow
@@ -176,31 +164,4 @@ func (c *context) lookupParserType(scope *gotypes.Scope) {
 	}
 
 	c.ParserType = parserObj
-}
-
-func determinePackageName(dir string) (string, error) {
-	dirEntries, err := os.ReadDir(dir)
-	if err != nil {
-		return "", err
-	}
-	var oneSourceName string
-	for _, dirEntry := range dirEntries {
-		if !dirEntry.IsDir() &&
-			filepath.Ext(dirEntry.Name()) == ".go" &&
-			dirEntry.Name() != lexerGenGo &&
-			dirEntry.Name() != parserGenGo {
-			oneSourceName = filepath.Join(dir, dirEntry.Name())
-		}
-	}
-	if oneSourceName == "" {
-		return "", fmt.Errorf("package contains no source files")
-	}
-
-	oneSource, err := goparser.ParseFile(
-		gotoken.NewFileSet(), oneSourceName, nil, 0)
-	if err != nil {
-		return "", fmt.Errorf("%v: %w", oneSourceName, err)
-	}
-
-	return oneSource.Name.Name, nil
 }

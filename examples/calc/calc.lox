@@ -25,4 +25,4 @@ expr = expr '+' expr    @left(1)
      | num ;
 
 num = NUM
-    | MINUS NUM ;
+    | '-' NUM ;

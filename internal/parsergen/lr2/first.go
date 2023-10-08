@@ -65,7 +65,7 @@ func first(g *Grammar, visited *set.Set[int], s int) set.Set[int] {
 	rule := g.GetRule(s)
 	firstSet := set.Set[int]{}
 	for _, prodIndex := range rule.Prods {
-		prod := g.prods[prodIndex]
+		prod := g.Prods[prodIndex]
 		if len(prod.Terms) == 0 {
 			firstSet.Add(Epsilon)
 			continue

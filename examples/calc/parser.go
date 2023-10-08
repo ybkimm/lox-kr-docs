@@ -1,31 +1,12 @@
 package main
 
-import (
-	gotoken "go/token"
-	"math"
-	"strconv"
-)
-
-func Eval(expr string) (float64, error) {
-	fset := gotoken.NewFileSet()
-	file := fset.AddFile("expr", -1, len(expr))
-	errLogger := &ErrLogger{
-		Fset: fset,
-	}
-
-	var parser calcParser
-	parser.errLogger = errLogger
-	lex := newLex(file, []byte(expr), errLogger)
-	_ = parser.parse(lex)
-	return parser.result, errLogger.Err()
-}
-
 type calcParser struct {
 	lox
-	errLogger *ErrLogger
-	result    float64
+	//errLogger *ErrLogger
+	result float64
 }
 
+/*
 func (p *calcParser) on_S(e float64) any {
 	p.result = e
 	return nil
@@ -79,3 +60,4 @@ func (p *calcParser) on_num__minus(_ Token, num Token) float64 {
 func (p *calcParser) onError() {
 	p.errLogger.Errorf(p.errorToken().Pos, "unexpected token %v", p.errorToken())
 }
+*/

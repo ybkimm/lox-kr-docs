@@ -35,6 +35,7 @@ func IsRule(sym int) bool {
 
 type Terminal struct {
 	Name     string
+	Alias    string
 	UserData any
 }
 
@@ -70,9 +71,9 @@ type Prod struct {
 
 // Grammar represents a LR1 grammar.
 type Grammar struct {
-	terminals []*Terminal
-	rules     []*Rule
-	prods     []*Prod
+	Terminals []*Terminal
+	Rules     []*Rule
+	Prods     []*Prod
 }
 
 // NewGrammar creates a new Grammar.
@@ -96,7 +97,7 @@ func NewGrammar() *Grammar {
 // derivable from the start rule, it will never be derived.
 func (g *Grammar) SetStart(ruleIndex int) {
 	assert.True(IsRule(ruleIndex))
-	g.prods[SPrimeProd].Terms = []int{ruleIndex}
+	g.Prods[SPrimeProd].Terms = []int{ruleIndex}
 }
 
 // AddTerminal adds a Terminal to the grammar, and returns its symbol index.
@@ -107,8 +108,8 @@ func (g *Grammar) AddTerminal(name string) int {
 	t := &Terminal{
 		Name: name,
 	}
-	g.terminals = append(g.terminals, t)
-	return len(g.terminals) - 1
+	g.Terminals = append(g.Terminals, t)
+	return len(g.Terminals) - 1
 }
 
 // AddRule adds a Rule to the grammar, and returns its symbol index. GetRule can
@@ -118,8 +119,8 @@ func (g *Grammar) AddRule(name string) int {
 	r := &Rule{
 		Name: name,
 	}
-	g.rules = append(g.rules, r)
-	return -len(g.rules)
+	g.Rules = append(g.Rules, r)
+	return -len(g.Rules)
 }
 
 // AddProd adds a Prod to a Rule.
@@ -130,8 +131,8 @@ func (g *Grammar) AddProd(ruleIndex int, terms ...int) int {
 		Rule: ruleIndex,
 	}
 
-	g.prods = append(g.prods, p)
-	prodIndex := len(g.prods) - 1
+	g.Prods = append(g.Prods, p)
+	prodIndex := len(g.Prods) - 1
 	rule.Prods = append(rule.Prods, prodIndex)
 	p.Terms = append(p.Terms, terms...)
 
@@ -139,7 +140,7 @@ func (g *Grammar) AddProd(ruleIndex int, terms ...int) int {
 }
 
 func (g *Grammar) LastProd() *Prod {
-	return g.prods[len(g.prods)-1]
+	return g.Prods[len(g.Prods)-1]
 }
 
 // GetTerminal returns the `Terminal` referenced by a symbol index.
@@ -149,7 +150,7 @@ func (g *Grammar) GetTerminal(symIndex int) *Terminal {
 	if symIndex == Epsilon {
 		return epsilon
 	}
-	return g.terminals[symIndex]
+	return g.Terminals[symIndex]
 }
 
 // GetRule returns the `Rule` referenced by a symbol index.
@@ -157,7 +158,7 @@ func (g *Grammar) GetTerminal(symIndex int) *Terminal {
 func (g *Grammar) GetRule(r int) *Rule {
 	assert.True(IsRule(r))
 	r = -r - 1
-	return g.rules[r]
+	return g.Rules[r]
 }
 
 // GetSymbolName returns the name of a rule or symbol referenced by the symbol
@@ -179,7 +180,7 @@ func (g *Grammar) GetSymbolNames(symIndex []int) []string {
 }
 
 func (g *Grammar) GetProd(prodIndex int) *Prod {
-	return g.prods[prodIndex]
+	return g.Prods[prodIndex]
 }
 
 // Print will write a visual representation of the grammar to an io.Writer for
@@ -188,7 +189,7 @@ func (g *Grammar) Print(w io.Writer) {
 	l := logger.New(w)
 	l.Logf("Terminals")
 	l.Logf("=========")
-	for _, t := range g.terminals {
+	for _, t := range g.Terminals {
 		l.Logf("%v", t.Name)
 	}
 	l.Logf("")
@@ -196,7 +197,7 @@ func (g *Grammar) Print(w io.Writer) {
 	l.Logf("=====")
 
 	writeProd := func(buf *strings.Builder, pi int) {
-		p := g.prods[pi]
+		p := g.Prods[pi]
 		for j, ti := range p.Terms {
 			if j != 0 {
 				buf.WriteString(" ")
@@ -216,7 +217,7 @@ func (g *Grammar) Print(w io.Writer) {
 	}
 
 	var buf strings.Builder
-	for _, r := range g.rules {
+	for _, r := range g.Rules {
 		buf.Reset()
 		fmt.Fprintf(&buf, "%v = ", r.Name)
 		if len(r.Prods) == 0 {
