@@ -36,7 +36,7 @@ type context struct {
 	TokenType     gotypes.Type
 	ErrorType     gotypes.Type
 	ParserType    *gotypes.Named
-	ActionMethods map[int]*actionMethod      // prod => method
-	ReduceGoTypes map[*lr2.Rule]gotypes.Type // rule => Go-type
+	ActionMethods map[*lr2.Prod]*actionMethod // prod => method
+	ReduceGoTypes map[*lr2.Rule]gotypes.Type  // rule => Go-type
 	HasOnReduce   bool
 }
