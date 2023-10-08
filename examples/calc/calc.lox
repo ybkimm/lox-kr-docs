@@ -1,15 +1,18 @@
-@token
-  NUM      'number'
+@lexer
 
-  PLUS     '+'
-  MINUS    '-'
-  MUL      '*'
-  DIV      '/'
-  REM      '%'
-  POW      '^'
-  O_PAREN  '('
-  C_PAREN  ')' ;
+NUM = [0-9]+ ;
+ADD = '+' ;
+SUB = '-' ;
+MUL = '*' ;
+DIV = '/' ;
+REM = '%' ;
+POW = '^' ;
+O_PAREN = '(' ;
+C_PAREN = ')' ;
 
+@parser
+
+@start
 S = expr ;
 
 expr = expr '+' expr    @left(1)

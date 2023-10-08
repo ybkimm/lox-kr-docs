@@ -1,54 +1,49 @@
 package codegen2
 
 import (
-	gotoken "go/token"
 	"os"
 	"path/filepath"
 
-	"github.com/dcaiafa/lox/internal/errlogger"
 	"github.com/dcaiafa/lox/internal/lexergen/ast"
 	"github.com/dcaiafa/lox/internal/lexergen/parser"
 )
 
 const LoxFileExtension = ".lox"
 
-// ParseLox parses and checks all .lox files in a directory.
-func ParseLox(
-	fset *gotoken.FileSet,
-	dir string,
-	errs *errlogger.ErrLogger,
-) *ast.Context {
-	loxFiles, err := filepath.Glob(filepath.Join(dir, "*"+LoxFileExtension))
+// parseLox parses and checks all .lox files in the project directory.
+func (c *context) ParseLox() bool {
+	loxFiles, err := filepath.Glob(filepath.Join(c.Dir, "*"+LoxFileExtension))
 	if err != nil {
-		errs.GeneralError(err)
-		return nil
+		c.Errs.GeneralError(err)
+		return false
 	}
 
 	if len(loxFiles) == 0 {
-		errs.GeneralErrorf("%v contains no %v files", dir, LoxFileExtension)
-		return nil
+		c.Errs.GeneralErrorf("%v contains no %v files", c.Dir, LoxFileExtension)
+		return false
 	}
 
 	spec := new(ast.Spec)
 	for _, loxFileName := range loxFiles {
 		data, err := os.ReadFile(loxFileName)
 		if err != nil {
-			errs.GeneralError(err)
-			return nil
+			c.Errs.GeneralError(err)
+			return false
 		}
-		file := fset.AddFile(loxFileName, -1, len(data))
-		unit := parser.Parse(file, data, errs)
-		if errs.HasError() {
-			return nil
+		file := c.Fset.AddFile(loxFileName, -1, len(data))
+		unit := parser.Parse(file, data, c.Errs)
+		if c.Errs.HasError() {
+			return false
 		}
 		spec.Units = append(spec.Units, unit)
 	}
 
-	ctx := ast.NewContext(fset, errs)
-	ctx.Analyze(spec, ast.AllPasses)
-	if errs.HasError() {
-		return nil
+	astctx := ast.NewContext(c.Fset, c.Errs)
+	astctx.Analyze(spec, ast.AllPasses)
+	if c.Errs.HasError() {
+		return false
 	}
 
-	return ctx
+	c.ParserGrammar = astctx.Grammar
+	return !c.Errs.HasError()
 }

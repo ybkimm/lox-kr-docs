@@ -64,10 +64,17 @@ C_PAREN = ')' ;
 
 	fset := gotoken.NewFileSet()
 	errs := errlogger.New()
-	ctx := ParseLox(fset, tmpDir, errs)
+
+	ctx := &context{
+		Fset: fset,
+		Dir:  tmpDir,
+		Errs: errs,
+	}
+
+	ctx.ParseLox()
 	testutil.RequireFalse(t, ctx.Errs.HasError())
 
 	var output strings.Builder
-	ctx.Grammar.Print(&output)
+	ctx.ParserGrammar.Print(&output)
 	baseline.Assert(t, output.String())
 }
