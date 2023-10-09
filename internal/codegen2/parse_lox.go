@@ -6,6 +6,7 @@ import (
 
 	"github.com/dcaiafa/lox/internal/lexergen/ast"
 	"github.com/dcaiafa/lox/internal/lexergen/parser"
+	"github.com/dcaiafa/lox/internal/parsergen/lr2"
 )
 
 const LoxFileExtension = ".lox"
@@ -45,5 +46,7 @@ func (c *context) ParseLox() bool {
 	}
 
 	c.ParserGrammar = astctx.Grammar
+	c.ParserTable = lr2.ConstructLALR(c.ParserGrammar)
+
 	return !c.Errs.HasError()
 }

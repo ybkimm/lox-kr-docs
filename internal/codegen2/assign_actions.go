@@ -9,7 +9,7 @@ import (
 )
 
 func (c *context) AssignActions() bool {
-	c.ReduceGoTypes = make(map[*lr2.Rule]gotypes.Type)
+	c.RuleGoTypes = make(map[*lr2.Rule]gotypes.Type)
 
 	methods := c.getActionMethods()
 	if methods == nil {
@@ -22,6 +22,9 @@ func (c *context) AssignActions() bool {
 		rules[rule.Name] = rule
 	}
 
+	// Determine the Go-type of reduce artifacts by matching action method names
+	// to rules. All action methods matching the same rule name must have the same
+	// return type.
 	for ruleName, ruleMethods := range methods {
 		var firstMethod *actionMethod
 		for _, method := range ruleMethods {
@@ -50,13 +53,51 @@ func (c *context) AssignActions() bool {
 				firstMethod.Name(), ruleName)
 			continue
 		}
-		c.ReduceGoTypes[rule] = firstMethod.Return
+		c.RuleGoTypes[rule] = firstMethod.Return
 	}
 	if c.Errs.HasError() {
 		return false
 	}
 
-	return true
+	// Determine the Go type of reduce artifacts for generated rules, which are
+	// derived from the Go-types for user-provided rules determined above. For
+	// example, if the Go type for rule 'expr' is 'int', then the Go type for the
+	// generated rule that replaced a 'expr+' term is '[]int'.
+	changed := true
+	for changed {
+		changed = false
+		for _, prod := range c.ParserGrammar.Prods {
+			rule := c.ParserGrammar.GetRule(prod.Rule)
+			typ := c.getReduceTypeForGeneratedRule(rule, prod)
+			if typ == nil {
+				// Rule was not generated, or we can't determine the Go-type for the
+				// rule based on this specific Prod.
+				continue
+			}
+			existing := c.RuleGoTypes[rule]
+			if existing != nil {
+				assert.True(gotypes.Identical(existing, typ))
+				continue
+			}
+			c.RuleGoTypes[rule] = typ
+			changed = true
+		}
+	}
+
+	// Check that every rule has been assigned a Go-type.
+	for _, rule := range c.ParserGrammar.Rules {
+		if rule.Generated == lr2.GeneratedSPrime {
+			// Except for S', which is never reduced.
+			continue
+		}
+		if c.RuleGoTypes[rule] == nil {
+			c.Errs.Errorf(
+				rule.Position, "rule missing action method: %v",
+				rule.Name)
+		}
+	}
+
+	return !c.Errs.HasError()
 }
 
 func (c *context) getActionMethods() map[string][]*actionMethod {
@@ -96,6 +137,50 @@ func (c *context) getActionMethods() map[string][]*actionMethod {
 		return nil
 	}
 	return actionMethods
+}
+
+func (c *context) getReduceTypeForGeneratedRule(
+	rule *lr2.Rule,
+	prod *lr2.Prod,
+) gotypes.Type {
+	switch rule.Generated {
+	case lr2.NotGenerated, lr2.GeneratedSPrime:
+		// S' is never reduced.
+		return nil
+	case lr2.GeneratedZeroOrOne:
+		// a = b c?
+		//  =>
+		// a = b a'
+		// a' = c | e
+		if prod != c.ParserGrammar.GetProd(rule.Prods[0]) {
+			return nil
+		}
+		termC := prod.Terms[0]
+		if lr2.IsRule(termC) {
+			return c.RuleGoTypes[c.ParserGrammar.GetRule(termC)]
+		} else {
+			return c.TokenType
+		}
+
+	case lr2.GeneratedOneOrMore, lr2.GeneratedList:
+		// a = b c+
+		//  =>
+		// a = b a'
+		// a' = a' c | c      (OneOrMore)
+		// a' = a' sep c | c  (List)
+		if prod != c.ParserGrammar.GetProd(rule.Prods[1]) {
+			return nil
+		}
+		termC := prod.Terms[0]
+		typeC := c.TokenType
+		if lr2.IsRule(termC) {
+			typeC = c.RuleGoTypes[c.ParserGrammar.GetRule(termC)]
+		}
+		return gotypes.NewSlice(typeC)
+
+	default:
+		panic("unreachable")
+	}
 }
 
 // ruleFromMethod returns the name of the rule corresponding to an action

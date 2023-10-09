@@ -1,6 +1,14 @@
 package main
 
-type Token struct{}
+import (
+	"math"
+	"strconv"
+)
+
+type Token struct {
+	Type TokenType
+	Str  string
+}
 
 type calcParser struct {
 	lox
@@ -13,12 +21,11 @@ func (p *calcParser) on_S__foo(e float64) any {
 	return nil
 }
 
-/*
 func (p *calcParser) on_expr__binary(left float64, op Token, right float64) float64 {
 	switch op.Type {
-	case PLUS:
+	case ADD:
 		return left + right
-	case MINUS:
+	case SUB:
 		return left - right
 	case MUL:
 		return left * right
@@ -44,7 +51,7 @@ func (p *calcParser) on_expr__num(e float64) float64 {
 func (p *calcParser) on_num(num Token) float64 {
 	v, err := strconv.ParseFloat(num.Str, 64)
 	if err != nil {
-		p.errLogger.Errorf(num.Pos, "invalid float: %v", err)
+		//p.errLogger.Errorf(num.Pos, "invalid float: %v", err)
 		return 0
 	}
 	return v
@@ -53,13 +60,12 @@ func (p *calcParser) on_num(num Token) float64 {
 func (p *calcParser) on_num__minus(_ Token, num Token) float64 {
 	v, err := strconv.ParseFloat(num.Str, 64)
 	if err != nil {
-		p.errLogger.Errorf(num.Pos, "invalid float: %v", err)
+		//p.errLogger.Errorf(num.Pos, "invalid float: %v", err)
 		return 0
 	}
 	return -v
 }
 
 func (p *calcParser) onError() {
-	p.errLogger.Errorf(p.errorToken().Pos, "unexpected token %v", p.errorToken())
+	//p.errLogger.Errorf(p.errorToken().Pos, "unexpected token %v", p.errorToken())
 }
-*/

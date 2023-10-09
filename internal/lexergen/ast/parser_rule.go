@@ -29,6 +29,7 @@ func (r *ParserRule) RunPass(ctx *Context, pass Pass) {
 		}
 		r.RuleIndex = ctx.Grammar.AddRule(r.Name)
 		rule := ctx.Grammar.GetRule(r.RuleIndex)
+		rule.Position = ctx.Position(r)
 		rule.Generated = r.Generated
 
 		if r.IsStart {

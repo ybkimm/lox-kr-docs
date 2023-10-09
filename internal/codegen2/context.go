@@ -31,12 +31,12 @@ type context struct {
 	Fset          *gotoken.FileSet
 	Dir           string
 	ParserGrammar *lr2.Grammar
+	ParserTable   *lr2.ParserTable
 	GoPackageName string
 	GoPackagePath string
 	TokenType     gotypes.Type
 	ErrorType     gotypes.Type
 	ParserType    *gotypes.Named
-	ActionMethods map[*lr2.Prod]*actionMethod // prod => method
-	ReduceGoTypes map[*lr2.Rule]gotypes.Type  // rule => Go-type
+	RuleGoTypes   map[*lr2.Rule]gotypes.Type // rule => Go-type
 	HasOnReduce   bool
 }

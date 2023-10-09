@@ -288,7 +288,57 @@ func renderParserTemplate(in *parserTemplateInputs) string {
 	if in.Placeholder {
 		template = parserPlaceholderTemplate
 	}
-
 	vars := make(jet.VarMap)
 	return renderTemplate(in.Package, in.PackagePath, template, vars)
 }
+
+/*
+func (c *context) EmitParser() {
+	vars := new(jet.VarMap)
+
+	const accept int32 = math.MaxInt32
+
+	vars.Set("accept", accept)
+
+	vars.Set("array", func(arr []int32) string {
+		var str strings.Builder
+		WriteArray(&str, arr)
+		return str.String()
+	})
+
+	vars.Set("actions", func() []int32 {
+		table := newTable()
+		for stateIndex := range c.ParserTable.States {
+			var row []int32 actions := c.ParserTable.Actions(stateIndex)
+			for terminalIndex := range actions.Terminals() {
+				action := actions.Get(lr2.TerminalID(terminalIndex)).Get(0)
+				row = append(row, int32(terminalIndex))
+
+				switch action.Type {
+				case lr2.ActionShift:
+					row = append(row, int32(action.ShiftState))
+				case lr2.ActionReduce:
+					row = append(row, int32(action.Prods[0])*-1)
+				case lr2.ActionAccept:
+					row = append(row, accept)
+				default:
+					panic("unreachable")
+				}
+				table.AddRow(stateIndex, row)
+			}
+		}
+		return table.Array()
+	})
+
+	vars.Set("goto", func() []int32 {
+		table := newTable()
+		for stateIndex := range c.ParserTable.States {
+			var row []int32
+			transitions := c.ParserTable.Transitions(stateIndex)
+			for _, input
+		}
+	})
+
+
+}
+*/

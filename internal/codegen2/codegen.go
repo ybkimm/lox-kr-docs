@@ -18,7 +18,6 @@ func Generate(cfg *Config) bool {
 		Errs: cfg.Errs,
 		Dir:  cfg.Dir,
 	}
-
 	return ctx.ParseLox() &&
 		ctx.PreParseGo() &&
 		ctx.EmitBase() &&

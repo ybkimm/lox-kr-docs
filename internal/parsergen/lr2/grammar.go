@@ -2,6 +2,7 @@ package lr2
 
 import (
 	"fmt"
+	gotoken "go/token"
 	"io"
 	"math"
 	"strings"
@@ -31,6 +32,14 @@ func IsTerminal(sym int) bool {
 
 func IsRule(sym int) bool {
 	return !IsTerminal(sym)
+}
+
+func TerminalID(terminalIndex int) int {
+	return terminalIndex
+}
+
+func RuleID(ruleIndex int) int {
+	return -ruleIndex - 1
 }
 
 type Terminal struct {
@@ -90,6 +99,7 @@ type Rule struct {
 	Name      string
 	Prods     []int
 	Generated Generated
+	Position  gotoken.Position
 	UserData  any
 }
 
@@ -153,7 +163,7 @@ func (g *Grammar) AddTerminal(name string) int {
 		Name: name,
 	}
 	g.Terminals = append(g.Terminals, t)
-	return len(g.Terminals) - 1
+	return TerminalID(len(g.Terminals) - 1)
 }
 
 // AddRule adds a Rule to the grammar, and returns its symbol id. GetRule can be
@@ -164,7 +174,7 @@ func (g *Grammar) AddRule(name string) int {
 		Name: name,
 	}
 	g.Rules = append(g.Rules, r)
-	return -len(g.Rules)
+	return RuleID(len(g.Rules) - 1)
 }
 
 // AddProd adds a Prod to a Rule.
