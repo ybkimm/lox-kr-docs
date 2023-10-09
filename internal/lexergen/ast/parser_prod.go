@@ -7,7 +7,7 @@ type ParserProd struct {
 	Terms     []*ParserTerm
 	Qualifier *ProdQualifier
 
-	ProdIndex int
+	Prod *lr2.Prod
 }
 
 func (p *ParserProd) RunPass(ctx *Context, pass Pass) {
@@ -22,20 +22,19 @@ func (p *ParserProd) RunPass(ctx *Context, pass Pass) {
 		defer ctx.CurrentPrinter.Pop()
 
 	case GenerateGrammar:
-		ruleIndex := ctx.CurrentParserRule.Peek().RuleIndex
-		terms := make([]int, len(p.Terms))
+		rule := ctx.CurrentParserRule.Peek().Rule
+		terms := make([]lr2.Term, len(p.Terms))
 		for i, termAst := range p.Terms {
-			terms[i] = termAst.SymbolIndex
+			terms[i] = termAst.Symbol
 		}
-		prodIndex := ctx.Grammar.AddProd(ruleIndex, terms...)
+		p.Prod = ctx.Grammar.AddProd(rule, terms...)
 		if p.Qualifier != nil {
-			prod := ctx.Grammar.GetProd(prodIndex)
-			prod.Precedence = p.Qualifier.Precedence
+			p.Prod.Precedence = p.Qualifier.Precedence
 			switch p.Qualifier.Associativity {
 			case Left:
-				prod.Associativity = lr2.Left
+				p.Prod.Associativity = lr2.Left
 			case Right:
-				prod.Associativity = lr2.Right
+				p.Prod.Associativity = lr2.Right
 			default:
 				panic("not-reached")
 			}

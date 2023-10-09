@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/dcaiafa/lox/internal/parsergen/lr2"
+
 type TokenRule struct {
 	baseStatement
 
@@ -7,7 +9,7 @@ type TokenRule struct {
 	Expr    *LexerExpr
 	Actions []Action
 
-	TerminalIndex int
+	Terminal *lr2.Terminal
 }
 
 func (r *TokenRule) RunPass(ctx *Context, pass Pass) {
@@ -27,7 +29,7 @@ func (r *TokenRule) RunPass(ctx *Context, pass Pass) {
 				ctx.CreateAlias(literal.Literal, r)
 			}
 		}
-		r.TerminalIndex = ctx.Grammar.AddTerminal(r.Name)
+		r.Terminal = ctx.Grammar.AddTerminal(r.Name)
 
 	case Print:
 		printer := ctx.CurrentPrinter.Peek()
@@ -42,7 +44,7 @@ func (r *TokenRule) RunPass(ctx *Context, pass Pass) {
 	case GenerateGrammar:
 		nfaCons := r.Expr.NFACons(ctx)
 		nfaCons.E.Accept = true
-		nfaCons.E.Data = r.TerminalIndex
+		nfaCons.E.Data = r.Terminal
 		ctx.CurrentLexerMode.Peek().AddRule(*nfaCons)
 	}
 }

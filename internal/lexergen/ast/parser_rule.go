@@ -14,7 +14,7 @@ type ParserRule struct {
 	Prods     []*ParserProd
 	Generated lr2.Generated
 
-	RuleIndex int
+	Rule *lr2.Rule
 }
 
 func (r *ParserRule) RunPass(ctx *Context, pass Pass) {
@@ -27,10 +27,9 @@ func (r *ParserRule) RunPass(ctx *Context, pass Pass) {
 		if !ctx.RegisterName(r.Name, r) {
 			return
 		}
-		r.RuleIndex = ctx.Grammar.AddRule(r.Name)
-		rule := ctx.Grammar.GetRule(r.RuleIndex)
-		rule.Position = ctx.Position(r)
-		rule.Generated = r.Generated
+		r.Rule = ctx.Grammar.AddRule(r.Name)
+		r.Rule.Position = ctx.Position(r)
+		r.Rule.Generated = r.Generated
 
 		if r.IsStart {
 			if ctx.StartParserRule != nil {

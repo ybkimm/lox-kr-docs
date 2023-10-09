@@ -45,7 +45,7 @@ type ParserTerm struct {
 	Child *ParserTerm
 	Sep   *ParserTerm
 
-	SymbolIndex int
+	Symbol lr2.Term
 }
 
 func (t *ParserTerm) RunPass(ctx *Context, pass Pass) {
@@ -87,9 +87,9 @@ func (t *ParserTerm) check(ctx *Context) bool {
 		}
 		switch ast := ast.(type) {
 		case *ParserRule:
-			t.SymbolIndex = ast.RuleIndex
+			t.Symbol = ast.Rule
 		case *TokenRule:
-			t.SymbolIndex = ast.TerminalIndex
+			t.Symbol = ast.Terminal
 		default:
 			ctx.Errs.Errorf(ctx.Position(t), "%v is not a parser or token rule", t.Name)
 			return false
@@ -104,7 +104,7 @@ func (t *ParserTerm) check(ctx *Context) bool {
 			ctx.Errs.Errorf(ctx.Position(t), "ambiguous token literal: '%v'", t.Alias)
 			return false
 		}
-		t.SymbolIndex = ast.TerminalIndex
+		t.Symbol = ast.Terminal
 	}
 	return true
 }
