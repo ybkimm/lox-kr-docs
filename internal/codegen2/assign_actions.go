@@ -67,7 +67,7 @@ func (c *context) AssignActions() bool {
 	for changed {
 		changed = false
 		for _, prod := range c.ParserGrammar.Prods {
-			rule := c.ParserGrammar.GetRule(prod.Rule)
+			rule := prod.Rule
 			typ := c.getReduceTypeForGeneratedRule(rule, prod)
 			if typ == nil {
 				// Rule was not generated, or we can't determine the Go-type for the
@@ -152,14 +152,17 @@ func (c *context) getReduceTypeForGeneratedRule(
 		//  =>
 		// a = b a'
 		// a' = c | e
-		if prod != c.ParserGrammar.GetProd(rule.Prods[0]) {
+		if prod != rule.Prods[0] {
 			return nil
 		}
 		termC := prod.Terms[0]
-		if lr2.IsRule(termC) {
-			return c.RuleGoTypes[c.ParserGrammar.GetRule(termC)]
-		} else {
+		switch termC := termC.(type) {
+		case *lr2.Rule:
+			return c.RuleGoTypes[termC]
+		case *lr2.Terminal:
 			return c.TokenType
+		default:
+			panic("not-reached")
 		}
 
 	case lr2.GeneratedOneOrMore, lr2.GeneratedList:
@@ -168,13 +171,18 @@ func (c *context) getReduceTypeForGeneratedRule(
 		// a = b a'
 		// a' = a' c | c      (OneOrMore)
 		// a' = a' sep c | c  (List)
-		if prod != c.ParserGrammar.GetProd(rule.Prods[1]) {
+		if prod != rule.Prods[1] {
 			return nil
 		}
 		termC := prod.Terms[0]
-		typeC := c.TokenType
-		if lr2.IsRule(termC) {
-			typeC = c.RuleGoTypes[c.ParserGrammar.GetRule(termC)]
+		var typeC gotypes.Type
+		switch termC := termC.(type) {
+		case *lr2.Rule:
+			typeC = c.RuleGoTypes[termC]
+		case *lr2.Terminal:
+			typeC = c.TokenType
+		default:
+			panic("not-reached")
 		}
 		return gotypes.NewSlice(typeC)
 
