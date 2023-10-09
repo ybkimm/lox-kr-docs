@@ -66,6 +66,15 @@ func (p *calcParser) on_num__minus(_ Token, num Token) float64 {
 	return -v
 }
 
+func (p *calcParser) on_num__minis(_ Token, num Token, _ Token) float64 {
+	v, err := strconv.ParseFloat(num.Str, 64)
+	if err != nil {
+		//p.errLogger.Errorf(num.Pos, "invalid float: %v", err)
+		return 0
+	}
+	return -v
+}
+
 func (p *calcParser) onError() {
 	//p.errLogger.Errorf(p.errorToken().Pos, "unexpected token %v", p.errorToken())
 }

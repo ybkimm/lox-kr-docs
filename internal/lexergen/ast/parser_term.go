@@ -79,7 +79,8 @@ func (t *ParserTerm) RunPass(ctx *Context, pass Pass) {
 }
 
 func (t *ParserTerm) check(ctx *Context) bool {
-	if t.Name != "" {
+	switch {
+	case t.Name != "":
 		ast := ctx.Lookup(t.Name)
 		if ast == nil {
 			ctx.Errs.Errorf(ctx.Position(t), "undefined: %v", t.Name)
@@ -94,7 +95,8 @@ func (t *ParserTerm) check(ctx *Context) bool {
 			ctx.Errs.Errorf(ctx.Position(t), "%v is not a parser or token rule", t.Name)
 			return false
 		}
-	} else if t.Alias != "" {
+
+	case t.Alias != "":
 		ast := ctx.LookupAlias(t.Alias)
 		switch ast {
 		case nil:
@@ -105,6 +107,9 @@ func (t *ParserTerm) check(ctx *Context) bool {
 			return false
 		}
 		t.Symbol = ast.Terminal
+
+	case t.Type == ParserTermError:
+		t.Symbol = ctx.Grammar.ErrorTerminal
 	}
 	return true
 }

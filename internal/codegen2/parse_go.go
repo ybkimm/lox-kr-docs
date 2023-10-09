@@ -61,6 +61,7 @@ func (c *context) ParseGo() bool {
 		c.Errs.GeneralErrorf("Token type is undefined")
 		return false
 	}
+	c.TokenType = tokenObj.Type()
 
 	// The "error" built-in type, it will be used for matching error-handling
 	// productions.

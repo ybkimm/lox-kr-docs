@@ -28,6 +28,7 @@ func (p *ParserProd) RunPass(ctx *Context, pass Pass) {
 			terms[i] = termAst.Symbol
 		}
 		p.Prod = ctx.Grammar.AddProd(rule, terms...)
+		p.Prod.Position = ctx.Position(p)
 		if p.Qualifier != nil {
 			p.Prod.Precedence = p.Qualifier.Precedence
 			switch p.Qualifier.Associativity {

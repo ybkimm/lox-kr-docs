@@ -124,22 +124,25 @@ type Prod struct {
 	Terms         []Term
 	Precedence    int
 	Associativity Associativity
+	Position      gotoken.Position
 	UserData      any
 }
 
 // Grammar represents a LR1 grammar.
 type Grammar struct {
-	Terminals []*Terminal
-	Rules     []*Rule
-	Prods     []*Prod
+	Terminals     []*Terminal
+	Rules         []*Rule
+	Prods         []*Prod
+	EOFTerminal   *Terminal
+	ErrorTerminal *Terminal
 }
 
 // NewGrammar creates a new Grammar.
 func NewGrammar() *Grammar {
 	g := &Grammar{}
 
-	g.AddTerminal("EOF")
-	g.AddTerminal("ERROR")
+	g.EOFTerminal = g.AddTerminal("EOF")
+	g.ErrorTerminal = g.AddTerminal("ERROR")
 
 	sprime := g.AddRule("S'")
 	sprime.Generated = GeneratedSPrime

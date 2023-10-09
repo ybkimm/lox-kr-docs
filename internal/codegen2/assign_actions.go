@@ -98,10 +98,16 @@ func (c *context) AssignActions() bool {
 		}
 	}
 
+	if c.Errs.HasError() {
+		return false
+	}
+
 	var unassignedMethods set.Set[*actionMethod]
 	for _, ruleMethods := range methods {
 		unassignedMethods.AddSlice(ruleMethods)
 	}
+
+	c.ActionMethods = make(map[*lr2.Prod]*actionMethod)
 
 	// Assign each method to a production.
 	for _, prod := range c.ParserGrammar.Prods {
@@ -110,6 +116,40 @@ func (c *context) AssignActions() bool {
 			// generated.
 			continue
 		}
+		matches := c.matchMethod(prod, methods[prod.Rule.Name])
+		if len(matches) == 0 {
+			c.Errs.Errorf(prod.Position, "production has no matching action method")
+			continue
+		}
+		if len(matches) > 1 {
+			c.Errs.Errorf(prod.Position, "multiple action methods matching production")
+			for _, match := range matches {
+				c.Errs.Infof(c.Fset.Position(match.Method.Pos()),
+					"possible match: %v", match.Method.Name())
+			}
+			continue
+		}
+		assert.True(
+			gotypes.Identical(
+				matches[0].Return,
+				c.RuleGoTypes[prod.Rule]))
+
+		c.ActionMethods[prod] = matches[0]
+		unassignedMethods.Remove(matches[0])
+	}
+
+	if c.Errs.HasError() {
+		return false
+	}
+
+	// All methods must be accounted for.
+	if !unassignedMethods.Empty() {
+		unassignedMethods.ForEach(func(m *actionMethod) {
+			c.Errs.Errorf(
+				c.Fset.Position(m.Method.Pos()),
+				"could not match action method %v to a production",
+				m.Name())
+		})
 	}
 
 	return !c.Errs.HasError()
@@ -206,22 +246,41 @@ func (c *context) getReduceTypeForGeneratedRule(
 	}
 }
 
-func (c *context) matchMethod(prod *lr2.Prod, methods []*actionMethod) *actionMethod {
+func (c *context) matchMethod(prod *lr2.Prod, methods []*actionMethod) []*actionMethod {
 	isMatch := func(method *actionMethod) bool {
 		if len(method.Params) != len(prod.Terms) {
 			return false
 		}
 		for i, param := range method.Params {
 			term := prod.Terms[i]
+			termGoType := c.getTermGoType(term)
+			if !gotypes.AssignableTo(param, termGoType) {
+				return false
+			}
+		}
+		return true
+	}
+
+	var matches []*actionMethod
+	for _, method := range methods {
+		if isMatch(method) {
+			matches = append(matches, method)
 		}
 	}
+
+	return matches
 }
 
 func (c *context) getTermGoType(term lr2.Term) gotypes.Type {
 	switch term := term.(type) {
 	case *lr2.Rule:
 		return c.RuleGoTypes[term]
-
+	case *lr2.Terminal:
+		if term == c.ParserGrammar.ErrorTerminal {
+			return c.ErrorType
+		} else {
+			return c.TokenType
+		}
 	default:
 		panic("not-reached")
 	}
