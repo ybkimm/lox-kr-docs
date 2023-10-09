@@ -6,6 +6,7 @@ import (
 
 	"github.com/dcaiafa/lox/internal/assert"
 	"github.com/dcaiafa/lox/internal/parsergen/lr2"
+	"github.com/dcaiafa/lox/internal/util/set"
 )
 
 func (c *context) AssignActions() bool {
@@ -94,6 +95,20 @@ func (c *context) AssignActions() bool {
 			c.Errs.Errorf(
 				rule.Position, "rule missing action method: %v",
 				rule.Name)
+		}
+	}
+
+	var unassignedMethods set.Set[*actionMethod]
+	for _, ruleMethods := range methods {
+		unassignedMethods.AddSlice(ruleMethods)
+	}
+
+	// Assign each method to a production.
+	for _, prod := range c.ParserGrammar.Prods {
+		if prod.Rule.Generated != lr2.NotGenerated {
+			// Ignore generated rules. Actions for generated rules will also be
+			// generated.
+			continue
 		}
 	}
 
@@ -188,6 +203,27 @@ func (c *context) getReduceTypeForGeneratedRule(
 
 	default:
 		panic("unreachable")
+	}
+}
+
+func (c *context) matchMethod(prod *lr2.Prod, methods []*actionMethod) *actionMethod {
+	isMatch := func(method *actionMethod) bool {
+		if len(method.Params) != len(prod.Terms) {
+			return false
+		}
+		for i, param := range method.Params {
+			term := prod.Terms[i]
+		}
+	}
+}
+
+func (c *context) getTermGoType(term lr2.Term) gotypes.Type {
+	switch term := term.(type) {
+	case *lr2.Rule:
+		return c.RuleGoTypes[term]
+
+	default:
+		panic("not-reached")
 	}
 }
 

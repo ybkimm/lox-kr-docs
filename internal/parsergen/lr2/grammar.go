@@ -100,6 +100,7 @@ func (g Generated) String() string {
 //
 //	expr = expr '+' expr @left(1) | '(' expr ')' | NUM
 type Rule struct {
+	Index     int
 	Name      string
 	Prods     []*Prod
 	Generated Generated
@@ -174,7 +175,8 @@ func (g *Grammar) AddTerminal(name string) *Terminal {
 // determine whether a symbol id references a Rule.
 func (g *Grammar) AddRule(name string) *Rule {
 	r := &Rule{
-		Name: name,
+		Index: len(g.Rules),
+		Name:  name,
 	}
 	g.Rules = append(g.Rules, r)
 	return r

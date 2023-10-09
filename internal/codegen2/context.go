@@ -38,5 +38,6 @@ type context struct {
 	ErrorType     gotypes.Type
 	ParserType    *gotypes.Named
 	RuleGoTypes   map[*lr2.Rule]gotypes.Type // rule => Go-type
+	ActionMethods map[*lr2.Prod]*actionMethod
 	HasOnReduce   bool
 }

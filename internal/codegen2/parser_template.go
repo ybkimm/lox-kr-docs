@@ -1,7 +1,11 @@
 package codegen2
 
 import (
+	"math"
+	"strings"
+
 	"github.com/CloudyKit/jet/v6"
+	"github.com/dcaiafa/lox/internal/parsergen/lr2"
 )
 
 const parserPlaceholderTemplate = `
@@ -292,13 +296,14 @@ func renderParserTemplate(in *parserTemplateInputs) string {
 	return renderTemplate(in.Package, in.PackagePath, template, vars)
 }
 
-/*
 func (c *context) EmitParser() {
 	vars := new(jet.VarMap)
 
 	const accept int32 = math.MaxInt32
 
 	vars.Set("accept", accept)
+	vars.Set("parser", c.ParserType.Obj().Name())
+	vars.Set("grammar", c.ParserGrammar)
 
 	vars.Set("array", func(arr []int32) string {
 		var str strings.Builder
@@ -308,23 +313,23 @@ func (c *context) EmitParser() {
 
 	vars.Set("actions", func() []int32 {
 		table := newTable()
-		for stateIndex := range c.ParserTable.States {
-			var row []int32 actions := c.ParserTable.Actions(stateIndex)
-			for terminalIndex := range actions.Terminals() {
-				action := actions.Get(lr2.TerminalID(terminalIndex)).Get(0)
-				row = append(row, int32(terminalIndex))
-
+		for _, state := range c.ParserTable.States {
+			var row []int32
+			actions := c.ParserTable.Actions(state)
+			for _, terminal := range actions.Terminals() {
+				action := actions.Get(terminal).Get(0)
+				row = append(row, int32(terminal.Index))
 				switch action.Type {
 				case lr2.ActionShift:
-					row = append(row, int32(action.ShiftState))
+					row = append(row, int32(action.ShiftState.Index))
 				case lr2.ActionReduce:
-					row = append(row, int32(action.Prods[0])*-1)
+					row = append(row, int32(action.Prods[0].Index)*-1)
 				case lr2.ActionAccept:
 					row = append(row, accept)
 				default:
 					panic("unreachable")
 				}
-				table.AddRow(stateIndex, row)
+				table.AddRow(state.Index, row)
 			}
 		}
 		return table.Array()
@@ -332,13 +337,35 @@ func (c *context) EmitParser() {
 
 	vars.Set("goto", func() []int32 {
 		table := newTable()
-		for stateIndex := range c.ParserTable.States {
+		for _, from := range c.ParserTable.States {
 			var row []int32
-			transitions := c.ParserTable.Transitions(stateIndex)
-			for _, input
+			transitions := c.ParserTable.Transitions(from)
+			for _, input := range transitions.Inputs() {
+				rule, ok := input.(*lr2.Rule)
+				if !ok {
+					continue
+				}
+				to := transitions.Get(rule)
+				row = append(row, int32(rule.Index), int32(to.Index))
+			}
+			table.AddRow(from.Index, row)
 		}
+		return table.Array()
 	})
 
+	vars.Set("lhs", func() []int32 {
+		lhs := make([]int32, len(c.ParserGrammar.Prods))
+		for i, prod := range c.ParserGrammar.Prods {
+			lhs[i] = int32(prod.Rule.Index)
+		}
+		return lhs
+	})
 
+	vars.Set("term_counts", func() []int32 {
+		termCounts := make([]int32, len(c.ParserGrammar.Prods))
+		for i, prod := range c.ParserGrammar.Prods {
+			termCounts[i] = int32(len(prod.Terms))
+		}
+		return termCounts
+	})
 }
-*/
