@@ -1,10 +1,11 @@
 package lr2
 
 import (
+	"cmp"
 	"fmt"
 	gotoken "go/token"
 	"io"
-	"math"
+	"slices"
 	"strings"
 
 	"github.com/dcaiafa/lox/internal/assert"
@@ -12,12 +13,28 @@ import (
 )
 
 const (
-	EOF        = 0
-	Error      = 1
-	Epsilon    = math.MaxInt
-	SPrime     = -1
-	SPrimeProd = 0
+	EOF             = 0
+	Error           = 1
+	SPrimeProdIndex = 0
 )
+
+type Term interface {
+	TermName() string
+}
+
+func TermNames[T Term](ts []T) []string {
+	names := make([]string, len(ts))
+	for i, t := range ts {
+		names[i] = t.TermName()
+	}
+	return names
+}
+
+func SortTerms[T Term](ts []T) {
+	slices.SortFunc(ts, func(a, b T) int {
+		return cmp.Compare(a.TermName(), b.TermName())
+	})
+}
 
 type Associativity int
 
@@ -26,29 +43,16 @@ const (
 	Right
 )
 
-func IsTerminal(sym int) bool {
-	return sym >= 0
-}
-
-func IsRule(sym int) bool {
-	return !IsTerminal(sym)
-}
-
-func TerminalID(terminalIndex int) int {
-	return terminalIndex
-}
-
-func RuleID(ruleIndex int) int {
-	return -ruleIndex - 1
-}
-
 type Terminal struct {
+	Index    int
 	Name     string
 	Alias    string
 	UserData any
 }
 
-var epsilon = &Terminal{
+func (t *Terminal) TermName() string { return t.Name }
+
+var Epsilon = &Terminal{
 	Name: "ε",
 }
 
@@ -97,11 +101,13 @@ func (g Generated) String() string {
 //	expr = expr '+' expr @left(1) | '(' expr ')' | NUM
 type Rule struct {
 	Name      string
-	Prods     []int
+	Prods     []*Prod
 	Generated Generated
 	Position  gotoken.Position
 	UserData  any
 }
+
+func (r *Rule) TermName() string { return r.Name }
 
 // Prod, or production, is a ordered set of terms belonging to a Rule.
 // For example:
@@ -112,8 +118,9 @@ type Rule struct {
 //	         ^
 //	       term
 type Prod struct {
-	Rule          int
-	Terms         []int
+	Index         int
+	Rule          *Rule
+	Terms         []Term
 	Precedence    int
 	Associativity Associativity
 	UserData      any
@@ -130,18 +137,14 @@ type Grammar struct {
 func NewGrammar() *Grammar {
 	g := &Grammar{}
 
-	n := g.AddTerminal("EOF")
-	assert.True(n == EOF)
+	g.AddTerminal("EOF")
+	g.AddTerminal("ERROR")
 
-	n = g.AddTerminal("ERROR")
-	assert.True(n == Error)
+	sprime := g.AddRule("S'")
+	sprime.Generated = GeneratedSPrime
 
-	n = g.AddRule("S'")
-	assert.True(n == SPrime)
-	g.GetRule(n).Generated = GeneratedSPrime
-
-	n = g.AddProd(SPrime)
-	assert.True(n == SPrimeProd)
+	sprimeProd := g.AddProd(sprime)
+	assert.True(sprimeProd.Index == SPrimeProdIndex)
 
 	return g
 }
@@ -149,92 +152,50 @@ func NewGrammar() *Grammar {
 // SetStart sets the Start rule for a grammar. This is the actual thing we are
 // trying to derive. If a Rule is not in the transitive closure of things
 // derivable from the start rule, it will never be derived.
-func (g *Grammar) SetStart(ruleID int) {
-	assert.True(IsRule(ruleID))
-	g.Prods[SPrimeProd].Terms = []int{ruleID}
+func (g *Grammar) SetStart(rule *Rule) {
+	g.Prods[0].Terms = []Term{rule}
 }
 
 // AddTerminal adds a Terminal to the grammar, and returns its symbol id.
 // GetTerminal can be used to a retrieve a `Terminal` object from a symbol id.
 // IsTerminal can be used to determine whether a symbol id references a
 // Terminal.
-func (g *Grammar) AddTerminal(name string) int {
+func (g *Grammar) AddTerminal(name string) *Terminal {
 	t := &Terminal{
-		Name: name,
+		Index: len(g.Terminals),
+		Name:  name,
 	}
 	g.Terminals = append(g.Terminals, t)
-	return TerminalID(len(g.Terminals) - 1)
+	return t
 }
 
 // AddRule adds a Rule to the grammar, and returns its symbol id. GetRule can be
 // used to retrieve a `Rule` object from a symbol id. IsRule can be used to
 // determine whether a symbol id references a Rule.
-func (g *Grammar) AddRule(name string) int {
+func (g *Grammar) AddRule(name string) *Rule {
 	r := &Rule{
 		Name: name,
 	}
 	g.Rules = append(g.Rules, r)
-	return RuleID(len(g.Rules) - 1)
+	return r
 }
 
 // AddProd adds a Prod to a Rule.
-func (g *Grammar) AddProd(ruleID int, terms ...int) int {
-	rule := g.GetRule(ruleID)
-
+func (g *Grammar) AddProd(rule *Rule, terms ...Term) *Prod {
 	p := &Prod{
-		Rule: ruleID,
+		Index: len(g.Prods),
+		Rule:  rule,
 	}
 
 	g.Prods = append(g.Prods, p)
-	prodIndex := len(g.Prods) - 1
-	rule.Prods = append(rule.Prods, prodIndex)
+	rule.Prods = append(rule.Prods, p)
 	p.Terms = append(p.Terms, terms...)
 
-	return prodIndex
+	return p
 }
 
 func (g *Grammar) LastProd() *Prod {
 	return g.Prods[len(g.Prods)-1]
-}
-
-// GetTerminal returns the `Terminal` referenced by a symbol id.
-// symID must reference a Terminal, not a Rule.
-func (g *Grammar) GetTerminal(symID int) *Terminal {
-	assert.True(IsTerminal(symID))
-	if symID == Epsilon {
-		return epsilon
-	}
-	return g.Terminals[symID]
-}
-
-// GetRule returns the `Rule` referenced by a symbol id.
-// symID must reference a Rule, not a Terminal.
-func (g *Grammar) GetRule(symID int) *Rule {
-	assert.True(IsRule(symID))
-	symID = -symID - 1
-	return g.Rules[symID]
-}
-
-// GetSymbolName returns the name of a rule or symbol referenced
-// by the symbol id.
-func (g *Grammar) GetSymbolName(symID int) string {
-	if IsTerminal(symID) {
-		return g.GetTerminal(symID).Name
-	} else {
-		return g.GetRule(symID).Name
-	}
-}
-
-func (g *Grammar) GetSymbolNames(symIDs []int) []string {
-	names := make([]string, len(symIDs))
-	for i, symID := range symIDs {
-		names[i] = g.GetSymbolName(symID)
-	}
-	return names
-}
-
-func (g *Grammar) GetProd(prodIndex int) *Prod {
-	return g.Prods[prodIndex]
 }
 
 // Print will write a visual representation of the grammar to an io.Writer for
@@ -250,13 +211,12 @@ func (g *Grammar) Print(w io.Writer) {
 	l.Logf("Rules")
 	l.Logf("=====")
 
-	writeProd := func(buf *strings.Builder, pi int) {
-		p := g.Prods[pi]
+	writeProd := func(buf *strings.Builder, p *Prod) {
 		for j, ti := range p.Terms {
 			if j != 0 {
 				buf.WriteString(" ")
 			}
-			buf.WriteString(g.GetSymbolName(ti))
+			buf.WriteString(ti.TermName())
 		}
 		if len(p.Terms) == 0 {
 			buf.WriteString("ε")

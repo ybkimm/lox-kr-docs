@@ -12,7 +12,7 @@ func ConstructLALR(g *Grammar) *ParserTable {
 	t := NewParserTable(g)
 
 	start := new(ItemSet)
-	start.Add(Item{Prod: SPrimeProd, Dot: 0, Lookahead: EOF})
+	start.Add(Item{Prod: SPrimeProdIndex, Dot: 0, Lookahead: EOF})
 	start = Closure(g, start)
 	startKey := start.LR0Key()
 	t.AddState(startKey, start)
@@ -23,7 +23,7 @@ func ConstructLALR(g *Grammar) *ParserTable {
 		slices.Sort(pending)
 		pendingSet.Clear()
 		for _, fromKey := range pending {
-			from, fromIndex := t.GetStateByKey(fromKey)
+			from := t.GetStateByKey(fromKey)
 			for _, sym := range Next(g, *from) {
 				changed := false
 				to := Goto(g, from, sym)
@@ -31,15 +31,15 @@ func ConstructLALR(g *Grammar) *ParserTable {
 
 				// The destination state might already exist in which case we might
 				// need to complement its lookaheads.
-				existingTo, existingToIndex := t.GetStateByKey(toKey)
+				existingTo := t.GetStateByKey(toKey)
 				if existingTo != nil {
 					for _, item := range to.Items() {
 						changed = existingTo.Add(item) || changed
 					}
-					t.Transitions(fromIndex).Add(sym, existingToIndex)
+					t.Transitions(from).Add(sym, existingTo)
 				} else {
-					toIndex := t.AddState(toKey, to)
-					t.Transitions(fromIndex).Add(sym, toIndex)
+					t.AddState(toKey, to)
+					t.Transitions(from).Add(sym, to)
 					changed = true
 				}
 				if changed {
@@ -57,24 +57,23 @@ func ConstructLALR(g *Grammar) *ParserTable {
 
 func createActions(t *ParserTable) {
 	g := t.Grammar
-	for stateIndex, state := range t.States {
+	for _, state := range t.States {
 		for _, item := range state.Items() {
-			prod := g.GetProd(item.Prod)
+			prod := g.Prods[item.Prod]
 			if item.Dot == len(prod.Terms) {
 				// A -> γ., x
-				if item.Prod == SPrimeProd {
-					t.Actions(stateIndex).
-						AddAccept(item.Lookahead)
+				if item.Prod == SPrimeProdIndex {
+					t.Actions(state).
+						AddAccept(g.Terminals[item.Lookahead])
 				} else {
-					t.Actions(stateIndex).
-						AddReduce(item.Lookahead, item.Prod)
+					t.Actions(state).
+						AddReduce(g.Terminals[item.Lookahead], g.Prods[item.Prod])
 				}
-			} else if terminal := prod.Terms[item.Dot]; IsTerminal(terminal) {
+			} else if terminal, ok := prod.Terms[item.Dot].(*Terminal); ok {
 				// A -> α.xβ where x is a Terminal
-				terminal := prod.Terms[item.Dot]
-				shiftState := t.Transitions(stateIndex).Get(terminal)
-				t.Actions(stateIndex).
-					AddShift(terminal, shiftState, item.Prod)
+				shiftState := t.Transitions(state).Get(terminal)
+				t.Actions(state).
+					AddShift(terminal, shiftState, t.Grammar.Prods[item.Prod])
 			}
 		}
 	}
@@ -83,7 +82,7 @@ func createActions(t *ParserTable) {
 func resolveConflicts(t *ParserTable) {
 	resolveConflict := func(
 		state *ItemSet,
-		terminal int,
+		terminal *Terminal,
 		actions *array.Array[*Action],
 	) bool {
 		// We can only resolve shift/reduce conflicts.
@@ -105,10 +104,9 @@ func resolveConflicts(t *ParserTable) {
 		// But we can only proceed with conflict resolution iff all the involved
 		// productions belong to the same Rule and they all have the same
 		// precendence value.
-		var shiftRule int
+		var shiftRule *Rule
 		var shiftPrec int
-		for i, prodIndex := range shift.Prods {
-			prod := t.Grammar.GetProd(prodIndex)
+		for i, prod := range shift.Prods {
 			if i == 0 {
 				shiftRule = prod.Rule
 				shiftPrec = prod.Precedence
@@ -118,7 +116,7 @@ func resolveConflicts(t *ParserTable) {
 		}
 
 		assert.True(len(reduce.Prods) == 1)
-		reduceProd := t.Grammar.GetProd(reduce.Prods[0])
+		reduceProd := reduce.Prods[0]
 		reducePrec := reduceProd.Precedence
 
 		// The production(s) associated with each action must belong to the same
@@ -141,7 +139,7 @@ func resolveConflicts(t *ParserTable) {
 			remove(reduce)
 		case len(shift.Prods) == 1 &&
 			shift.Prods[0] == reduce.Prods[0] &&
-			t.Grammar.GetProd(shift.Prods[0]).Associativity == Right:
+			shift.Prods[0].Associativity == Right:
 			remove(reduce)
 		default:
 			remove(shift)
@@ -150,8 +148,8 @@ func resolveConflicts(t *ParserTable) {
 		return true
 	}
 
-	for stateIndex, state := range t.States {
-		actionMap := t.Actions(stateIndex)
+	for _, state := range t.States {
+		actionMap := t.Actions(state)
 		for _, terminal := range actionMap.Terminals() {
 			actions := actionMap.Get(terminal)
 			assert.True(!actions.Empty())

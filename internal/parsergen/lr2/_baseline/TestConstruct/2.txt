@@ -7,23 +7,12 @@ I0:
   L = .id, EOF
   L = .id, =
   R = .L, EOF
-    on * shift I4
+    on * shift I1
     on id shift I5
-    on R goto I1
     on L goto I2
-    on S goto I3
+    on R goto I3
+    on S goto I4
 I1:
-  S = R., EOF
-    on EOF reduce S
-I2:
-  S = L .= R, EOF
-  R = L., EOF
-    on EOF reduce R
-    on = shift I6
-I3:
-  S' = S., EOF
-    on EOF accept
-I4:
   L = .* R, EOF
   L = .* R, =
   L = * .R, EOF
@@ -32,61 +21,72 @@ I4:
   L = .id, =
   R = .L, EOF
   R = .L, =
-    on * shift I4
+    on * shift I1
     on id shift I5
-    on R goto I7
-    on L goto I8
+    on L goto I7
+    on R goto I8
+I2:
+  S = L .= R, EOF
+  R = L., EOF
+    on = shift I6
+    on EOF reduce R
+I3:
+  S = R., EOF
+    on EOF reduce S
+I4:
+  S' = S., EOF
+    on EOF accept
 I5:
   L = id., EOF
   L = id., =
-    on EOF reduce L
     on = reduce L
+    on EOF reduce L
 I6:
   S = L = .R, EOF
   L = .* R, EOF
   L = .id, EOF
   R = .L, EOF
-    on * shift I4
+    on * shift I1
     on id shift I5
+    on L goto I7
     on R goto I9
-    on L goto I8
 I7:
-  L = * R., EOF
-  L = * R., =
-    on EOF reduce L
-    on = reduce L
-I8:
   R = L., EOF
   R = L., =
-    on EOF reduce R
     on = reduce R
+    on EOF reduce R
+I8:
+  L = * R., EOF
+  L = * R., =
+    on = reduce L
+    on EOF reduce L
 I9:
   S = L = R., EOF
     on EOF reduce S
 
 digraph G {
   I0 [label="I0\nS' = .S, EOF\nS = .L = R, EOF\nS = .R, EOF\nL = .* R, EOF\nL = .* R, =\nL = .id, EOF\nL = .id, =\nR = .L, EOF"];
-  I1 [label="I1\nS = R., EOF"];
+  I1 [label="I1\nL = .* R, EOF\nL = .* R, =\nL = * .R, EOF\nL = * .R, =\nL = .id, EOF\nL = .id, =\nR = .L, EOF\nR = .L, ="];
   I2 [label="I2\nS = L .= R, EOF\nR = L., EOF"];
-  I3 [label="I3\nS' = S., EOF"];
-  I4 [label="I4\nL = .* R, EOF\nL = .* R, =\nL = * .R, EOF\nL = * .R, =\nL = .id, EOF\nL = .id, =\nR = .L, EOF\nR = .L, ="];
+  I3 [label="I3\nS = R., EOF"];
+  I4 [label="I4\nS' = S., EOF"];
   I5 [label="I5\nL = id., EOF\nL = id., ="];
   I6 [label="I6\nS = L = .R, EOF\nL = .* R, EOF\nL = .id, EOF\nR = .L, EOF"];
-  I7 [label="I7\nL = * R., EOF\nL = * R., ="];
-  I8 [label="I8\nR = L., EOF\nR = L., ="];
+  I7 [label="I7\nR = L., EOF\nR = L., ="];
+  I8 [label="I8\nL = * R., EOF\nL = * R., ="];
   I9 [label="I9\nS = L = R., EOF"];
-  I0 -> I1 [label="R"];
+  I0 -> I1 [label="*"];
   I0 -> I2 [label="L"];
-  I0 -> I3 [label="S"];
-  I0 -> I4 [label="*"];
+  I0 -> I3 [label="R"];
+  I0 -> I4 [label="S"];
   I0 -> I5 [label="id"];
+  I1 -> I1 [label="*"];
+  I1 -> I7 [label="L"];
+  I1 -> I8 [label="R"];
+  I1 -> I5 [label="id"];
   I2 -> I6 [label="="];
-  I4 -> I7 [label="R"];
-  I4 -> I8 [label="L"];
-  I4 -> I4 [label="*"];
-  I4 -> I5 [label="id"];
+  I6 -> I1 [label="*"];
+  I6 -> I7 [label="L"];
   I6 -> I9 [label="R"];
-  I6 -> I8 [label="L"];
-  I6 -> I4 [label="*"];
   I6 -> I5 [label="id"];
 }

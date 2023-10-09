@@ -32,19 +32,19 @@ I1:
   E = E .* E, *
   E = E .* E, +
   E = E .* E, -
-    on EOF accept
     on * shift I3
     on + shift I4
     on - shift I5
+    on EOF accept
 I2:
   E = num., EOF
   E = num., *
   E = num., +
   E = num., -
-    on EOF reduce E
     on * reduce E
     on + reduce E
     on - reduce E
+    on EOF reduce E
 I3:
   E = .E + E, EOF
   E = .E + E, *
@@ -131,10 +131,10 @@ I6:
   E = E .* E, *
   E = E .* E, +
   E = E .* E, -
-    on EOF reduce E
     on * shift I3
     on + reduce E
     on - reduce E
+    on EOF reduce E
 I7:
   E = E .+ E, EOF
   E = E .+ E, *
@@ -152,10 +152,10 @@ I7:
   E = E .* E, *
   E = E .* E, +
   E = E .* E, -
-    on EOF reduce E
     on * shift I3
     on + reduce E
     on - reduce E
+    on EOF reduce E
 I8:
   E = E .+ E, EOF
   E = E .+ E, *
@@ -173,10 +173,10 @@ I8:
   E = E * E., *
   E = E * E., +
   E = E * E., -
-    on EOF reduce E
     on * reduce E
     on + reduce E
     on - reduce E
+    on EOF reduce E
 
 digraph G {
   I0 [label="I0\nS' = .E, EOF\nE = .E + E, EOF\nE = .E + E, *\nE = .E + E, +\nE = .E + E, -\nE = .E - E, EOF\nE = .E - E, *\nE = .E - E, +\nE = .E - E, -\nE = .E * E, EOF\nE = .E * E, *\nE = .E * E, +\nE = .E * E, -\nE = .num, EOF\nE = .num, *\nE = .num, +\nE = .num, -"];

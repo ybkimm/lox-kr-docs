@@ -16,21 +16,21 @@ func Closure(g *Grammar, i *ItemSet) *ItemSet {
 		pendingItems := pending.Items()
 		pending.Clear()
 		for _, item := range pendingItems {
-			prod := g.GetProd(item.Prod)
+			prod := g.Prods[item.Prod]
 			if item.Dot == len(prod.Terms) {
 				continue
 			}
 			termB := prod.Terms[item.Dot]
-			if !IsRule(termB) {
+			ruleB, ok := termB.(*Rule)
+			if !ok {
 				continue
 			}
-			ruleB := g.GetRule(termB)
 			beta := prod.Terms[item.Dot+1:]
-			a := item.Lookahead
+			a := g.Terminals[item.Lookahead]
 			first := First(g, append(beta, a))
 			for _, prodB := range ruleB.Prods {
-				first.ForEach(func(t int) {
-					newItem := Item{Prod: prodB, Dot: 0, Lookahead: t}
+				first.ForEach(func(t *Terminal) {
+					newItem := Item{Prod: prodB.Index, Dot: 0, Lookahead: t.Index}
 					if result.Add(newItem) {
 						pending.Add(newItem)
 					}

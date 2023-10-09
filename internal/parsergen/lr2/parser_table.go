@@ -12,42 +12,42 @@ type ParserTable struct {
 	HasConflicts bool
 	States       []*ItemSet
 
-	stateMap    map[string]int         // state-key => state
-	transitions map[int]*TransitionMap // state => transitions
-	actions     map[int]*ActionMap     // state => actions
+	stateMap    map[string]int              // state-key => state
+	transitions map[*ItemSet]*TransitionMap // state => transitions
+	actions     map[*ItemSet]*ActionMap     // state => actions
 }
 
 func NewParserTable(g *Grammar) *ParserTable {
 	return &ParserTable{
 		Grammar:     g,
 		stateMap:    make(map[string]int),
-		transitions: make(map[int]*TransitionMap),
-		actions:     make(map[int]*ActionMap),
+		transitions: make(map[*ItemSet]*TransitionMap),
+		actions:     make(map[*ItemSet]*ActionMap),
 	}
 }
 
-func (c *ParserTable) GetStateByKey(key string) (*ItemSet, int) {
+func (c *ParserTable) GetStateByKey(key string) *ItemSet {
 	stateIndex, ok := c.stateMap[key]
 	if !ok {
-		return nil, 0
+		return nil
 	}
-	return c.States[stateIndex], stateIndex
+	return c.States[stateIndex]
 }
 
 func (c *ParserTable) GetStateByIndex(stateIndex int) *ItemSet {
 	return c.States[stateIndex]
 }
 
-func (c *ParserTable) AddState(key string, s *ItemSet) int {
+func (c *ParserTable) AddState(key string, s *ItemSet) {
 	if _, ok := c.stateMap[key]; ok {
 		panic("state already exists")
 	}
 	c.States = append(c.States, s)
 	c.stateMap[key] = len(c.States) - 1
-	return len(c.States) - 1
+	s.Index = len(c.States) - 1
 }
 
-func (c *ParserTable) Transitions(from int) *TransitionMap {
+func (c *ParserTable) Transitions(from *ItemSet) *TransitionMap {
 	ts := c.transitions[from]
 	if ts == nil {
 		ts = new(TransitionMap)
@@ -56,7 +56,7 @@ func (c *ParserTable) Transitions(from int) *TransitionMap {
 	return ts
 }
 
-func (c *ParserTable) Actions(state int) *ActionMap {
+func (c *ParserTable) Actions(state *ItemSet) *ActionMap {
 	am := c.actions[state]
 	if am == nil {
 		am = new(ActionMap)
@@ -73,7 +73,7 @@ func (t *ParserTable) Print(w io.Writer) {
 		l = l.WithIndent()
 		l.Logf("%v", state.ToString(t.Grammar))
 		l = l.WithIndent()
-		actionMap := t.Actions(stateIndex)
+		actionMap := t.Actions(state)
 		for _, sym := range actionMap.Terminals() {
 			actions := actionMap.Get(sym)
 			conflict := ""
@@ -83,16 +83,16 @@ func (t *ParserTable) Print(w io.Writer) {
 			for _, action := range actions.Elements() {
 				l.Logf(
 					"on %v %v%v",
-					t.Grammar.GetSymbolName(sym),
+					sym.TermName(),
 					action.ToString(t.Grammar),
 					conflict)
 			}
 		}
-		transitions := t.Transitions(stateIndex)
+		transitions := t.Transitions(state)
 		for _, input := range transitions.Inputs() {
-			if IsRule(input) {
+			if rule, ok := input.(*Rule); ok {
 				to := transitions.Get(input)
-				l.Logf("on %v goto I%v", t.Grammar.GetSymbolName(input), to)
+				l.Logf("on %v goto I%v", rule.Name, to.Index)
 			}
 		}
 	}
@@ -102,21 +102,21 @@ func (t *ParserTable) PrintGraph(w io.Writer) {
 	l := logger.New(w)
 	l.Logf("digraph G {")
 	li := l.WithIndent()
-	for stateIndex, state := range t.States {
+	for _, state := range t.States {
 		li.Logf(
 			"I%d [label=%q];",
-			stateIndex,
-			fmt.Sprintf("I%d\n%v", stateIndex, state.ToString(t.Grammar)))
+			state.Index,
+			fmt.Sprintf("I%d\n%v", state.Index, state.ToString(t.Grammar)))
 	}
-	for stateIndex := range t.States {
-		transitions := t.Transitions(stateIndex)
+	for _, state := range t.States {
+		transitions := t.Transitions(state)
 		for _, input := range transitions.Inputs() {
-			toIndex := transitions.Get(input)
+			to := transitions.Get(input)
 			li.Logf(
 				"I%d -> I%d [label=%q];",
-				stateIndex,
-				toIndex,
-				t.Grammar.GetSymbolName(input))
+				state.Index,
+				to.Index,
+				input.TermName())
 		}
 	}
 	l.Logf("}")

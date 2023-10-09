@@ -1,25 +1,24 @@
 package lr2
 
 import (
-	"sort"
 	"testing"
 
 	"github.com/dcaiafa/lox/internal/util/set"
 )
 
 func TestFirst(t *testing.T) {
-	names := func(g *Grammar, syms set.Set[int]) []string {
+	names := func(g *Grammar, syms set.Set[*Terminal]) []string {
 		names := make([]string, 0, syms.Len())
 		symElems := syms.Elements()
-		sort.Ints(symElems)
+		SortTerms(symElems)
 		for _, sym := range symElems {
-			names = append(names, g.GetSymbolName(sym))
+			names = append(names, sym.TermName())
 		}
 		return names
 	}
-	assertTerminalSetEq := func(t *testing.T, g *Grammar, result set.Set[int], expected ...int) {
+	assertTerminalSetEq := func(t *testing.T, g *Grammar, result set.Set[*Terminal], expected ...*Terminal) {
 		t.Helper()
-		expectedSet := set.New[int](expected...)
+		expectedSet := set.New[*Terminal](expected...)
 		if !result.Equal(expectedSet) {
 			t.Log("Expected: ", names(g, expectedSet))
 			t.Log("Actual: ", names(g, result))
@@ -60,12 +59,12 @@ func TestFirst(t *testing.T) {
 		g.AddProd(rF, tOP, rE, tCP)
 		g.AddProd(rF, tId)
 
-		assertTerminalSetEq(t, g, First(g, []int{rE}), tOP, tId)
-		assertTerminalSetEq(t, g, First(g, []int{rEp}), tA, Epsilon)
-		assertTerminalSetEq(t, g, First(g, []int{rTp}), tM, Epsilon)
-		assertTerminalSetEq(t, g, First(g, []int{rEp, rE}), tA, tOP, tId)
-		assertTerminalSetEq(t, g, First(g, []int{rEp, rTp}), tA, tM, Epsilon)
-		assertTerminalSetEq(t, g, First(g, []int{rEp, tId}), tA, tId)
+		assertTerminalSetEq(t, g, First(g, []Term{rE}), tOP, tId)
+		assertTerminalSetEq(t, g, First(g, []Term{rEp}), tA, Epsilon)
+		assertTerminalSetEq(t, g, First(g, []Term{rTp}), tM, Epsilon)
+		assertTerminalSetEq(t, g, First(g, []Term{rEp, rE}), tA, tOP, tId)
+		assertTerminalSetEq(t, g, First(g, []Term{rEp, rTp}), tA, tM, Epsilon)
+		assertTerminalSetEq(t, g, First(g, []Term{rEp, tId}), tA, tId)
 	})
 
 	t.Run("2", func(t *testing.T) {
@@ -91,7 +90,7 @@ func TestFirst(t *testing.T) {
 		g.AddProd(rZ, tS)
 		g.AddProd(rZ /* ε */)
 
-		assertTerminalSetEq(t, g, First(g, []int{rX}), tA, tS, tM)
+		assertTerminalSetEq(t, g, First(g, []Term{rX}), tA, tS, tM)
 	})
 
 	t.Run("3", func(t *testing.T) {
@@ -111,7 +110,7 @@ func TestFirst(t *testing.T) {
 		g.AddProd(rXS, rX)
 		g.AddProd(rX, tA)
 
-		assertTerminalSetEq(t, g, First(g, []int{rXS}), tA)
+		assertTerminalSetEq(t, g, First(g, []Term{rXS}), tA)
 	})
 
 	t.Run("4", func(t *testing.T) {
@@ -149,8 +148,8 @@ func TestFirst(t *testing.T) {
 		g.AddProd(rD /* ε */)
 		g.AddProd(rE, tDlr)
 
-		assertTerminalSetEq(t, g, First(g, []int{rB}), tSub, Epsilon)
-		assertTerminalSetEq(t, g, First(g, []int{rB, tMul}), tSub, tMul)
-		assertTerminalSetEq(t, g, First(g, []int{rA}), tSub, tDiv, tRem, tMul, tAdd, Epsilon)
+		assertTerminalSetEq(t, g, First(g, []Term{rB}), tSub, Epsilon)
+		assertTerminalSetEq(t, g, First(g, []Term{rB, tMul}), tSub, tMul)
+		assertTerminalSetEq(t, g, First(g, []Term{rA}), tSub, tDiv, tRem, tMul, tAdd, Epsilon)
 	})
 }

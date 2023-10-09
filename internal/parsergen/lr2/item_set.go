@@ -8,6 +8,8 @@ import (
 )
 
 type ItemSet struct {
+	Index int
+
 	set         set.Set[Item]
 	cachedItems []Item
 }

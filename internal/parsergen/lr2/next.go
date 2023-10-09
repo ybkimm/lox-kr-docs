@@ -1,7 +1,8 @@
 package lr2
 
 import (
-	"sort"
+	"cmp"
+	"slices"
 
 	"github.com/dcaiafa/lox/internal/util/set"
 )
@@ -16,16 +17,18 @@ import (
 //	C = .d
 //
 // Then Next(I) is [C, c, d].
-func Next(g *Grammar, is ItemSet) []int {
-	var set set.Set[int]
+func Next(g *Grammar, is ItemSet) []Term {
+	var set set.Set[Term]
 	is.ForEach(func(i Item) {
-		prod := g.GetProd(i.Prod)
+		prod := g.Prods[i.Prod]
 		if i.Dot >= len(prod.Terms) {
 			return
 		}
 		set.Add(prod.Terms[i.Dot])
 	})
 	syms := set.Elements()
-	sort.Ints(syms)
+	slices.SortFunc(syms, func(a, b Term) int {
+		return cmp.Compare(a.TermName(), b.TermName())
+	})
 	return syms
 }

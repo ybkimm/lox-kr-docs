@@ -30,12 +30,12 @@ import "github.com/dcaiafa/lox/internal/util/set"
 // First(E) is not included as First('%') does not include ε. '*' is included by
 // First(D), and '+' by First('+'). Finally ε is in the final result only
 // because First(D) includes it.
-func First(g *Grammar, syms []int) set.Set[int] {
-	visited := new(set.Set[int])
+func First(g *Grammar, syms []Term) set.Set[*Terminal] {
+	visited := new(set.Set[Term])
 	if len(syms) == 1 {
 		return first(g, visited, syms[0])
 	}
-	var firstSet set.Set[int]
+	var firstSet set.Set[*Terminal]
 	for _, sym := range syms {
 		partialFirst := first(g, visited, sym)
 		firstSet.AddSet(partialFirst)
@@ -50,22 +50,21 @@ func First(g *Grammar, syms []int) set.Set[int] {
 	return firstSet
 }
 
-func first(g *Grammar, visited *set.Set[int], s int) set.Set[int] {
-	if IsTerminal(s) {
-		return set.New[int](s)
+func first(g *Grammar, visited *set.Set[Term], s Term) set.Set[*Terminal] {
+	if terminal, ok := s.(*Terminal); ok {
+		return set.New[*Terminal](terminal)
 	}
 
 	// Productions can contain recursion.
 	// E.g.: xs = xs x | x
 	if visited.Has(s) {
-		return set.Set[int]{}
+		return set.Set[*Terminal]{}
 	}
 	visited.Add(s)
 
-	rule := g.GetRule(s)
-	firstSet := set.Set[int]{}
-	for _, prodIndex := range rule.Prods {
-		prod := g.Prods[prodIndex]
+	rule := s.(*Rule)
+	firstSet := set.Set[*Terminal]{}
+	for _, prod := range rule.Prods {
 		if len(prod.Terms) == 0 {
 			firstSet.Add(Epsilon)
 			continue
@@ -75,7 +74,7 @@ func first(g *Grammar, visited *set.Set[int], s int) set.Set[int] {
 		for _, term := range prod.Terms {
 			termFirst := first(g, visited, term)
 			hasEpsilon := false
-			termFirst.ForEach(func(s int) {
+			termFirst.ForEach(func(s *Terminal) {
 				if s == Epsilon {
 					hasEpsilon = true
 					return

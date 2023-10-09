@@ -1,19 +1,22 @@
 package lr2
 
-import "slices"
+import (
+	"cmp"
+	"slices"
+)
 
 type TransitionMap struct {
-	transitions map[int]int // symbol => state
+	transitions map[Term]*ItemSet // symbol => state
 }
 
-func (m *TransitionMap) Add(symbol, to int) {
+func (m *TransitionMap) Add(symbol Term, to *ItemSet) {
 	if m.transitions == nil {
-		m.transitions = make(map[int]int)
+		m.transitions = make(map[Term]*ItemSet)
 	}
 	m.transitions[symbol] = to
 }
 
-func (m *TransitionMap) Get(input int) int {
+func (m *TransitionMap) Get(input Term) *ItemSet {
 	to, ok := m.transitions[input]
 	if !ok {
 		panic("no transition for input")
@@ -21,11 +24,13 @@ func (m *TransitionMap) Get(input int) int {
 	return to
 }
 
-func (m *TransitionMap) Inputs() []int {
-	inputs := make([]int, 0, len(m.transitions))
+func (m *TransitionMap) Inputs() []Term {
+	inputs := make([]Term, 0, len(m.transitions))
 	for input := range m.transitions {
 		inputs = append(inputs, input)
 	}
-	slices.Sort(inputs)
+	slices.SortFunc(inputs, func(a, b Term) int {
+		return cmp.Compare(a.TermName(), b.TermName())
+	})
 	return inputs
 }

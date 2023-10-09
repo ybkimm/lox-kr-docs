@@ -13,14 +13,14 @@ type Item struct {
 }
 
 func (i Item) IsKernel() bool {
-	return i.Prod == SPrimeProd || i.Dot != 0
+	return i.Prod == SPrimeProdIndex || i.Dot != 0
 }
 
 func (i Item) ToString(g *Grammar) string {
 	var str strings.Builder
 
 	prod := g.Prods[i.Prod]
-	fmt.Fprintf(&str, "%v = ", g.GetRule(prod.Rule).Name)
+	fmt.Fprintf(&str, "%v = ", prod.Rule.Name)
 	for j, term := range prod.Terms {
 		if j != 0 {
 			str.WriteString(" ")
@@ -28,13 +28,13 @@ func (i Item) ToString(g *Grammar) string {
 		if j == i.Dot {
 			str.WriteString(".")
 		}
-		str.WriteString(g.GetSymbolName(term))
+		str.WriteString(term.TermName())
 	}
 	if i.Dot == len(prod.Terms) {
 		str.WriteString(".")
 	}
 	str.WriteString(", ")
-	str.WriteString(g.GetSymbolName(i.Lookahead))
+	str.WriteString(g.Terminals[i.Lookahead].Name)
 	return str.String()
 }
 

@@ -1,6 +1,7 @@
 package lr2
 
 import (
+	"cmp"
 	"fmt"
 	"slices"
 
@@ -17,16 +18,16 @@ const (
 
 type Action struct {
 	Type       ActionType
-	ShiftState int
-	Prods      []int
+	ShiftState *ItemSet
+	Prods      []*Prod
 }
 
 func (a Action) ToString(g *Grammar) string {
 	switch a.Type {
 	case ActionShift:
-		return fmt.Sprintf("shift I%v", a.ShiftState)
+		return fmt.Sprintf("shift I%v", a.ShiftState.Index)
 	case ActionReduce:
-		return fmt.Sprintf("reduce %v", g.GetSymbolName(g.GetProd(a.Prods[0]).Rule))
+		return fmt.Sprintf("reduce %v", a.Prods[0].Rule.Name)
 	case ActionAccept:
 		return "accept"
 	default:
@@ -35,10 +36,10 @@ func (a Action) ToString(g *Grammar) string {
 }
 
 type ActionMap struct {
-	actions map[int]*array.Array[*Action]
+	actions map[*Terminal]*array.Array[*Action]
 }
 
-func (m *ActionMap) AddShift(terminal int, toState int, prod int) {
+func (m *ActionMap) AddShift(terminal *Terminal, toState *ItemSet, prod *Prod) {
 	actions := m.getMap()[terminal]
 	if actions == nil {
 		actions = new(array.Array[*Action])
@@ -56,12 +57,12 @@ func (m *ActionMap) AddShift(terminal int, toState int, prod int) {
 	action := &Action{
 		Type:       ActionShift,
 		ShiftState: toState,
-		Prods:      []int{prod},
+		Prods:      []*Prod{prod},
 	}
 	actions.Add(action)
 }
 
-func (m *ActionMap) AddReduce(terminal int, prod int) {
+func (m *ActionMap) AddReduce(terminal *Terminal, prod *Prod) {
 	actions := m.getMap()[terminal]
 	if actions == nil {
 		actions = new(array.Array[*Action])
@@ -69,12 +70,12 @@ func (m *ActionMap) AddReduce(terminal int, prod int) {
 	}
 	action := &Action{
 		Type:  ActionReduce,
-		Prods: []int{prod},
+		Prods: []*Prod{prod},
 	}
 	actions.Add(action)
 }
 
-func (m *ActionMap) AddAccept(terminal int) {
+func (m *ActionMap) AddAccept(terminal *Terminal) {
 	actions := m.getMap()[terminal]
 	if actions == nil {
 		actions = new(array.Array[*Action])
@@ -91,16 +92,18 @@ func (m *ActionMap) AddAccept(terminal int) {
 	actions.Add(action)
 }
 
-func (m *ActionMap) Terminals() []int {
-	inputs := make([]int, 0, len(m.actions))
+func (m *ActionMap) Terminals() []*Terminal {
+	inputs := make([]*Terminal, 0, len(m.actions))
 	for input := range m.actions {
 		inputs = append(inputs, input)
 	}
-	slices.Sort(inputs)
+	slices.SortFunc(inputs, func(a, b *Terminal) int {
+		return cmp.Compare(a.Name, b.Name)
+	})
 	return inputs
 }
 
-func (m *ActionMap) Get(terminal int) *array.Array[*Action] {
+func (m *ActionMap) Get(terminal *Terminal) *array.Array[*Action] {
 	actions := m.actions[terminal]
 	if actions == nil {
 		actions = new(array.Array[*Action])
@@ -108,9 +111,9 @@ func (m *ActionMap) Get(terminal int) *array.Array[*Action] {
 	return actions
 }
 
-func (m *ActionMap) getMap() map[int]*array.Array[*Action] {
+func (m *ActionMap) getMap() map[*Terminal]*array.Array[*Action] {
 	if m.actions == nil {
-		m.actions = make(map[int]*array.Array[*Action])
+		m.actions = make(map[*Terminal]*array.Array[*Action])
 	}
 	return m.actions
 }

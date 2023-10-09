@@ -31,12 +31,12 @@ func TestGoto(t *testing.T) {
 		// C = .d, c
 		// C = .d, d
 		var is ItemSet
-		is.Add(Item{Prod: SPrimeProd, Dot: 0, Lookahead: EOF})
-		is.Add(Item{Prod: g.GetRule(S).Prods[0], Dot: 0, Lookahead: EOF})
-		is.Add(Item{Prod: g.GetRule(C).Prods[0], Dot: 0, Lookahead: c})
-		is.Add(Item{Prod: g.GetRule(C).Prods[0], Dot: 0, Lookahead: d})
-		is.Add(Item{Prod: g.GetRule(C).Prods[1], Dot: 0, Lookahead: c})
-		is.Add(Item{Prod: g.GetRule(C).Prods[1], Dot: 0, Lookahead: d})
+		is.Add(Item{Prod: SPrimeProdIndex, Dot: 0, Lookahead: EOF})
+		is.Add(Item{Prod: S.Prods[0].Index, Dot: 0, Lookahead: EOF})
+		is.Add(Item{Prod: C.Prods[0].Index, Dot: 0, Lookahead: c.Index})
+		is.Add(Item{Prod: C.Prods[0].Index, Dot: 0, Lookahead: d.Index})
+		is.Add(Item{Prod: C.Prods[1].Index, Dot: 0, Lookahead: c.Index})
+		is.Add(Item{Prod: C.Prods[1].Index, Dot: 0, Lookahead: d.Index})
 
 		gS := Goto(g, &is, S)
 		testutil.RequireEqualStr(t, gS.ToString(g), `

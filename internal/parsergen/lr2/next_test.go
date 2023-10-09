@@ -31,15 +31,15 @@ func TestNext(t *testing.T) {
 		// C = .d, c
 		// C = .d, d
 		var is ItemSet
-		is.Add(Item{Prod: SPrimeProd, Dot: 0, Lookahead: EOF})
-		is.Add(Item{Prod: g.GetRule(S).Prods[0], Dot: 0, Lookahead: EOF})
-		is.Add(Item{Prod: g.GetRule(C).Prods[0], Dot: 0, Lookahead: c})
-		is.Add(Item{Prod: g.GetRule(C).Prods[0], Dot: 0, Lookahead: d})
-		is.Add(Item{Prod: g.GetRule(C).Prods[1], Dot: 0, Lookahead: c})
-		is.Add(Item{Prod: g.GetRule(C).Prods[1], Dot: 0, Lookahead: d})
+		is.Add(Item{Prod: SPrimeProdIndex, Dot: 0, Lookahead: EOF})
+		is.Add(Item{Prod: S.Prods[0].Index, Dot: 0, Lookahead: EOF})
+		is.Add(Item{Prod: C.Prods[0].Index, Dot: 0, Lookahead: c.Index})
+		is.Add(Item{Prod: C.Prods[0].Index, Dot: 0, Lookahead: d.Index})
+		is.Add(Item{Prod: C.Prods[1].Index, Dot: 0, Lookahead: c.Index})
+		is.Add(Item{Prod: C.Prods[1].Index, Dot: 0, Lookahead: d.Index})
 
 		result := Next(g, is)
-		testutil.RequireEqual(t, g.GetSymbolNames(result), []string{"C", "S", "c", "d"})
+		testutil.RequireEqual(t, TermNames(result), []string{"C", "S", "c", "d"})
 	})
 
 	t.Run("2", func(t *testing.T) {
@@ -47,20 +47,20 @@ func TestNext(t *testing.T) {
 		// C = .c C, EOF
 		// C = .d, EOF
 		var is ItemSet
-		is.Add(Item{Prod: g.GetRule(C).Prods[0], Dot: 1, Lookahead: EOF})
-		is.Add(Item{Prod: g.GetRule(C).Prods[0], Dot: 0, Lookahead: EOF})
-		is.Add(Item{Prod: g.GetRule(C).Prods[1], Dot: 0, Lookahead: EOF})
+		is.Add(Item{Prod: C.Prods[0].Index, Dot: 1, Lookahead: EOF})
+		is.Add(Item{Prod: C.Prods[0].Index, Dot: 0, Lookahead: EOF})
+		is.Add(Item{Prod: C.Prods[1].Index, Dot: 0, Lookahead: EOF})
 
 		result := Next(g, is)
-		testutil.RequireEqual(t, g.GetSymbolNames(result), []string{"C", "c", "d"})
+		testutil.RequireEqual(t, TermNames(result), []string{"C", "c", "d"})
 	})
 
 	t.Run("3", func(t *testing.T) {
 		// C = d., EOF
 		var is ItemSet
-		is.Add(Item{Prod: g.GetRule(C).Prods[1], Dot: 1, Lookahead: EOF})
+		is.Add(Item{Prod: C.Prods[1].Index, Dot: 1, Lookahead: EOF})
 
 		result := Next(g, is)
-		testutil.RequireEqual(t, g.GetSymbolNames(result), []string{})
+		testutil.RequireEqual(t, TermNames(result), []string{})
 	})
 }
