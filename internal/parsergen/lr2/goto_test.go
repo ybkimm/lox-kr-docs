@@ -31,8 +31,8 @@ func TestGoto(t *testing.T) {
 		// C = .d, c
 		// C = .d, d
 		var is ItemSet
-		is.Add(Item{Prod: SPrimeProdIndex, Dot: 0, Lookahead: EOF})
-		is.Add(Item{Prod: S.Prods[0].Index, Dot: 0, Lookahead: EOF})
+		is.Add(Item{Prod: sPrimeProdIndex, Dot: 0, Lookahead: eofIndex})
+		is.Add(Item{Prod: S.Prods[0].Index, Dot: 0, Lookahead: eofIndex})
 		is.Add(Item{Prod: C.Prods[0].Index, Dot: 0, Lookahead: c.Index})
 		is.Add(Item{Prod: C.Prods[0].Index, Dot: 0, Lookahead: d.Index})
 		is.Add(Item{Prod: C.Prods[1].Index, Dot: 0, Lookahead: c.Index})

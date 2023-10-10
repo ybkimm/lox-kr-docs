@@ -27,31 +27,31 @@ func (m *actionMethod) Name() string {
 	return m.Method.Name()
 }
 
-type Generated int
+type generated int
 
 const (
-	NotGenerated Generated = iota
-	GeneratedSPrime
-	GeneratedZeroOrMore
-	GeneratedOneOrMore
-	GeneratedZeroOrOne
-	GeneratedList
+	notGenerated generated = iota
+	generatedSPrime
+	generatedZeroOrMore
+	generatedOneOrMore
+	generatedZeroOrOne
+	generatedList
 )
 
-func RuleGenerated(r *lr2.Rule) Generated {
+func RuleGenerated(r *lr2.Rule) generated {
 	switch {
-	case r.Name == "S'":
-		return GeneratedSPrime
+	case r.Name == lr2.SPrime:
+		return generatedSPrime
 	case strings.HasSuffix(r.Name, "*"):
-		return GeneratedZeroOrMore
+		return generatedZeroOrMore
 	case strings.HasSuffix(r.Name, "+"):
-		return GeneratedOneOrMore
+		return generatedOneOrMore
 	case strings.HasSuffix(r.Name, "?"):
-		return GeneratedZeroOrOne
+		return generatedZeroOrOne
 	case strings.HasPrefix(r.Name, "@list"):
-		return GeneratedList
+		return generatedList
 	default:
-		return NotGenerated
+		return notGenerated
 	}
 }
 

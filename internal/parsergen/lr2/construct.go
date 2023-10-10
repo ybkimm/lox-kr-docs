@@ -12,7 +12,7 @@ func ConstructLALR(g *Grammar) *ParserTable {
 	t := NewParserTable(g)
 
 	start := new(ItemSet)
-	start.Add(Item{Prod: SPrimeProdIndex, Dot: 0, Lookahead: EOF})
+	start.Add(Item{Prod: sPrimeProdIndex, Dot: 0, Lookahead: eofIndex})
 	start = Closure(g, start)
 	startKey := start.LR0Key()
 	t.AddState(startKey, start)
@@ -62,7 +62,7 @@ func createActions(t *ParserTable) {
 			prod := g.Prods[item.Prod]
 			if item.Dot == len(prod.Terms) {
 				// A -> γ., x
-				if item.Prod == SPrimeProdIndex {
+				if item.Prod == sPrimeProdIndex {
 					t.Actions(state).
 						AddAccept(g.Terminals[item.Lookahead])
 				} else {

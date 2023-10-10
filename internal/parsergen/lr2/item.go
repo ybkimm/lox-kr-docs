@@ -13,7 +13,7 @@ type Item struct {
 }
 
 func (i Item) IsKernel() bool {
-	return i.Prod == SPrimeProdIndex || i.Dot != 0
+	return i.Prod == sPrimeProdIndex || i.Dot != 0
 }
 
 func (i Item) ToString(g *Grammar) string {

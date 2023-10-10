@@ -54,7 +54,7 @@ func TestItem(t *testing.T) {
 		}
 	})
 	t.Run("Sprime", func(t *testing.T) {
-		i := Item{Prod: SPrimeProdIndex, Dot: 0, Lookahead: EOF}
+		i := Item{Prod: sPrimeProdIndex, Dot: 0, Lookahead: eofIndex}
 		if !i.IsKernel() {
 			t.Fatalf("[%v] should be a kernel", i.ToString(g))
 		}

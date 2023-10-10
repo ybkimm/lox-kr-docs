@@ -31,8 +31,8 @@ func TestNext(t *testing.T) {
 		// C = .d, c
 		// C = .d, d
 		var is ItemSet
-		is.Add(Item{Prod: SPrimeProdIndex, Dot: 0, Lookahead: EOF})
-		is.Add(Item{Prod: S.Prods[0].Index, Dot: 0, Lookahead: EOF})
+		is.Add(Item{Prod: sPrimeProdIndex, Dot: 0, Lookahead: eofIndex})
+		is.Add(Item{Prod: S.Prods[0].Index, Dot: 0, Lookahead: eofIndex})
 		is.Add(Item{Prod: C.Prods[0].Index, Dot: 0, Lookahead: c.Index})
 		is.Add(Item{Prod: C.Prods[0].Index, Dot: 0, Lookahead: d.Index})
 		is.Add(Item{Prod: C.Prods[1].Index, Dot: 0, Lookahead: c.Index})
@@ -47,9 +47,9 @@ func TestNext(t *testing.T) {
 		// C = .c C, EOF
 		// C = .d, EOF
 		var is ItemSet
-		is.Add(Item{Prod: C.Prods[0].Index, Dot: 1, Lookahead: EOF})
-		is.Add(Item{Prod: C.Prods[0].Index, Dot: 0, Lookahead: EOF})
-		is.Add(Item{Prod: C.Prods[1].Index, Dot: 0, Lookahead: EOF})
+		is.Add(Item{Prod: C.Prods[0].Index, Dot: 1, Lookahead: eofIndex})
+		is.Add(Item{Prod: C.Prods[0].Index, Dot: 0, Lookahead: eofIndex})
+		is.Add(Item{Prod: C.Prods[1].Index, Dot: 0, Lookahead: eofIndex})
 
 		result := Next(g, is)
 		testutil.RequireEqual(t, TermNames(result), []string{"C", "c", "d"})
@@ -58,7 +58,7 @@ func TestNext(t *testing.T) {
 	t.Run("3", func(t *testing.T) {
 		// C = d., EOF
 		var is ItemSet
-		is.Add(Item{Prod: C.Prods[1].Index, Dot: 1, Lookahead: EOF})
+		is.Add(Item{Prod: C.Prods[1].Index, Dot: 1, Lookahead: eofIndex})
 
 		result := Next(g, is)
 		testutil.RequireEqual(t, TermNames(result), []string{})

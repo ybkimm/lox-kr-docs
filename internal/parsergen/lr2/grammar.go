@@ -13,10 +13,11 @@ import (
 )
 
 const (
-	EOF             = 0
-	Error           = 1
-	SPrimeProdIndex = 0
+	eofIndex        = 0
+	sPrimeProdIndex = 0
 )
+
+const SPrime = "S'"
 
 type Term interface {
 	TermName() string
@@ -104,9 +105,9 @@ func NewGrammar() *Grammar {
 	g.EOFTerminal = g.AddTerminal("EOF")
 	g.ErrorTerminal = g.AddTerminal("ERROR")
 
-	sprime := g.AddRule("S'")
+	sprime := g.AddRule(SPrime)
 	sprimeProd := g.AddProd(sprime)
-	assert.True(sprimeProd.Index == SPrimeProdIndex)
+	assert.True(sprimeProd.Index == sPrimeProdIndex)
 
 	return g
 }
