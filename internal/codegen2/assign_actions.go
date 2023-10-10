@@ -87,7 +87,7 @@ func (c *context) AssignActions() bool {
 
 	// Check that every rule has been assigned a Go-type.
 	for _, rule := range c.ParserGrammar.Rules {
-		if rule.Generated == lr2.GeneratedSPrime {
+		if RuleGenerated(rule) == GeneratedSPrime {
 			// Except for S', which is never reduced.
 			continue
 		}
@@ -111,7 +111,7 @@ func (c *context) AssignActions() bool {
 
 	// Assign each method to a production.
 	for _, prod := range c.ParserGrammar.Prods {
-		if prod.Rule.Generated != lr2.NotGenerated {
+		if RuleGenerated(prod.Rule) != NotGenerated {
 			// Ignore generated rules. Actions for generated rules will also be
 			// generated.
 			continue
@@ -198,11 +198,11 @@ func (c *context) getReduceTypeForGeneratedRule(
 	rule *lr2.Rule,
 	prod *lr2.Prod,
 ) gotypes.Type {
-	switch rule.Generated {
-	case lr2.NotGenerated, lr2.GeneratedSPrime:
+	switch RuleGenerated(rule) {
+	case NotGenerated, GeneratedSPrime:
 		// S' is never reduced.
 		return nil
-	case lr2.GeneratedZeroOrOne:
+	case GeneratedZeroOrOne:
 		// a = b c?
 		//  =>
 		// a = b a'
@@ -220,7 +220,7 @@ func (c *context) getReduceTypeForGeneratedRule(
 			panic("not-reached")
 		}
 
-	case lr2.GeneratedOneOrMore, lr2.GeneratedList:
+	case GeneratedOneOrMore, GeneratedList:
 		// a = b c+
 		//  =>
 		// a = b a'

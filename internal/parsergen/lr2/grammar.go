@@ -56,56 +56,16 @@ var Epsilon = &Terminal{
 	Name: "ε",
 }
 
-// Generated is a hint for the code-generator that determines how the rule was
-// produced.
-type Generated int
-
-const (
-	// NotGenerated: the rule was not generated - it was specified in the grammar.
-	NotGenerated Generated = iota
-
-	// GeneratedSPrime: the rule is the S' rule generated in the process of
-	// creating the augmented grammar.
-	GeneratedSPrime
-
-	// GeneratedZeroOrOne: the rule was generated to normalize a T* term.
-	GeneratedZeroOrOne
-
-	// GeneratedOneOrMore: the rule was generated to normalize a T+ term.
-	GeneratedOneOrMore
-
-	// GeneratedList: the rule was generated to normalize a @list(T, S) term.
-	GeneratedList
-)
-
-func (g Generated) String() string {
-	switch g {
-	case NotGenerated:
-		return "NotGenerated"
-	case GeneratedSPrime:
-		return "SPrime"
-	case GeneratedZeroOrOne:
-		return "ZeroOrOne"
-	case GeneratedOneOrMore:
-		return "OneOrMore"
-	case GeneratedList:
-		return "List"
-	default:
-		return "???"
-	}
-}
-
 // Rule, also known as "non-terminal", is a named collection of productions.
 // For example, the following is a rule:
 //
 //	expr = expr '+' expr @left(1) | '(' expr ')' | NUM
 type Rule struct {
-	Index     int
-	Name      string
-	Prods     []*Prod
-	Generated Generated
-	Position  gotoken.Position
-	UserData  any
+	Index    int
+	Name     string
+	Prods    []*Prod
+	Position gotoken.Position
+	UserData any
 }
 
 func (r *Rule) TermName() string { return r.Name }
@@ -145,8 +105,6 @@ func NewGrammar() *Grammar {
 	g.ErrorTerminal = g.AddTerminal("ERROR")
 
 	sprime := g.AddRule("S'")
-	sprime.Generated = GeneratedSPrime
-
 	sprimeProd := g.AddProd(sprime)
 	assert.True(sprimeProd.Index == SPrimeProdIndex)
 

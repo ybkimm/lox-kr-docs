@@ -1,18 +1,15 @@
 package ast
 
 import (
-	"fmt"
-
 	"github.com/dcaiafa/lox/internal/parsergen/lr2"
 )
 
 type ParserRule struct {
 	baseStatement
 
-	IsStart   bool
-	Name      string
-	Prods     []*ParserProd
-	Generated lr2.Generated
+	IsStart bool
+	Name    string
+	Prods   []*ParserProd
 
 	Rule *lr2.Rule
 }
@@ -29,7 +26,6 @@ func (r *ParserRule) RunPass(ctx *Context, pass Pass) {
 		}
 		r.Rule = ctx.Grammar.AddRule(r.Name)
 		r.Rule.Position = ctx.Position(r)
-		r.Rule.Generated = r.Generated
 
 		if r.IsStart {
 			if ctx.StartParserRule != nil {
@@ -44,11 +40,7 @@ func (r *ParserRule) RunPass(ctx *Context, pass Pass) {
 
 	case Print:
 		printer := ctx.CurrentPrinter.Peek()
-		generated := ""
-		if r.Generated != lr2.NotGenerated {
-			generated = fmt.Sprintf(" Generated: %v", r.Generated)
-		}
-		printer.Printf("ParserRule: Name: %v%v", r.Name, generated)
+		printer.Printf("ParserRule: Name: %v", r.Name)
 		ctx.CurrentPrinter.Push(printer.WithIndent(2))
 		defer ctx.CurrentPrinter.Pop()
 	}

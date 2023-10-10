@@ -115,28 +115,30 @@ func (t *ParserTerm) check(ctx *Context) bool {
 }
 
 func (t *ParserTerm) normalize(ctx *Context) {
-	generate := func(f func(r *ParserRule)) {
-		r := &ParserRule{}
-		r.Name = fmt.Sprintf(
-			"%s$%d",
-			ctx.CurrentParserRule.Peek().Name,
-			len(ctx.CurrentUnit.Peek().Statements))
+	generate := func(name string, f func(r *ParserRule)) {
+		var r *ParserRule
+		existingRule := ctx.Lookup(name)
+		if existingRule == nil {
+			r = &ParserRule{Name: name}
 
-		f(r)
+			f(r)
+			unit := ctx.CurrentUnit.Peek()
+			unit.Statements = append(unit.Statements, r)
 
-		unit := ctx.CurrentUnit.Peek()
-		unit.Statements = append(unit.Statements, r)
+			r.RunPass(ctx, CreateNames)
+			r.RunPass(ctx, Check)
+			r.RunPass(ctx, Normalize)
+			t.RunPass(ctx, Check)
+			assert.False(ctx.Errs.HasError())
+		} else {
+			r = existingRule.(*ParserRule)
+		}
 
 		t.Name = r.Name
 		t.Type = ParserTermSimple
 		t.Child = nil
 		t.Sep = nil
-
-		r.RunPass(ctx, CreateNames)
-		r.RunPass(ctx, Check)
-		r.RunPass(ctx, Normalize)
-		t.RunPass(ctx, Check)
-		assert.False(ctx.Errs.HasError())
+		t.Symbol = r.Rule
 	}
 
 	switch t.Type {
@@ -148,8 +150,7 @@ func (t *ParserTerm) normalize(ctx *Context) {
 		//   =>
 		// a = b a'
 		// a' = c+ | ε
-		generate(func(r *ParserRule) {
-			r.Generated = lr2.GeneratedZeroOrOne
+		generate(t.Child.Name+"*", func(r *ParserRule) {
 			r.Prods = []*ParserProd{
 				{
 					Terms: []*ParserTerm{
@@ -166,8 +167,7 @@ func (t *ParserTerm) normalize(ctx *Context) {
 		// a = b a'
 		// a' = a' c
 		//    | c
-		generate(func(r *ParserRule) {
-			r.Generated = lr2.GeneratedOneOrMore
+		generate(t.Child.Name+"+", func(r *ParserRule) {
 			r.Prods = []*ParserProd{
 				{
 					Terms: []*ParserTerm{
@@ -188,8 +188,7 @@ func (t *ParserTerm) normalize(ctx *Context) {
 		//   =>
 		// a = b a'
 		// a' = c | ε
-		generate(func(r *ParserRule) {
-			r.Generated = lr2.GeneratedZeroOrOne
+		generate(t.Child.Name+"?", func(r *ParserRule) {
 			r.Prods = []*ParserProd{
 				{
 					Terms: []*ParserTerm{
@@ -206,8 +205,8 @@ func (t *ParserTerm) normalize(ctx *Context) {
 		// a = b a'
 		// a' = a' sep c
 		//    | c
-		generate(func(r *ParserRule) {
-			r.Generated = lr2.GeneratedList
+		name := fmt.Sprintf("@list(%v,%v)", t.Child.Name, t.Sep.Name)
+		generate(name, func(r *ParserRule) {
 			r.Prods = []*ParserProd{
 				{
 					Terms: []*ParserTerm{

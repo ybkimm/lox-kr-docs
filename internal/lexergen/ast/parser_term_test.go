@@ -13,7 +13,9 @@ P = '+' ;
 @parser
 b = P ;
 c = P ;
-@start a = b c* ;
+@start S = a | d ;
+a = b c* ;
+d = c* ;
 `)
 		var str strings.Builder
 		ctx.Print(spec, &str)
@@ -29,17 +31,25 @@ ParserRule: Name: b
 ParserRule: Name: c
   Prod:
     Term: Name: P Type: Simple
+ParserRule: Name: S
+  Prod:
+    Term: Name: a Type: Simple
+  Prod:
+    Term: Name: d Type: Simple
 ParserRule: Name: a
   Prod:
     Term: Name: b Type: Simple
-    Term: Name: a$4 Type: Simple
-ParserRule: Name: a$4 Generated: ZeroOrOne
+    Term: Name: c* Type: Simple
+ParserRule: Name: d
   Prod:
-    Term: Name: a$4$5 Type: Simple
+    Term: Name: c* Type: Simple
+ParserRule: Name: c*
   Prod:
-ParserRule: Name: a$4$5 Generated: OneOrMore
+    Term: Name: c+ Type: Simple
   Prod:
-    Term: Name: a$4$5 Type: Simple
+ParserRule: Name: c+
+  Prod:
+    Term: Name: c+ Type: Simple
     Term: Name: c Type: Simple
   Prod:
     Term: Name: c Type: Simple
@@ -72,10 +82,10 @@ ParserRule: Name: c
 ParserRule: Name: a
   Prod:
     Term: Name: b Type: Simple
-    Term: Name: a$4 Type: Simple
-ParserRule: Name: a$4 Generated: OneOrMore
+    Term: Name: c+ Type: Simple
+ParserRule: Name: c+
   Prod:
-    Term: Name: a$4 Type: Simple
+    Term: Name: c+ Type: Simple
     Term: Name: c Type: Simple
   Prod:
     Term: Name: c Type: Simple
@@ -108,8 +118,8 @@ ParserRule: Name: c
 ParserRule: Name: a
   Prod:
     Term: Name: b Type: Simple
-    Term: Name: a$4 Type: Simple
-ParserRule: Name: a$4 Generated: ZeroOrOne
+    Term: Name: c? Type: Simple
+ParserRule: Name: c?
   Prod:
     Term: Name: c Type: Simple
   Prod:
@@ -123,7 +133,9 @@ P = '+' ;
 @parser
 b = P ;
 c = P ;
-@start a = b @list(c, P) ;
+@start S = a | d ;
+a = b @list(c, P) ;
+d = @list(c, P) ;
 `)
 		var str strings.Builder
 		ctx.Print(spec, &str)
@@ -139,13 +151,21 @@ ParserRule: Name: b
 ParserRule: Name: c
   Prod:
     Term: Name: P Type: Simple
+ParserRule: Name: S
+  Prod:
+    Term: Name: a Type: Simple
+  Prod:
+    Term: Name: d Type: Simple
 ParserRule: Name: a
   Prod:
     Term: Name: b Type: Simple
-    Term: Name: a$4 Type: Simple
-ParserRule: Name: a$4 Generated: List
+    Term: Name: @list(c,P) Type: Simple
+ParserRule: Name: d
   Prod:
-    Term: Name: a$4 Type: Simple
+    Term: Name: @list(c,P) Type: Simple
+ParserRule: Name: @list(c,P)
+  Prod:
+    Term: Name: @list(c,P) Type: Simple
     Term: Name: P Type: Simple
     Term: Name: c Type: Simple
   Prod:

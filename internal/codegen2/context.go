@@ -8,24 +8,6 @@ import (
 	"github.com/dcaiafa/lox/internal/parsergen/lr2"
 )
 
-const (
-	baseGenGo       = "base.gen.go"
-	parserGenGo     = "parser.gen.go"
-	lexerGenGo      = "lexer.gen.go"
-	parserStateName = "lox"
-	onReduce        = "onReduce"
-)
-
-type actionMethod struct {
-	Method *gotypes.Func
-	Params []gotypes.Type
-	Return gotypes.Type
-}
-
-func (m *actionMethod) Name() string {
-	return m.Method.Name()
-}
-
 type context struct {
 	Errs          *errlogger.ErrLogger
 	Fset          *gotoken.FileSet
