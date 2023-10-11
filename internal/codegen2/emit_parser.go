@@ -276,6 +276,17 @@ func (p *{{parser}}) _Act(prod int32) any {
 				return zero
 			}
 		{{- end }}
+	{{- else if generated == "zero_or_more" }}
+  case {{ prod_index }}:  // ZeroOrMore
+		{{- term_go_type := go_type(rule_go_types[rule]) }}
+		{{- if len(prod.Terms) == 1 }}
+			return _cast[{{ term_go_type }}](p._sym.Peek(0))
+		{{- else }}
+			{
+				var zero {{term_go_type}}
+				return zero
+			}
+		{{- end }}
 	{{- end }}
 {{- end }}
 	default:

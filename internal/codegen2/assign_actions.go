@@ -202,6 +202,7 @@ func (c *context) getReduceTypeForGeneratedRule(
 	case notGenerated, generatedSPrime:
 		// S' is never reduced.
 		return nil
+
 	case generatedZeroOrOne:
 		// a = b c?
 		//  =>
@@ -219,6 +220,19 @@ func (c *context) getReduceTypeForGeneratedRule(
 		default:
 			panic("not-reached")
 		}
+
+	case generatedZeroOrMore:
+		// a = b c*
+		//   =>
+		// a = b a'
+		// a' = c+ | ε
+		if prod != rule.Prods[0] {
+			return nil
+		}
+		termCplus := prod.Terms[0].(*lr2.Rule)
+		typeCplus := c.getReduceTypeForGeneratedRule(termCplus, termCplus.Prods[1])
+		assert.True(typeCplus != nil)
+		return typeCplus
 
 	case generatedOneOrMore, generatedList:
 		// a = b c+
@@ -254,7 +268,7 @@ func (c *context) matchMethod(prod *lr2.Prod, methods []*actionMethod) []*action
 		for i, param := range method.Params {
 			term := prod.Terms[i]
 			termGoType := c.getTermGoType(term)
-			if !gotypes.AssignableTo(param, termGoType) {
+			if !gotypes.AssignableTo(termGoType, param) {
 				return false
 			}
 		}
