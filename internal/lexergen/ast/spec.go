@@ -36,6 +36,7 @@ func (s *Spec) RunPass(ctx *Context, pass Pass) {
 				ctx.Errs.Errorf(gotoken.Position{}, "@start rule undefined")
 				return
 			}
+			ctx.Grammar.SetStart(ctx.StartParserRule.Rule)
 		}
 	}
 }

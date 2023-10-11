@@ -27,15 +27,15 @@ func (m *actionMethod) Name() string {
 	return m.Method.Name()
 }
 
-type generated int
+type generated string
 
 const (
-	notGenerated generated = iota
-	generatedSPrime
-	generatedZeroOrMore
-	generatedOneOrMore
-	generatedZeroOrOne
-	generatedList
+	notGenerated        generated = "not_generated"
+	generatedSPrime     generated = "sprime"
+	generatedZeroOrMore generated = "zero_or_more"
+	generatedOneOrMore  generated = "one_or_more"
+	generatedZeroOrOne  generated = "zero_or_one"
+	generatedList       generated = "list"
 )
 
 func RuleGenerated(r *lr2.Rule) generated {
@@ -71,5 +71,6 @@ func Generate(cfg *Config) bool {
 		ctx.PreParseGo() &&
 		ctx.EmitBase() &&
 		ctx.ParseGo() &&
-		ctx.AssignActions()
+		ctx.AssignActions() &&
+		ctx.EmitParser()
 }

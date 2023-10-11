@@ -2,6 +2,8 @@ package codegen2
 
 import (
 	"math"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/CloudyKit/jet/v6"
@@ -225,46 +227,47 @@ func (p *{{parser}}) _Recover() (int32, bool) {
 func (p *{{parser}}) _Act(prod int32) any {
 	switch prod {
 {{- range prod_index, prod := grammar.Prods }}
-	{{- rule := grammar.ProdRule(prod) }}
-	{{- if rule.Generated == not_generated }}
+	{{- rule := prod.Rule }}
+	{{- generated := rule_generated(rule) }}
+	{{- if generated == "not_generated" }}
 		{{- method := methods[prod] }}
 			case {{ prod_index }}:
-				return p.{{ method.Name}}(
+				return p.{{ method.Name() }}(
 				{{- range param_index, param := method.Params }}
-				  _cast[{{ go_type(param.Type) }}](p._sym.Peek({{ len(method.Params) - param_index - 1 }})),
+				  _cast[{{ go_type(param) }}](p._sym.Peek({{ len(method.Params) - param_index - 1 }})),
 				{{- end }}
 		    )
-	{{- else if rule.Generated == generated_one_or_more }}
+	{{- else if generated == "one_or_more" }}
 	case {{ prod_index }}:  // OneOrMore
 		{{- if len(prod.Terms) == 1 }}
-			{{- term_go_type := go_type(term_reduce_type(prod.Terms[0])) }}
+			{{- term_go_type := go_type(get_term_go_type(prod.Terms[0])) }}
 		  return []{{ term_go_type }}{
 				_cast[{{ term_go_type }}](p._sym.Peek(0)),
 			}
 		{{- else }}
-			{{- term_go_type := go_type(term_reduce_type(prod.Terms[1])) }}
+			{{- term_go_type := go_type(get_term_go_type(prod.Terms[1])) }}
 			return append(
 				_cast[[]{{term_go_type}}](p._sym.Peek(1)),
 				_cast[{{ term_go_type }}](p._sym.Peek(0)),
 			)
 		{{- end }}
-	{{- else if rule.Generated == generated_list }}
+	{{- else if generated == "list" }}
 	case {{ prod_index }}:  // List
 		{{- if len(prod.Terms) == 1 }}
-			{{- term_go_type := go_type(term_reduce_type(prod.Terms[0])) }}
+			{{- term_go_type := go_type(get_term_go_type(prod.Terms[0])) }}
 		  return []{{ term_go_type }}{
 				_cast[{{ term_go_type }}](p._sym.Peek(0)),
 			}
 		{{- else }}
-			{{- term_go_type := go_type(term_reduce_type(prod.Terms[2])) }}
+			{{- term_go_type := go_type(get_term_go_type(prod.Terms[2])) }}
 			return append(
 				_cast[[]{{ term_go_type }}](p._sym.Peek(2)),
 				_cast[{{ term_go_type }}](p._sym.Peek(0)),
 			)
 		{{- end }}
-	{{- else if rule.Generated == generated_zero_or_one }}
+	{{- else if generated == "zero_or_one" }}
   case {{ prod_index }}:  // ZeroOrOne
-		{{- term_go_type := go_type(rule_reduce_type[rule]) }}
+		{{- term_go_type := go_type(rule_go_types[rule]) }}
 		{{- if len(prod.Terms) == 1 }}
 			return _cast[{{ term_go_type }}](p._sym.Peek(0))
 		{{- else }}
@@ -296,14 +299,19 @@ func renderParserTemplate(in *parserTemplateInputs) string {
 	return renderTemplate(in.Package, in.PackagePath, template, vars)
 }
 
-func (c *context) EmitParser() {
-	vars := new(jet.VarMap)
+func (c *context) EmitParser() bool {
+	vars := make(jet.VarMap)
 
 	const accept int32 = math.MaxInt32
 
 	vars.Set("accept", accept)
 	vars.Set("parser", c.ParserType.Obj().Name())
 	vars.Set("grammar", c.ParserGrammar)
+	vars.Set("methods", c.ActionMethods)
+	vars.Set("rule_generated", RuleGenerated)
+	vars.Set("get_term_go_type", c.getTermGoType)
+	vars.Set("rule_go_types", c.RuleGoTypes)
+	vars.Set("has_on_reduce", c.HasOnReduce)
 
 	vars.Set("array", func(arr []int32) string {
 		var str strings.Builder
@@ -329,8 +337,8 @@ func (c *context) EmitParser() {
 				default:
 					panic("unreachable")
 				}
-				table.AddRow(state.Index, row)
 			}
+			table.AddRow(state.Index, row)
 		}
 		return table.Array()
 	})
@@ -368,4 +376,16 @@ func (c *context) EmitParser() {
 		}
 		return termCounts
 	})
+
+	parserGen := renderTemplate(
+		c.GoPackageName, c.GoPackagePath, parserTemplate, vars)
+
+	err := os.WriteFile(
+		filepath.Join(c.Dir, parserGenGo), []byte(parserGen), 0666)
+	if err != nil {
+		c.Errs.GeneralError(err)
+		return false
+	}
+
+	return true
 }

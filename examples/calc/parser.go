@@ -1,19 +1,29 @@
 package main
 
 import (
+	gotoken "go/token"
 	"math"
 	"strconv"
 )
 
-type Token struct {
-	Type TokenType
-	Str  string
+func Eval(expr string) (float64, error) {
+	fset := gotoken.NewFileSet()
+	file := fset.AddFile("expr", -1, len(expr))
+	errLogger := &ErrLogger{
+		Fset: fset,
+	}
+
+	var parser calcParser
+	parser.errLogger = errLogger
+	lex := newLex(file, []byte(expr), errLogger)
+	_ = parser.parse(lex)
+	return parser.result, errLogger.Err()
 }
 
 type calcParser struct {
 	lox
-	//errLogger *ErrLogger
-	result float64
+	errLogger *ErrLogger
+	result    float64
 }
 
 func (p *calcParser) on_S__foo(e float64) any {
@@ -51,7 +61,7 @@ func (p *calcParser) on_expr__num(e float64) float64 {
 func (p *calcParser) on_num(num Token) float64 {
 	v, err := strconv.ParseFloat(num.Str, 64)
 	if err != nil {
-		//p.errLogger.Errorf(num.Pos, "invalid float: %v", err)
+		p.errLogger.Errorf(num.Pos, "invalid float: %v", err)
 		return 0
 	}
 	return v
@@ -60,21 +70,12 @@ func (p *calcParser) on_num(num Token) float64 {
 func (p *calcParser) on_num__minus(_ Token, num Token) float64 {
 	v, err := strconv.ParseFloat(num.Str, 64)
 	if err != nil {
-		//p.errLogger.Errorf(num.Pos, "invalid float: %v", err)
-		return 0
-	}
-	return -v
-}
-
-func (p *calcParser) on_num__minis(_ Token, num Token, _ Token) float64 {
-	v, err := strconv.ParseFloat(num.Str, 64)
-	if err != nil {
-		//p.errLogger.Errorf(num.Pos, "invalid float: %v", err)
+		p.errLogger.Errorf(num.Pos, "invalid float: %v", err)
 		return 0
 	}
 	return -v
 }
 
 func (p *calcParser) onError() {
-	//p.errLogger.Errorf(p.errorToken().Pos, "unexpected token %v", p.errorToken())
+	p.errLogger.Errorf(p.errorToken().Pos, "unexpected token %v", p.errorToken())
 }
