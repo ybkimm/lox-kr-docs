@@ -150,7 +150,7 @@ func (t *ParserTerm) normalize(ctx *Context) {
 		//   =>
 		// a = b a'
 		// a' = c+ | ε
-		generate(t.Child.Name+"*", func(r *ParserRule) {
+		generate(t.Child.Symbol.TermName()+"*", func(r *ParserRule) {
 			r.Prods = []*ParserProd{
 				{
 					Terms: []*ParserTerm{
@@ -167,7 +167,7 @@ func (t *ParserTerm) normalize(ctx *Context) {
 		// a = b a'
 		// a' = a' c
 		//    | c
-		generate(t.Child.Name+"+", func(r *ParserRule) {
+		generate(t.Child.Symbol.TermName()+"+", func(r *ParserRule) {
 			r.Prods = []*ParserProd{
 				{
 					Terms: []*ParserTerm{
@@ -188,7 +188,7 @@ func (t *ParserTerm) normalize(ctx *Context) {
 		//   =>
 		// a = b a'
 		// a' = c | ε
-		generate(t.Child.Name+"?", func(r *ParserRule) {
+		generate(t.Child.Symbol.TermName()+"?", func(r *ParserRule) {
 			r.Prods = []*ParserProd{
 				{
 					Terms: []*ParserTerm{
@@ -205,7 +205,10 @@ func (t *ParserTerm) normalize(ctx *Context) {
 		// a = b a'
 		// a' = a' sep c
 		//    | c
-		name := fmt.Sprintf("@list(%v,%v)", t.Child.Name, t.Sep.Name)
+		name := fmt.Sprintf(
+			"@list(%v,%v)",
+			t.Child.Symbol.TermName(),
+			t.Sep.Symbol.TermName())
 		generate(name, func(r *ParserRule) {
 			r.Prods = []*ParserProd{
 				{
