@@ -39,7 +39,7 @@ func (e *LexerExpr) NFACons(ctx *Context) *mode.NFAComposite {
 	//      +----> F2b --> ... F2e -----+
 	//
 	// For all {Fnb, Fne} where Fn ∈ Factors.
-	nfaFactory := ctx.Mode().NFA
+	nfaFactory := ctx.Mode().StateFactory
 	nfaCons := &mode.NFAComposite{}
 	nfaCons.B = nfaFactory.NewState()
 	nfaCons.E = nfaFactory.NewState()

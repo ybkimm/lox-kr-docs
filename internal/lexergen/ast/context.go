@@ -24,20 +24,20 @@ type Context struct {
 	CurrentPrinter    stack.Stack[*Printer]
 	CurrentLexerMode  stack.Stack[*mode.Mode]
 	Grammar           *lr2.Grammar
+	LexerModes        map[string]*mode.Mode
 
 	names   map[string]AST
 	aliases map[string]*TokenRule
-	modes   map[string]*mode.Mode
 }
 
 func NewContext(fset *gotoken.FileSet, errs *errlogger.ErrLogger) *Context {
 	c := &Context{
-		FSet:    fset,
-		Errs:    errs,
-		Grammar: lr2.NewGrammar(),
-		names:   make(map[string]AST),
-		aliases: make(map[string]*TokenRule),
-		modes:   make(map[string]*mode.Mode),
+		FSet:       fset,
+		Errs:       errs,
+		Grammar:    lr2.NewGrammar(),
+		LexerModes: make(map[string]*mode.Mode),
+		names:      make(map[string]AST),
+		aliases:    make(map[string]*TokenRule),
 	}
 	defaultMode := mode.New("")
 	c.CurrentLexerMode.Push(defaultMode)
@@ -56,14 +56,14 @@ func (c *Context) RegisterName(name string, ast AST) bool {
 }
 
 func (c *Context) CreateMode(name string) *mode.Mode {
-	_, ok := c.modes[name]
+	_, ok := c.LexerModes[name]
 	if ok {
 		// This should never happen because the name conflict should have been
 		// caught already when calling CreateName.
 		panic("mode redefined")
 	}
 	m := mode.New(name)
-	c.modes[name] = m
+	c.LexerModes[name] = m
 	return m
 }
 

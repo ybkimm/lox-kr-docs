@@ -14,7 +14,7 @@ C_PAREN
 
 Rules
 =====
-S' = ε
+S' = S
 S = expr
 expr = expr ADD expr  @left(1)
   | expr SUB expr  @left(1)

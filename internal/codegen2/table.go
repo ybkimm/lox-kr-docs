@@ -67,7 +67,7 @@ func rowKey(xs []int32) string {
 	return string(key)
 }
 
-func WriteArray(w *strings.Builder, xs []int32) {
+func WriteArray[T int32 | uint32](w *strings.Builder, xs []T) {
 	for i, x := range xs {
 		if i != 0 && i%14 == 0 {
 			w.WriteByte('\n')

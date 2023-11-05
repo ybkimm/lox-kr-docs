@@ -11,9 +11,9 @@ type NFAComposite struct {
 }
 
 type Mode struct {
-	Name  string
-	NFA   *nfa.StateFactory
-	Rules []NFAComposite
+	Name         string
+	StateFactory *nfa.StateFactory
+	Rules        []NFAComposite
 }
 
 func (m *Mode) AddRule(r NFAComposite) {
@@ -29,7 +29,7 @@ func (m *Mode) ComputeDFA() *dfa.State {
 	//      \   ε
 	//       +----> Rules[N].B ---> ...
 	//
-	start := m.NFA.NewState()
+	start := m.StateFactory.NewState()
 	for _, rule := range m.Rules {
 		start.AddTransition(rule.B, nfa.Epsilon)
 	}
@@ -39,7 +39,7 @@ func (m *Mode) ComputeDFA() *dfa.State {
 
 func New(name string) *Mode {
 	return &Mode{
-		Name: name,
-		NFA:  nfa.NewStateFactory(),
+		Name:         name,
+		StateFactory: nfa.NewStateFactory(),
 	}
 }

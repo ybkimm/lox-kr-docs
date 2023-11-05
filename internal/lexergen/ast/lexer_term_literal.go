@@ -30,7 +30,7 @@ func (t *LexerTermLiteral) NFACons(ctx *Context) *mode.NFAComposite {
 	// For a literal "foo", build the NFACons:
 	//     f      o      o
 	//  B --> s1 --> s2 --> E
-	nfa := ctx.Mode().NFA
+	nfa := ctx.Mode().StateFactory
 	nfaCons := new(mode.NFAComposite)
 	nfaCons.B = nfa.NewState()
 	nfaCons.E = nfaCons.B

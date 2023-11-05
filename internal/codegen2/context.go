@@ -5,6 +5,7 @@ import (
 	gotypes "go/types"
 
 	"github.com/dcaiafa/lox/internal/errlogger"
+	"github.com/dcaiafa/lox/internal/lexergen/mode"
 	"github.com/dcaiafa/lox/internal/parsergen/lr2"
 )
 
@@ -22,4 +23,5 @@ type context struct {
 	RuleGoTypes   map[*lr2.Rule]gotypes.Type // rule => Go-type
 	ActionMethods map[*lr2.Prod]*actionMethod
 	HasOnReduce   bool
+	LexerModes    map[string]*mode.Mode
 }

@@ -45,10 +45,9 @@ func (c *context) ParseLox() bool {
 		return false
 	}
 
+	c.LexerModes = astctx.LexerModes
 	c.ParserGrammar = astctx.Grammar
 	c.ParserTable = lr2.ConstructLALR(c.ParserGrammar)
-
-	c.ParserTable.Print(os.Stdout)
 
 	return !c.Errs.HasError()
 }

@@ -22,7 +22,7 @@ func (r *MacroRule) RunPass(ctx *Context, pass Pass) {
 func (r *MacroRule) NFACons(ctx *Context) *mode.NFAComposite {
 	if r.cycleDetect {
 		ctx.Errs.Errorf(ctx.Position(r), "macro cycle detected")
-		nfaFactory := ctx.Mode().NFA
+		nfaFactory := ctx.Mode().StateFactory
 		nfaCons := &mode.NFAComposite{B: nfaFactory.NewState()}
 		nfaCons.E = nfaCons.B
 		return nfaCons

@@ -25,7 +25,7 @@ func (t *LexerTermCard) RunPass(ctx *Context, pass Pass) {
 }
 
 func (t *LexerTermCard) NFACons(ctx *Context) *mode.NFAComposite {
-	nfaFactory := ctx.Mode().NFA
+	nfaFactory := ctx.Mode().StateFactory
 
 	switch t.Card {
 	case One:
