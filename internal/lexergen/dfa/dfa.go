@@ -15,6 +15,14 @@ import (
 	"github.com/dcaiafa/lox/internal/util/stack"
 )
 
+type DFA struct {
+	States []*State
+}
+
+func (d *DFA) Print(out io.Writer) {
+	d.States[0].Print(out)
+}
+
 type State struct {
 	ID          uint32
 	Transitions stablemap.Map[any, *State]
@@ -93,7 +101,7 @@ func (n *State) Print(out io.Writer) {
 	fmt.Fprintf(out, "}\n")
 }
 
-func NFAToDFA(n *nfa.State) *State {
+func NFAToDFA(n *nfa.State) *DFA {
 	// DFA states already created, indexed by their signature:
 	// the unique combination of NFA states that define a DFA state.
 	states := make(map[string]*State)
@@ -140,9 +148,9 @@ func NFAToDFA(n *nfa.State) *State {
 		})
 	}
 
-	assignIDs(start)
-
-	return start
+	return &DFA{
+		States: assignIDs(start),
+	}
 }
 
 func eClosure(nfaStates set.Set[*nfa.State]) *State {
@@ -192,17 +200,17 @@ func getInputs(nfaStates []*nfa.State) set.Set[any] {
 	return inputs
 }
 
-func assignIDs(s *State) {
+func assignIDs(s *State) []*State {
 	var visited set.Set[*State]
 	var pending stack.Stack[*State]
+	var states []*State
 
 	visited.Add(s)
 	pending.Push(s)
-	var nextID uint32
 	for !pending.Empty() {
 		s = pending.Pop()
-		s.ID = nextID
-		nextID++
+		s.ID = uint32(len(states))
+		states = append(states, s)
 		dests := s.Transitions.Values()
 		sort.Slice(dests, func(i, j int) bool {
 			return dests[i].ID < dests[j].ID
@@ -214,4 +222,6 @@ func assignIDs(s *State) {
 			}
 		}
 	}
+
+	return states
 }

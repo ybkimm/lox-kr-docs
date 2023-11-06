@@ -6,8 +6,13 @@ import (
 	"github.com/dcaiafa/lox/internal/errlogger"
 	"github.com/dcaiafa/lox/internal/lexergen/dfa"
 	"github.com/dcaiafa/lox/internal/lexergen/nfa"
-	"github.com/dcaiafa/lox/internal/util/set"
 )
+
+type Mode struct {
+	Index int
+	Name  string
+	DFA   *dfa.DFA
+}
 
 type NFAComposite struct {
 	B *nfa.State
@@ -24,7 +29,7 @@ func (m *ModeBuilder) AddRule(r NFAComposite) {
 	m.Rules = append(m.Rules, r)
 }
 
-func (m *ModeBuilder) Build(errs *errlogger.ErrLogger, fset *gotoken.FileSet) *dfa.State {
+func (m *ModeBuilder) Build(errs *errlogger.ErrLogger, fset *gotoken.FileSet) *Mode {
 	// Build a single NFA from all rules:
 	//          ε
 	//       +----> Rules[0].B ---> ...
@@ -40,26 +45,18 @@ func (m *ModeBuilder) Build(errs *errlogger.ErrLogger, fset *gotoken.FileSet) *d
 
 	d := dfa.NFAToDFA(start)
 
-	var visited set.Set[*dfa.State]
-	m.fixState(errs, fset, d, &visited)
+	for _, state := range d.States {
+		state.Data = m.pickAction(errs, fset, state)
+	}
+
 	if errs.HasError() {
 		return nil
 	}
 
-	return d
-}
-
-func (m *ModeBuilder) fixState(
-	errs *errlogger.ErrLogger,
-	fset *gotoken.FileSet,
-	state *dfa.State,
-	visited *set.Set[*dfa.State],
-) {
-	if visited.Has(state) {
-		return
+	return &Mode{
+		Name: m.Name,
+		DFA:  d,
 	}
-	visited.Add(state)
-	state.Data = m.pickAction(errs, fset, state)
 }
 
 func (m *ModeBuilder) pickAction(

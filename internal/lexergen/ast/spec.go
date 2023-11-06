@@ -2,6 +2,7 @@ package ast
 
 import (
 	gotoken "go/token"
+	"slices"
 
 	"github.com/dcaiafa/lox/internal/lexergen/mode"
 )
@@ -37,6 +38,19 @@ func (s *Spec) RunPass(ctx *Context, pass Pass) {
 				return
 			}
 			ctx.Grammar.SetStart(ctx.StartParserRule.Rule)
+		}
+
+		modeNames := make([]string, 0, len(ctx.LexerModes))
+		for name := range ctx.LexerModes {
+			modeNames = append(modeNames, name)
+		}
+		slices.Sort(modeNames)
+
+		ctx.LexerDFAs = make(map[string]*mode.Mode, len(ctx.LexerModes))
+		for i, name := range modeNames {
+			mode := ctx.LexerModes[name].Build(ctx.Errs, ctx.FSet)
+			mode.Index = i
+			ctx.LexerDFAs[name] = mode
 		}
 	}
 }

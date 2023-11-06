@@ -25,6 +25,7 @@ type Context struct {
 	CurrentLexerMode  stack.Stack[*mode.ModeBuilder]
 	Grammar           *lr2.Grammar
 	LexerModes        map[string]*mode.ModeBuilder
+	LexerDFAs         map[string]*mode.Mode
 
 	names   map[string]AST
 	aliases map[string]*TokenRule
