@@ -23,5 +23,5 @@ type context struct {
 	RuleGoTypes   map[*lr2.Rule]gotypes.Type // rule => Go-type
 	ActionMethods map[*lr2.Prod]*actionMethod
 	HasOnReduce   bool
-	LexerModes    map[string]*mode.Mode
+	LexerModes    map[string]*mode.ModeBuilder
 }

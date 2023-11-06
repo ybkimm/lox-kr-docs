@@ -22,9 +22,9 @@ type Context struct {
 	CurrentParserRule stack.Stack[*ParserRule]
 	CurrentParserProd stack.Stack[*ParserProd]
 	CurrentPrinter    stack.Stack[*Printer]
-	CurrentLexerMode  stack.Stack[*mode.Mode]
+	CurrentLexerMode  stack.Stack[*mode.ModeBuilder]
 	Grammar           *lr2.Grammar
-	LexerModes        map[string]*mode.Mode
+	LexerModes        map[string]*mode.ModeBuilder
 
 	names   map[string]AST
 	aliases map[string]*TokenRule
@@ -35,7 +35,7 @@ func NewContext(fset *gotoken.FileSet, errs *errlogger.ErrLogger) *Context {
 		FSet:       fset,
 		Errs:       errs,
 		Grammar:    lr2.NewGrammar(),
-		LexerModes: make(map[string]*mode.Mode),
+		LexerModes: make(map[string]*mode.ModeBuilder),
 		names:      make(map[string]AST),
 		aliases:    make(map[string]*TokenRule),
 	}
@@ -55,7 +55,7 @@ func (c *Context) RegisterName(name string, ast AST) bool {
 	return true
 }
 
-func (c *Context) CreateMode(name string) *mode.Mode {
+func (c *Context) CreateMode(name string) *mode.ModeBuilder {
 	_, ok := c.LexerModes[name]
 	if ok {
 		// This should never happen because the name conflict should have been
@@ -91,7 +91,7 @@ func (c *Context) Position(ast AST) gotoken.Position {
 	return c.FSet.Position(ast.Bounds().Begin)
 }
 
-func (c *Context) Mode() *mode.Mode {
+func (c *Context) Mode() *mode.ModeBuilder {
 	return c.CurrentLexerMode.Peek()
 }
 

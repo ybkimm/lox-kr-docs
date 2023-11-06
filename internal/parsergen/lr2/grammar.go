@@ -58,7 +58,7 @@ var Epsilon = &Terminal{
 }
 
 // Rule, also known as "non-terminal", is a named collection of productions.
-// For example, the following is a rule:
+// For example, the following is a rule with three productions:
 //
 //	expr = expr '+' expr @left(1) | '(' expr ')' | NUM
 type Rule struct {

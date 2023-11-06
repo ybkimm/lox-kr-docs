@@ -1,6 +1,9 @@
 package ast
 
-import "github.com/dcaiafa/lox/internal/parsergen/lr2"
+import (
+	"github.com/dcaiafa/lox/internal/lexergen/mode"
+	"github.com/dcaiafa/lox/internal/parsergen/lr2"
+)
 
 type TokenRule struct {
 	baseStatement
@@ -44,7 +47,11 @@ func (r *TokenRule) RunPass(ctx *Context, pass Pass) {
 	case GenerateGrammar:
 		nfaCons := r.Expr.NFACons(ctx)
 		nfaCons.E.Accept = true
-		nfaCons.E.Data = r.Terminal
+		nfaCons.E.Data = &mode.Action{
+			Type:     mode.ActionEmit,
+			Terminal: r.Terminal.Index,
+			Pos:      r.bounds.Begin,
+		}
 		ctx.CurrentLexerMode.Peek().AddRule(*nfaCons)
 	}
 }

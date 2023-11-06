@@ -8,7 +8,7 @@ type Mode struct {
 	Name  string
 	Rules []Statement
 
-	Mode *mode.Mode
+	Mode *mode.ModeBuilder
 }
 
 func (m *Mode) RunPass(ctx *Context, pass Pass) {

@@ -11,7 +11,7 @@ type Spec struct {
 
 	Units []*Unit
 
-	DefaultLexerMode *mode.Mode
+	DefaultLexerMode *mode.ModeBuilder
 }
 
 func (s *Spec) RunPass(ctx *Context, pass Pass) {
