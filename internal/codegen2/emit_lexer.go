@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"github.com/CloudyKit/jet/v6"
+	"github.com/dcaiafa/lox/internal/assert"
+	"github.com/dcaiafa/lox/internal/lexergen/dfa"
 	"github.com/dcaiafa/lox/internal/lexergen/mode"
 )
 
@@ -15,22 +17,49 @@ const lexerTemplate = `
 {{ range _, mode := modes() }}
 
 var _lexerMode{{mode.Index}} = []uint32 {
-	{{ mode_table(mode) | array }}
+	{{ mode_table(mode) }}
 }
 
 {{ end }}
 
-/*
-type _LexerStateMachine struct {
-	OnToken   func(t TokenType)
-	OnDiscard func()
+type _LexerStateMachineResultType int
 
+type _LexerStateMachineResult struct {
+
+
+}
+
+type _LexerStateMachine struct {
 	state int
+	mode []uint32
 }
 
 func (l *_LexerStateMachine) PushRune(r rune) {
+	if l.mode == nil {
+		l.mode = _lexerMode0
+	}
+	
+	i := int(l.mode[int(l.state)])
+	count := int(l.mode[i])
+	i++
+	end := i + count
+
+	for ; i < end; i += 4 {
+		switch l.mode[i] {
+		case 0: // Goto
+			if r >= rune(l.mode[i+1]) &&
+				 r <= rune(l.mode[i+2]) {
+				l.state = int(l.mode[i+3])
+				return
+			}
+		case 1: // Accept
+			l.OnToken(TokenType(l.mode[i+3]))
+		default:
+			panic("not-reached")
+	  }
+	}
+
 }
-*/
 
 `
 
@@ -54,8 +83,28 @@ func (c *context) EmitLexer() bool {
 		return modes
 	})
 
-	vars.Set("mode_table", func(mode *mode.Mode) []uint32 {
-		return []uint32{1, 2, 3}
+	vars.Set("mode_table", func(m *mode.Mode) string {
+		table := newTable[uint32]()
+		for _, state := range m.DFA.States {
+			var row []uint32
+			state.Transitions.ForEach(func(eventRaw any, toState *dfa.State) {
+				event := eventRaw.(mode.Range)
+				row = append(row, 0, uint32(event.B), uint32(event.E), toState.ID)
+			})
+			action := state.Data.(*mode.Action)
+			if action != nil {
+				switch action.Type {
+				case mode.ActionEmit:
+					row = append(
+						row, 1, 0, 0, uint32(action.Terminal))
+				default:
+					panic("unreachable")
+				}
+			}
+			assert.True(len(row) > 0)
+			table.AddRow(int(state.ID), row)
+		}
+		return table.String()
 	})
 
 	lexerGen := renderTemplate(
