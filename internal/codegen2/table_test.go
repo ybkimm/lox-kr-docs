@@ -7,7 +7,7 @@ import (
 )
 
 func TestTable(t *testing.T) {
-	r := newTable()
+	r := newTable[int32]()
 
 	r.AddRow(0, []int32{1, 2, 3})
 	r.AddRow(1, []int32{3, 4})

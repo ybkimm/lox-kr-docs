@@ -331,7 +331,7 @@ func (c *context) EmitParser() bool {
 	})
 
 	vars.Set("actions", func() []int32 {
-		table := newTable()
+		table := newTable[int32]()
 		for _, state := range c.ParserTable.States {
 			var row []int32
 			actions := c.ParserTable.Actions(state)
@@ -355,7 +355,7 @@ func (c *context) EmitParser() bool {
 	})
 
 	vars.Set("goto", func() []int32 {
-		table := newTable()
+		table := newTable[int32]()
 		for _, from := range c.ParserTable.States {
 			var row []int32
 			transitions := c.ParserTable.Transitions(from)
