@@ -22,23 +22,25 @@ var _lexerMode{{mode.Index}} = []uint32 {
 
 {{ end }}
 
-type _LexerStateMachineResultType int
-
-type _LexerStateMachineResult struct {
-
-
-}
+const (
+	_lexerConsume = 0
+	_lexerDiscard = 1
+	_lexerAccept  = 2
+	_lexerEOF     = 3
+	_lexerError   = -1
+)
 
 type _LexerStateMachine struct {
+	token int
 	state int
-	mode []uint32
+	mode  []uint32
 }
 
-func (l *_LexerStateMachine) PushRune(r rune) {
+func (l *_LexerStateMachine) PushRune(r rune) int {
 	if l.mode == nil {
 		l.mode = _lexerMode0
 	}
-	
+
 	i := int(l.mode[int(l.state)])
 	count := int(l.mode[i])
 	i++
@@ -48,19 +50,34 @@ func (l *_LexerStateMachine) PushRune(r rune) {
 		switch l.mode[i] {
 		case 0: // Goto
 			if r >= rune(l.mode[i+1]) &&
-				 r <= rune(l.mode[i+2]) {
+				r <= rune(l.mode[i+2]) {
 				l.state = int(l.mode[i+3])
-				return
+				return _lexerConsume
 			}
 		case 1: // Accept
-			l.OnToken(TokenType(l.mode[i+3]))
+			l.token = int(l.mode[i+3])
+			l.state = 0
+			return _lexerAccept
 		default:
 			panic("not-reached")
-	  }
+		}
 	}
 
+	if l.state == 0 && r == 0 {
+		return _lexerEOF
+	}
+
+	return _lexerError
 }
 
+func (l *_LexerStateMachine) Reset() {
+	l.mode = nil
+	l.state = 0
+}
+
+func (l *_LexerStateMachine) Token() int {
+	return l.token
+}
 `
 
 func (c *context) EmitLexer() bool {

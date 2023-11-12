@@ -13,9 +13,13 @@ func Eval(expr string) (float64, error) {
 		Fset: fset,
 	}
 
+	onError := func(l *Lexer) {
+		errLogger.Errorf(l.Pos(), "unexpected character: %c", l.Peek())
+	}
+
 	var parser calcParser
 	parser.errLogger = errLogger
-	lex := newLex(file, []byte(expr), errLogger)
+	lex := NewLexer(new(_LexerStateMachine), onError, file, []byte(expr))
 	_ = parser.parse(lex)
 	return parser.result, errLogger.Err()
 }
@@ -59,7 +63,7 @@ func (p *calcParser) on_expr__num(e float64) float64 {
 }
 
 func (p *calcParser) on_num(num Token) float64 {
-	v, err := strconv.ParseFloat(num.Str, 64)
+	v, err := strconv.ParseFloat(string(num.Str), 64)
 	if err != nil {
 		p.errLogger.Errorf(num.Pos, "invalid float: %v", err)
 		return 0
@@ -68,7 +72,7 @@ func (p *calcParser) on_num(num Token) float64 {
 }
 
 func (p *calcParser) on_num__minus(_ Token, num Token) float64 {
-	v, err := strconv.ParseFloat(num.Str, 64)
+	v, err := strconv.ParseFloat(string(num.Str), 64)
 	if err != nil {
 		p.errLogger.Errorf(num.Pos, "invalid float: %v", err)
 		return 0
@@ -77,5 +81,7 @@ func (p *calcParser) on_num__minus(_ Token, num Token) float64 {
 }
 
 func (p *calcParser) onError() {
-	p.errLogger.Errorf(p.errorToken().Pos, "unexpected token %v", p.errorToken())
+	if p.errorToken().Type != ERROR {
+		p.errLogger.Errorf(p.errorToken().Pos, "unexpected token %v", p.errorToken())
+	}
 }

@@ -6,60 +6,57 @@ import (
 	"io"
 )
 
+type StateMachine interface {
+	PushRune(r rune) int
+	Token() int
+	Reset()
+}
+
 type Token struct {
 	Type TokenType
-	Str  string
+	Str  []byte
 	Pos  gotoken.Pos
 }
 
-func isNumber(r rune) bool {
-	return r >= '0' && r <= '9'
+type Lexer struct {
+	sm          StateMachine
+	onError     func(l *Lexer)
+	file        *gotoken.File
+	input       []byte
+	inputReader *bytes.Reader
+	char        rune
+	start       int
+	pos         gotoken.Pos
 }
 
-func isLetter(r rune) bool {
-	return (r >= 'A' && r <= 'Z') || (r >= 'a' && r <= 'z')
-}
-
-func isSpace(r rune) bool {
-	return r == ' ' || r == '\t' || r == '\r'
-}
-
-type lex struct {
-	file      *gotoken.File
-	input     *bytes.Reader
-	errLogger *ErrLogger
-	buf       bytes.Buffer
-	char      rune
-}
-
-func newLex(file *gotoken.File, input []byte, errLogger *ErrLogger) *lex {
-	l := &lex{
-		file:      file,
-		input:     bytes.NewReader(input),
-		errLogger: errLogger,
+func NewLexer(
+	sm StateMachine,
+	onError func(l *Lexer),
+	file *gotoken.File,
+	input []byte,
+) *Lexer {
+	l := &Lexer{
+		sm:          sm,
+		onError:     onError,
+		file:        file,
+		input:       input,
+		inputReader: bytes.NewReader(input),
 	}
-	l.advance()
+	l.consume()
 	return l
 }
 
-func (l *lex) ReadToken() (Token, TokenType) {
-	var tok Token
-	l.readToken(&tok)
-	return tok, tok.Type
-}
-
-func (l *lex) offset() int {
-	offset, _ := l.input.Seek(0, io.SeekCurrent)
+func (l *Lexer) offset() int {
+	offset, _ := l.inputReader.Seek(0, io.SeekCurrent)
 	return int(offset) - 1
 }
 
-func (l *lex) advance() {
+func (l *Lexer) consume() {
 	if l.char == '\n' {
-		// Register the new line so that go/token.Pos can be converted to
-		// line/col. The line starts at the character after the \n.
+		// Line starts at the character after the \n.
 		l.file.AddLine(l.offset() + 1)
 	}
-	r, _, err := l.input.ReadRune()
+	r, _, err := l.inputReader.ReadRune()
 	if err != nil {
 		l.char = 0
 		return
@@ -67,81 +64,65 @@ func (l *lex) advance() {
 	l.char = r
 }
 
-func (l *lex) pos() gotoken.Pos {
-	return l.file.Pos(l.offset())
+func (l *Lexer) Pos() gotoken.Pos {
+	return l.pos
 }
 
-func (l *lex) peek() rune {
+func (l *Lexer) Peek() rune {
 	return l.char
 }
 
-func (l *lex) readToken(tok *Token) {
-	tok.Type = -1
-	for tok.Type == -1 {
-		r := l.peek()
+func (l *Lexer) ReadToken() (Token, TokenType) {
+	l.start = -1
+	l.pos = 0
 
-		if isSpace(r) {
-			l.advance()
-			continue
-		}
-		if r == '\n' {
-			l.advance()
-			continue
+	for {
+		if l.start == -1 {
+			l.start = l.offset()
+			l.pos = l.file.Pos(l.offset())
 		}
 
-		tok.Pos = l.pos()
-		if r == 0 {
-			tok.Type = EOF
-			return
-		}
+		action := l.sm.PushRune(l.char)
 
-		switch r {
-		case '+':
-			tok.Type = ADD
-			l.advance()
-		case '-':
-			tok.Type = SUB
-			l.advance()
-		case '*':
-			tok.Type = MUL
-			l.advance()
-		case '/':
-			tok.Type = DIV
-			l.advance()
-		case '%':
-			tok.Type = REM
-			l.advance()
-		case '^':
-			tok.Type = POW
-			l.advance()
-		case '(':
-			tok.Type = O_PAREN
-			l.advance()
-		case ')':
-			tok.Type = C_PAREN
-			l.advance()
-		default:
-			if isNumber(r) {
-				l.scanNum(tok)
-			} else {
-				l.advance()
-				l.errLogger.Errorf(
-					l.pos(),
-					"unexpected character: %c", r)
-				tok.Type = ERROR
+		switch action {
+		case 0: // consume
+			l.consume()
+
+		case 1: // discard
+			l.start = -1
+			l.consume()
+
+		case 2: // accept
+			end := l.offset()
+			t := Token{
+				Type: TokenType(l.sm.Token()),
+				Str:  l.input[l.start:end],
+				Pos:  l.pos,
 			}
+			l.start = -1
+			return t, t.Type
+
+		case 3: // EOF
+			t := Token{
+				Type: EOF,
+				Pos:  l.pos,
+			}
+			return t, t.Type
+
+		default: // Error
+			t := Token{
+				Type: ERROR,
+				Pos:  l.pos,
+			}
+
+			l.onError(l)
+
+			for l.char != '\n' && l.char != 0 {
+				l.consume()
+			}
+			l.sm.Reset()
+
+			return t, t.Type
 		}
 	}
-}
-
-func (l *lex) scanNum(tok *Token) {
-	l.buf.Reset()
-
-	for isNumber(l.peek()) {
-		l.buf.WriteRune(l.peek())
-		l.advance()
-	}
-
-	tok.Type = NUM
-	tok.Str = l.buf.String()
 }
