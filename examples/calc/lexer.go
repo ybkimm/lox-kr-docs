@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	gotoken "go/token"
 	"io"
 )
@@ -13,7 +14,7 @@ type StateMachine interface {
 }
 
 type Token struct {
-	Type TokenType
+	Type int
 	Str  []byte
 	Pos  gotoken.Pos
 }
@@ -48,13 +49,12 @@ func NewLexer(
 
 func (l *Lexer) offset() int {
 	offset, _ := l.inputReader.Seek(0, io.SeekCurrent)
-	return int(offset) - 1
+	return int(offset)
 }
 
 func (l *Lexer) consume() {
 	if l.char == '\n' {
-		// Line starts at the character after the \n.
-		l.file.AddLine(l.offset() + 1)
+		l.file.AddLine(l.offset())
 	}
 	r, _, err := l.inputReader.ReadRune()
 	if err != nil {
@@ -72,13 +72,14 @@ func (l *Lexer) Peek() rune {
 	return l.char
 }
 
-func (l *Lexer) ReadToken() (Token, TokenType) {
+func (l *Lexer) ReadToken() (Token, int) {
 	l.start = -1
 	l.pos = 0
 
 	for {
 		if l.start == -1 {
-			l.start = l.offset()
+			// offset() refers to the character that follows l.char, hence the -1.
+			l.start = l.offset() - 1
 			l.pos = l.file.Pos(l.offset())
 		}
 
@@ -91,11 +92,12 @@ func (l *Lexer) ReadToken() (Token, TokenType) {
 		case 1: // accept
 			end := l.offset()
 			t := Token{
-				Type: TokenType(l.sm.Token()),
+				Type: l.sm.Token(),
 				Str:  l.input[l.start:end],
 				Pos:  l.pos,
 			}
 			l.start = -1
+			fmt.Println(t, string(t.Str))
 			return t, t.Type
 
 		case 2: // discard

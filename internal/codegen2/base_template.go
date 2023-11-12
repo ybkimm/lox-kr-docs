@@ -6,15 +6,13 @@ import (
 )
 
 const baseTemplate = `
-type TokenType int
-
 const (
 {{- range i, t := terminals }}
-	{{ t.Name }} TokenType = {{ i }}
+	{{ t.Name }} int = {{ i }}
 {{- end }}
 )
 
-func (t TokenType) String() string {
+func _TokenToString(t int) string {
 	switch t {
 {{- range i, t := terminals }}
 	case {{ t.Name }}: 

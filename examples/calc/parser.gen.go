@@ -80,7 +80,7 @@ func _Find(table []int32, y, x int32) (int32, bool) {
 }
 
 type _Lexer interface {
-	ReadToken() (Token, TokenType)
+	ReadToken() (Token, int)
 }
 
 type lox struct {
@@ -89,7 +89,7 @@ type lox struct {
 	_sym   _Stack[any]
 
 	_lookahead     Token
-	_lookaheadType TokenType
+	_lookaheadType int
 	_errorToken    Token
 }
 

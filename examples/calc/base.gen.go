@@ -1,23 +1,21 @@
 package main
 
 
-type TokenType int
-
 const (
-	EOF TokenType = 0
-	ERROR TokenType = 1
-	NUM TokenType = 2
-	ADD TokenType = 3
-	SUB TokenType = 4
-	MUL TokenType = 5
-	DIV TokenType = 6
-	REM TokenType = 7
-	POW TokenType = 8
-	O_PAREN TokenType = 9
-	C_PAREN TokenType = 10
+	EOF int = 0
+	ERROR int = 1
+	NUM int = 2
+	ADD int = 3
+	SUB int = 4
+	MUL int = 5
+	DIV int = 6
+	REM int = 7
+	POW int = 8
+	O_PAREN int = 9
+	C_PAREN int = 10
 )
 
-func (t TokenType) String() string {
+func _TokenToString(t int) string {
 	switch t {
 	case EOF: 
 		return "EOF"

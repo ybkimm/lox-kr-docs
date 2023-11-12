@@ -14,7 +14,7 @@ const parserPlaceholderTemplate = `
 type lox struct {}
 
 type _Lexer interface {
-	ReadToken() (Token, TokenType)
+	ReadToken() (Token, int)
 }
 
 func (p *lox) parse(l _Lexer) bool {
@@ -83,7 +83,7 @@ func _Find(table []int32, y, x int32) (int32, bool) {
 }
 
 type _Lexer interface {
-	ReadToken() (Token, TokenType)
+	ReadToken() (Token, int)
 }
 
 type lox struct {
@@ -95,7 +95,7 @@ type lox struct {
 	{{- end }}
 
 	_lookahead     Token
-	_lookaheadType TokenType
+	_lookaheadType int
 	_errorToken    Token
 }
 

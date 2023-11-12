@@ -91,7 +91,7 @@ func (m *ModeBuilder) pickAction(
 			conflict(winner, actionSet[i])
 			return nil
 		}
-		if actionSet[i].Pos > winner.Pos {
+		if actionSet[i].Pos < winner.Pos {
 			winner = actionSet[i]
 		}
 	}
