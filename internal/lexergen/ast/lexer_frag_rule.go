@@ -15,9 +15,21 @@ func (r *FragRule) RunPass(ctx *Context, pass Pass) {
 	switch pass {
 	case GenerateGrammar:
 		nfaCons := r.Expr.NFACons(ctx)
-		actions := make([]*mode.Action, 0, len(r.Actions))
+		actions := &mode.Actions{
+			Pos: r.Bounds().Begin,
+		}
+		hasDiscard := false
 		for _, actAST := range r.Actions {
-			actions = append(actions, actAST.GetAction())
+			act := actAST.GetAction()
+			if act.Type == mode.ActionDiscard {
+				hasDiscard = true
+			}
+			actions.Actions = append(actions.Actions, act)
+		}
+		if !hasDiscard {
+			actions.Actions = append(actions.Actions, mode.Action{
+				Type: mode.ActionAccum,
+			})
 		}
 		nfaCons.E.Data = actions
 		ctx.CurrentLexerMode.Peek().AddRule(*nfaCons)

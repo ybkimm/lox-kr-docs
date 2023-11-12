@@ -23,11 +23,11 @@ var _lexerMode{{mode.Index}} = []uint32 {
 {{ end }}
 
 const (
-	_lexerConsume = 0
-	_lexerDiscard = 1
-	_lexerAccept  = 2
-	_lexerEOF     = 3
-	_lexerError   = -1
+	_lexerConsume  = 0
+	_lexerAccept   = 1
+	_lexerDiscard  = 2
+	_lexerEOF      = 3
+	_lexerError    = -1
 )
 
 type _LexerStateMachine struct {
@@ -54,10 +54,16 @@ func (l *_LexerStateMachine) PushRune(r rune) int {
 				l.state = int(l.mode[i+3])
 				return _lexerConsume
 			}
-		case 1: // Accept
+		case 3: // Accept
 			l.token = int(l.mode[i+3])
 			l.state = 0
 			return _lexerAccept
+		case 4: // Discard
+			l.state = 0
+			return _lexerDiscard
+		case 5: // Accum
+			l.state = 0
+			return _lexerConsume
 		default:
 			panic("not-reached")
 		}
@@ -104,18 +110,24 @@ func (c *context) EmitLexer() bool {
 		table := newTable[uint32]()
 		for _, state := range m.DFA.States {
 			var row []uint32
+			// Goto/Consume (0) actions.
 			state.Transitions.ForEach(func(eventRaw any, toState *dfa.State) {
 				event := eventRaw.(mode.Range)
 				row = append(row, 0, uint32(event.B), uint32(event.E), toState.ID)
 			})
-			action := state.Data.(*mode.Action)
-			if action != nil {
-				switch action.Type {
-				case mode.ActionEmit:
-					row = append(
-						row, 1, 0, 0, uint32(action.Terminal))
-				default:
-					panic("unreachable")
+			actions := state.Data.(*mode.Actions)
+			if actions != nil {
+				for _, action := range actions.Actions {
+					switch action.Type {
+					case mode.ActionAccept:
+						row = append(row, 3, 0, 0, uint32(action.Terminal))
+					case mode.ActionDiscard:
+						row = append(row, 4, 0, 0, 0)
+					case mode.ActionAccum:
+						row = append(row, 5, 0, 0, 0)
+					default:
+						panic("unreachable")
+					}
 				}
 			}
 			assert.True(len(row) > 0)

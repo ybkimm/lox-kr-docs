@@ -76,7 +76,7 @@ const (
 
 type Action interface {
 	AST
-	GetAction() *mode.Action
+	GetAction() mode.Action
 }
 
 type ActionSkip struct {
@@ -85,9 +85,9 @@ type ActionSkip struct {
 
 func (a *ActionSkip) RunPass(ctx *Context, pass Pass) {}
 
-func (a *ActionSkip) GetAction() *mode.Action {
-	return &mode.Action{
-		Type: mode.ActionSkip,
+func (a *ActionSkip) GetAction() mode.Action {
+	return mode.Action{
+		Type: mode.ActionDiscard,
 	}
 }
 
@@ -114,7 +114,7 @@ func (a *ActionPushMode) RunPass(ctx *Context, pass Pass) {
 	}
 }
 
-func (a *ActionPushMode) GetAction() *mode.Action {
+func (a *ActionPushMode) GetAction() mode.Action {
 	panic("not implemented")
 }
 
@@ -124,7 +124,7 @@ type ActionPopMode struct {
 
 func (a *ActionPopMode) RunPass(ctx *Context, pass Pass) {}
 
-func (a *ActionPopMode) GetAction() *mode.Action {
+func (a *ActionPopMode) GetAction() mode.Action {
 	panic("not implemented")
 }
 

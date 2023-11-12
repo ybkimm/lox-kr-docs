@@ -7,16 +7,21 @@ import (
 type ActionType int
 
 const (
-	ActionNone ActionType = iota
-	ActionEmit
-	ActionPushMode
-	ActionPopMode
-	ActionSkip
+	ActionNone     ActionType = 0
+	ActionPushMode ActionType = 1
+	ActionPopMode  ActionType = 2
+	ActionAccept   ActionType = 3
+	ActionDiscard  ActionType = 4
+	ActionAccum    ActionType = 5
 )
 
 type Action struct {
 	Type     ActionType
 	Terminal int
-	Pos      gotoken.Pos
 	Mode     string
+}
+
+type Actions struct {
+	Actions []Action
+	Pos     gotoken.Pos
 }

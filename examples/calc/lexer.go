@@ -88,11 +88,7 @@ func (l *Lexer) ReadToken() (Token, TokenType) {
 		case 0: // consume
 			l.consume()
 
-		case 1: // discard
-			l.start = -1
-			l.consume()
-
-		case 2: // accept
+		case 1: // accept
 			end := l.offset()
 			t := Token{
 				Type: TokenType(l.sm.Token()),
@@ -101,6 +97,9 @@ func (l *Lexer) ReadToken() (Token, TokenType) {
 			}
 			l.start = -1
 			return t, t.Type
+
+		case 2: // discard
+			l.start = -1
 
 		case 3: // EOF
 			t := Token{

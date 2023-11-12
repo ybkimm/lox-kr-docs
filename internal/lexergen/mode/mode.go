@@ -3,6 +3,7 @@ package mode
 import (
 	gotoken "go/token"
 
+	"github.com/dcaiafa/lox/internal/assert"
 	"github.com/dcaiafa/lox/internal/errlogger"
 	"github.com/dcaiafa/lox/internal/lexergen/dfa"
 	"github.com/dcaiafa/lox/internal/lexergen/nfa"
@@ -63,40 +64,35 @@ func (m *ModeBuilder) pickAction(
 	errs *errlogger.ErrLogger,
 	fset *gotoken.FileSet,
 	state *dfa.State,
-) *Action {
-	var actions []*Action
+) *Actions {
+	var actionSet []*Actions
 	for _, nstate := range state.NFAStates {
-		action, ok := nstate.Data.(*Action)
+		actions, ok := nstate.Data.(*Actions)
 		if !ok {
 			continue
 		}
-		actions = append(actions, action)
+		assert.True(len(actions.Actions) > 0)
+		actionSet = append(actionSet, actions)
 	}
 
-	if len(actions) == 0 {
+	if len(actionSet) == 0 {
 		return nil
 	}
 
-	conflict := func(a1, a2 *Action) {
+	conflict := func(a1, a2 *Actions) {
 		errs.Errorf(fset.Position(a1.Pos), "Conflicting lexer actions: %v", a1)
 		errs.Infof(fset.Position(a2.Pos), "Conflicts with other action: %v", a2)
 	}
 
-	if len(actions) > 1 {
-		if actions[0].Type != ActionEmit {
-			conflict(actions[0], actions[1])
+	winner := actionSet[0]
+	for i := 1; i < len(actionSet); i++ {
+		actions := actionSet[i]
+		if fset.File(actions.Pos) != fset.File(winner.Pos) {
+			conflict(winner, actionSet[i])
 			return nil
 		}
-	}
-
-	winner := actions[0]
-	for i := 1; i < len(actions); i++ {
-		if fset.File(actions[i].Pos) != fset.File(winner.Pos) {
-			conflict(winner, actions[i])
-			return nil
-		}
-		if actions[i].Pos > winner.Pos {
-			winner = actions[i]
+		if actionSet[i].Pos > winner.Pos {
+			winner = actionSet[i]
 		}
 	}
 

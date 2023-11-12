@@ -3,23 +3,24 @@ package main
 
 
 var _lexerMode0 = []uint32 {
-	10, 47, 52, 57, 62, 67, 72, 77, 82, 87, 36, 0, 48, 57, 
-9, 0, 43, 43, 8, 0, 45, 45, 7, 0, 42, 42, 6, 0, 
-47, 47, 5, 0, 37, 37, 4, 0, 94, 94, 3, 0, 40, 40, 
-2, 0, 41, 41, 1, 4, 1, 0, 0, 10, 4, 1, 0, 0, 
-9, 4, 1, 0, 0, 8, 4, 1, 0, 0, 7, 4, 1, 0, 
-0, 6, 4, 1, 0, 0, 5, 4, 1, 0, 0, 4, 4, 1, 
-0, 0, 3, 8, 0, 48, 57, 9, 1, 0, 0, 2, 
+	11, 52, 61, 66, 71, 76, 81, 86, 91, 96, 101, 40, 0, 48, 
+57, 10, 0, 43, 43, 9, 0, 45, 45, 8, 0, 42, 42, 7, 
+0, 47, 47, 6, 0, 37, 37, 5, 0, 94, 94, 4, 0, 40, 
+40, 3, 0, 41, 41, 2, 0, 32, 32, 1, 8, 0, 32, 32, 
+1, 4, 0, 0, 0, 4, 3, 0, 0, 10, 4, 3, 0, 0, 
+9, 4, 3, 0, 0, 8, 4, 3, 0, 0, 7, 4, 3, 0, 
+0, 6, 4, 3, 0, 0, 5, 4, 3, 0, 0, 4, 4, 3, 
+0, 0, 3, 8, 0, 48, 57, 10, 3, 0, 0, 2, 
 }
 
 
 
 const (
-	_lexerConsume = 0
-	_lexerDiscard = 1
-	_lexerAccept  = 2
-	_lexerEOF     = 3
-	_lexerError   = -1
+	_lexerConsume  = 0
+	_lexerAccept   = 1
+	_lexerDiscard  = 2
+	_lexerEOF      = 3
+	_lexerError    = -1
 )
 
 type _LexerStateMachine struct {
@@ -46,10 +47,16 @@ func (l *_LexerStateMachine) PushRune(r rune) int {
 				l.state = int(l.mode[i+3])
 				return _lexerConsume
 			}
-		case 1: // Accept
+		case 3: // Accept
 			l.token = int(l.mode[i+3])
 			l.state = 0
 			return _lexerAccept
+		case 4: // Discard
+			l.state = 0
+			return _lexerDiscard
+		case 5: // Accum
+			l.state = 0
+			return _lexerConsume
 		default:
 			panic("not-reached")
 		}
