@@ -11,6 +11,7 @@ const (
 	ActionEmit
 	ActionPushMode
 	ActionPopMode
+	ActionSkip
 )
 
 type Action struct {

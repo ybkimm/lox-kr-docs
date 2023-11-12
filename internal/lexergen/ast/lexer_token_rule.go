@@ -47,11 +47,16 @@ func (r *TokenRule) RunPass(ctx *Context, pass Pass) {
 	case GenerateGrammar:
 		nfaCons := r.Expr.NFACons(ctx)
 		nfaCons.E.Accept = true
-		nfaCons.E.Data = &mode.Action{
+		actions := make([]*mode.Action, 0, len(r.Actions)+1)
+		for _, actAST := range r.Actions {
+			actions = append(actions, actAST.GetAction())
+		}
+		actions = append(actions, &mode.Action{
 			Type:     mode.ActionEmit,
 			Terminal: r.Terminal.Index,
 			Pos:      r.bounds.Begin,
-		}
+		})
+		nfaCons.E.Data = actions
 		ctx.CurrentLexerMode.Peek().AddRule(*nfaCons)
 	}
 }

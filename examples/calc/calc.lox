@@ -10,10 +10,13 @@ POW = '^' ;
 O_PAREN = '(' ;
 C_PAREN = ')' ;
 
+@frag ' '+  @skip ;
+
 @parser
 
 @start
 S = expr ;
+
 
 expr = expr '+' expr    @left(1)
      | expr '-' expr    @left(1)

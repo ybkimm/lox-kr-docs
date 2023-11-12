@@ -60,17 +60,6 @@ type baseStatement struct {
 
 func (s *baseStatement) isStatement() {}
 
-type FragRule struct {
-	baseStatement
-	Expr    *LexerExpr
-	Actions []Action
-}
-
-func (r *FragRule) RunPass(ctx *Context, pass Pass) {
-	r.Expr.RunPass(ctx, pass)
-	RunPass(ctx, r.Actions, pass)
-}
-
 type LexerTerm interface {
 	AST
 	NFACons(ctx *Context) *mode.NFAComposite
@@ -87,25 +76,24 @@ const (
 
 type Action interface {
 	AST
-	isAction()
+	GetAction() *mode.Action
 }
-
-type baseAction struct {
-	baseAST
-}
-
-func (a *baseAction) isAction() {}
 
 type ActionSkip struct {
-	baseAction
+	baseAST
 }
 
 func (a *ActionSkip) RunPass(ctx *Context, pass Pass) {}
 
-type ActionPushMode struct {
-	baseAction
-	Mode string
+func (a *ActionSkip) GetAction() *mode.Action {
+	return &mode.Action{
+		Type: mode.ActionSkip,
+	}
+}
 
+type ActionPushMode struct {
+	baseAST
+	Mode    string
 	modeAST *Mode
 }
 
@@ -126,11 +114,18 @@ func (a *ActionPushMode) RunPass(ctx *Context, pass Pass) {
 	}
 }
 
-type ActionPopMode struct {
-	baseAction
+func (a *ActionPushMode) GetAction() *mode.Action {
+	panic("not implemented")
 }
 
-func (a *ActionPopMode) RunPass(ctx *Context, pass Pass) {
+type ActionPopMode struct {
+	baseAST
+}
+
+func (a *ActionPopMode) RunPass(ctx *Context, pass Pass) {}
+
+func (a *ActionPopMode) GetAction() *mode.Action {
+	panic("not implemented")
 }
 
 type Associativity int
