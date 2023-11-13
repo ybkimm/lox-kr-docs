@@ -1,0 +1,151 @@
+sources:
+  - name: calc.lox
+    data: |
+      @lexer
+
+      NUM = [0-9]+ ;
+      ADD = '+' ;
+      SUB = '-' ;
+      MUL = '*' ;
+      DIV = '/' ;
+      REM = '%' ;
+      POW = '^' ;
+      O_PAREN = '(' ;
+      C_PAREN = ')' ;
+
+      @frag [ \r\n\t]+  @skip ;
+
+      @parser
+
+      @start
+      S = expr ;
+
+      expr = expr '+' expr    @left(1)
+           | expr '-' expr    @left(1)
+           | expr '*' expr    @left(2)
+           | expr '/' expr    @left(2)
+           | expr '%' expr    @left(2)
+           | expr '^' expr    @right(3)
+           | '(' expr ')'
+           | num ;
+
+      num = NUM
+          | '-' NUM ;
+
+  - name: parser.go
+    data: |
+      package main
+
+      import (
+        gotoken "go/token"
+        "math"
+        "strconv"
+        "io"
+        "os"
+        "fmt"
+
+        "github.com/dcaiafa/lox/internal/errlogger"
+        "github.com/dcaiafa/lox/internal/util/baselexer"
+      )
+
+      type Token = baselexer.Token
+
+      func main() {
+        input, err := io.ReadAll(os.Stdin)
+        if err != nil {
+          panic(err)
+        }
+
+        fset := gotoken.NewFileSet()
+        file := fset.AddFile("expr", -1, len(input))
+        errs := errlogger.New()
+
+        onError := func(l *baselexer.Lexer) {
+          errs.Errorf(file.Position(l.Pos()), "unexpected character: %c", l.Peek())
+        }
+
+        var parser calcParser
+        parser.errs = errs
+        parser.fset = fset
+        lex := baselexer.New(new(_LexerStateMachine), onError, file, input)
+        _ = parser.parse(lex)
+
+        if errs.HasError() {
+          fmt.Println("Errors occurred.")
+          return
+        }
+        fmt.Println(parser.result)
+      }
+
+      type calcParser struct {
+        lox
+        fset   *gotoken.FileSet
+        errs   *errlogger.ErrLogger
+        result float64
+      }
+
+      func (p *calcParser) on_S__foo(e float64) any {
+        p.result = e
+        return nil
+      }
+
+      func (p *calcParser) on_expr__binary(left float64, op Token, right float64) float64 {
+        switch op.Type {
+        case ADD:
+          return left + right
+        case SUB:
+          return left - right
+        case MUL:
+          return left * right
+        case DIV:
+          return left / right
+        case REM:
+          return math.Mod(left, right)
+        case POW:
+          return math.Pow(left, right)
+        default:
+          panic("not reached")
+        }
+      }
+
+      func (p *calcParser) on_expr__paren(_ Token, e float64, _ Token) float64 {
+        return e
+      }
+
+      func (p *calcParser) on_expr__num(e float64) float64 {
+        return e
+      }
+
+      func (p *calcParser) on_num(num Token) float64 {
+        v, err := strconv.ParseFloat(string(num.Str), 64)
+        if err != nil {
+          p.errs.Errorf(p.fset.Position(num.Pos), "invalid float: %v", err)
+          return 0
+        }
+        return v
+      }
+
+      func (p *calcParser) on_num__minus(_ Token, num Token) float64 {
+        v, err := strconv.ParseFloat(string(num.Str), 64)
+        if err != nil {
+          p.errs.Errorf(p.fset.Position(num.Pos), "invalid float: %v", err)
+          return 0
+        }
+        return -v
+      }
+
+      func (p *calcParser) onError() {
+        if p.errorToken().Type != ERROR {
+          p.errs.Errorf(
+            p.fset.Position(p.errorToken().Pos),
+            "unexpected %v", _TokenToString(p.errorToken().Type))
+        }
+      }
+
+inputs:
+  - "1 + 2 * 3"
+  - "1 + 2\n* 3\n"
+  - "-10"
+  - ""
+  - "1 + 2 + "
+  - "1 +* 2"

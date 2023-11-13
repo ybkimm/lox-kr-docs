@@ -1,0 +1,1404 @@
+Parser Table
+============
+I0:
+  S' = .S, EOF
+  S = .expr, EOF
+  expr = .expr ADD expr, EOF
+  expr = .expr ADD expr, ADD
+  expr = .expr ADD expr, SUB
+  expr = .expr ADD expr, MUL
+  expr = .expr ADD expr, DIV
+  expr = .expr ADD expr, REM
+  expr = .expr ADD expr, POW
+  expr = .expr SUB expr, EOF
+  expr = .expr SUB expr, ADD
+  expr = .expr SUB expr, SUB
+  expr = .expr SUB expr, MUL
+  expr = .expr SUB expr, DIV
+  expr = .expr SUB expr, REM
+  expr = .expr SUB expr, POW
+  expr = .expr MUL expr, EOF
+  expr = .expr MUL expr, ADD
+  expr = .expr MUL expr, SUB
+  expr = .expr MUL expr, MUL
+  expr = .expr MUL expr, DIV
+  expr = .expr MUL expr, REM
+  expr = .expr MUL expr, POW
+  expr = .expr DIV expr, EOF
+  expr = .expr DIV expr, ADD
+  expr = .expr DIV expr, SUB
+  expr = .expr DIV expr, MUL
+  expr = .expr DIV expr, DIV
+  expr = .expr DIV expr, REM
+  expr = .expr DIV expr, POW
+  expr = .expr REM expr, EOF
+  expr = .expr REM expr, ADD
+  expr = .expr REM expr, SUB
+  expr = .expr REM expr, MUL
+  expr = .expr REM expr, DIV
+  expr = .expr REM expr, REM
+  expr = .expr REM expr, POW
+  expr = .expr POW expr, EOF
+  expr = .expr POW expr, ADD
+  expr = .expr POW expr, SUB
+  expr = .expr POW expr, MUL
+  expr = .expr POW expr, DIV
+  expr = .expr POW expr, REM
+  expr = .expr POW expr, POW
+  expr = .O_PAREN expr C_PAREN, EOF
+  expr = .O_PAREN expr C_PAREN, ADD
+  expr = .O_PAREN expr C_PAREN, SUB
+  expr = .O_PAREN expr C_PAREN, MUL
+  expr = .O_PAREN expr C_PAREN, DIV
+  expr = .O_PAREN expr C_PAREN, REM
+  expr = .O_PAREN expr C_PAREN, POW
+  expr = .num, EOF
+  expr = .num, ADD
+  expr = .num, SUB
+  expr = .num, MUL
+  expr = .num, DIV
+  expr = .num, REM
+  expr = .num, POW
+  num = .NUM, EOF
+  num = .NUM, ADD
+  num = .NUM, SUB
+  num = .NUM, MUL
+  num = .NUM, DIV
+  num = .NUM, REM
+  num = .NUM, POW
+  num = .SUB NUM, EOF
+  num = .SUB NUM, ADD
+  num = .SUB NUM, SUB
+  num = .SUB NUM, MUL
+  num = .SUB NUM, DIV
+  num = .SUB NUM, REM
+  num = .SUB NUM, POW
+    on NUM shift I1
+    on O_PAREN shift I2
+    on SUB shift I4
+    on S goto I3
+    on expr goto I5
+    on num goto I6
+I1:
+  num = NUM., EOF
+  num = NUM., ADD
+  num = NUM., SUB
+  num = NUM., MUL
+  num = NUM., DIV
+  num = NUM., REM
+  num = NUM., POW
+  num = NUM., C_PAREN
+    on ADD reduce num
+    on C_PAREN reduce num
+    on DIV reduce num
+    on EOF reduce num
+    on MUL reduce num
+    on POW reduce num
+    on REM reduce num
+    on SUB reduce num
+I2:
+  expr = .expr ADD expr, ADD
+  expr = .expr ADD expr, SUB
+  expr = .expr ADD expr, MUL
+  expr = .expr ADD expr, DIV
+  expr = .expr ADD expr, REM
+  expr = .expr ADD expr, POW
+  expr = .expr ADD expr, C_PAREN
+  expr = .expr SUB expr, ADD
+  expr = .expr SUB expr, SUB
+  expr = .expr SUB expr, MUL
+  expr = .expr SUB expr, DIV
+  expr = .expr SUB expr, REM
+  expr = .expr SUB expr, POW
+  expr = .expr SUB expr, C_PAREN
+  expr = .expr MUL expr, ADD
+  expr = .expr MUL expr, SUB
+  expr = .expr MUL expr, MUL
+  expr = .expr MUL expr, DIV
+  expr = .expr MUL expr, REM
+  expr = .expr MUL expr, POW
+  expr = .expr MUL expr, C_PAREN
+  expr = .expr DIV expr, ADD
+  expr = .expr DIV expr, SUB
+  expr = .expr DIV expr, MUL
+  expr = .expr DIV expr, DIV
+  expr = .expr DIV expr, REM
+  expr = .expr DIV expr, POW
+  expr = .expr DIV expr, C_PAREN
+  expr = .expr REM expr, ADD
+  expr = .expr REM expr, SUB
+  expr = .expr REM expr, MUL
+  expr = .expr REM expr, DIV
+  expr = .expr REM expr, REM
+  expr = .expr REM expr, POW
+  expr = .expr REM expr, C_PAREN
+  expr = .expr POW expr, ADD
+  expr = .expr POW expr, SUB
+  expr = .expr POW expr, MUL
+  expr = .expr POW expr, DIV
+  expr = .expr POW expr, REM
+  expr = .expr POW expr, POW
+  expr = .expr POW expr, C_PAREN
+  expr = .O_PAREN expr C_PAREN, ADD
+  expr = .O_PAREN expr C_PAREN, SUB
+  expr = .O_PAREN expr C_PAREN, MUL
+  expr = .O_PAREN expr C_PAREN, DIV
+  expr = .O_PAREN expr C_PAREN, REM
+  expr = .O_PAREN expr C_PAREN, POW
+  expr = .O_PAREN expr C_PAREN, C_PAREN
+  expr = O_PAREN .expr C_PAREN, EOF
+  expr = O_PAREN .expr C_PAREN, ADD
+  expr = O_PAREN .expr C_PAREN, SUB
+  expr = O_PAREN .expr C_PAREN, MUL
+  expr = O_PAREN .expr C_PAREN, DIV
+  expr = O_PAREN .expr C_PAREN, REM
+  expr = O_PAREN .expr C_PAREN, POW
+  expr = O_PAREN .expr C_PAREN, C_PAREN
+  expr = .num, ADD
+  expr = .num, SUB
+  expr = .num, MUL
+  expr = .num, DIV
+  expr = .num, REM
+  expr = .num, POW
+  expr = .num, C_PAREN
+  num = .NUM, ADD
+  num = .NUM, SUB
+  num = .NUM, MUL
+  num = .NUM, DIV
+  num = .NUM, REM
+  num = .NUM, POW
+  num = .NUM, C_PAREN
+  num = .SUB NUM, ADD
+  num = .SUB NUM, SUB
+  num = .SUB NUM, MUL
+  num = .SUB NUM, DIV
+  num = .SUB NUM, REM
+  num = .SUB NUM, POW
+  num = .SUB NUM, C_PAREN
+    on NUM shift I1
+    on O_PAREN shift I2
+    on SUB shift I4
+    on expr goto I13
+    on num goto I6
+I3:
+  S' = S., EOF
+    on EOF accept
+I4:
+  num = SUB .NUM, EOF
+  num = SUB .NUM, ADD
+  num = SUB .NUM, SUB
+  num = SUB .NUM, MUL
+  num = SUB .NUM, DIV
+  num = SUB .NUM, REM
+  num = SUB .NUM, POW
+  num = SUB .NUM, C_PAREN
+    on NUM shift I14
+I5:
+  S = expr., EOF
+  expr = expr .ADD expr, EOF
+  expr = expr .ADD expr, ADD
+  expr = expr .ADD expr, SUB
+  expr = expr .ADD expr, MUL
+  expr = expr .ADD expr, DIV
+  expr = expr .ADD expr, REM
+  expr = expr .ADD expr, POW
+  expr = expr .SUB expr, EOF
+  expr = expr .SUB expr, ADD
+  expr = expr .SUB expr, SUB
+  expr = expr .SUB expr, MUL
+  expr = expr .SUB expr, DIV
+  expr = expr .SUB expr, REM
+  expr = expr .SUB expr, POW
+  expr = expr .MUL expr, EOF
+  expr = expr .MUL expr, ADD
+  expr = expr .MUL expr, SUB
+  expr = expr .MUL expr, MUL
+  expr = expr .MUL expr, DIV
+  expr = expr .MUL expr, REM
+  expr = expr .MUL expr, POW
+  expr = expr .DIV expr, EOF
+  expr = expr .DIV expr, ADD
+  expr = expr .DIV expr, SUB
+  expr = expr .DIV expr, MUL
+  expr = expr .DIV expr, DIV
+  expr = expr .DIV expr, REM
+  expr = expr .DIV expr, POW
+  expr = expr .REM expr, EOF
+  expr = expr .REM expr, ADD
+  expr = expr .REM expr, SUB
+  expr = expr .REM expr, MUL
+  expr = expr .REM expr, DIV
+  expr = expr .REM expr, REM
+  expr = expr .REM expr, POW
+  expr = expr .POW expr, EOF
+  expr = expr .POW expr, ADD
+  expr = expr .POW expr, SUB
+  expr = expr .POW expr, MUL
+  expr = expr .POW expr, DIV
+  expr = expr .POW expr, REM
+  expr = expr .POW expr, POW
+    on ADD shift I7
+    on DIV shift I8
+    on EOF reduce S
+    on MUL shift I9
+    on POW shift I10
+    on REM shift I11
+    on SUB shift I12
+I6:
+  expr = num., EOF
+  expr = num., ADD
+  expr = num., SUB
+  expr = num., MUL
+  expr = num., DIV
+  expr = num., REM
+  expr = num., POW
+  expr = num., C_PAREN
+    on ADD reduce expr
+    on C_PAREN reduce expr
+    on DIV reduce expr
+    on EOF reduce expr
+    on MUL reduce expr
+    on POW reduce expr
+    on REM reduce expr
+    on SUB reduce expr
+I7:
+  expr = .expr ADD expr, EOF
+  expr = .expr ADD expr, ADD
+  expr = .expr ADD expr, SUB
+  expr = .expr ADD expr, MUL
+  expr = .expr ADD expr, DIV
+  expr = .expr ADD expr, REM
+  expr = .expr ADD expr, POW
+  expr = .expr ADD expr, C_PAREN
+  expr = expr ADD .expr, EOF
+  expr = expr ADD .expr, ADD
+  expr = expr ADD .expr, SUB
+  expr = expr ADD .expr, MUL
+  expr = expr ADD .expr, DIV
+  expr = expr ADD .expr, REM
+  expr = expr ADD .expr, POW
+  expr = expr ADD .expr, C_PAREN
+  expr = .expr SUB expr, EOF
+  expr = .expr SUB expr, ADD
+  expr = .expr SUB expr, SUB
+  expr = .expr SUB expr, MUL
+  expr = .expr SUB expr, DIV
+  expr = .expr SUB expr, REM
+  expr = .expr SUB expr, POW
+  expr = .expr SUB expr, C_PAREN
+  expr = .expr MUL expr, EOF
+  expr = .expr MUL expr, ADD
+  expr = .expr MUL expr, SUB
+  expr = .expr MUL expr, MUL
+  expr = .expr MUL expr, DIV
+  expr = .expr MUL expr, REM
+  expr = .expr MUL expr, POW
+  expr = .expr MUL expr, C_PAREN
+  expr = .expr DIV expr, EOF
+  expr = .expr DIV expr, ADD
+  expr = .expr DIV expr, SUB
+  expr = .expr DIV expr, MUL
+  expr = .expr DIV expr, DIV
+  expr = .expr DIV expr, REM
+  expr = .expr DIV expr, POW
+  expr = .expr DIV expr, C_PAREN
+  expr = .expr REM expr, EOF
+  expr = .expr REM expr, ADD
+  expr = .expr REM expr, SUB
+  expr = .expr REM expr, MUL
+  expr = .expr REM expr, DIV
+  expr = .expr REM expr, REM
+  expr = .expr REM expr, POW
+  expr = .expr REM expr, C_PAREN
+  expr = .expr POW expr, EOF
+  expr = .expr POW expr, ADD
+  expr = .expr POW expr, SUB
+  expr = .expr POW expr, MUL
+  expr = .expr POW expr, DIV
+  expr = .expr POW expr, REM
+  expr = .expr POW expr, POW
+  expr = .expr POW expr, C_PAREN
+  expr = .O_PAREN expr C_PAREN, EOF
+  expr = .O_PAREN expr C_PAREN, ADD
+  expr = .O_PAREN expr C_PAREN, SUB
+  expr = .O_PAREN expr C_PAREN, MUL
+  expr = .O_PAREN expr C_PAREN, DIV
+  expr = .O_PAREN expr C_PAREN, REM
+  expr = .O_PAREN expr C_PAREN, POW
+  expr = .O_PAREN expr C_PAREN, C_PAREN
+  expr = .num, EOF
+  expr = .num, ADD
+  expr = .num, SUB
+  expr = .num, MUL
+  expr = .num, DIV
+  expr = .num, REM
+  expr = .num, POW
+  expr = .num, C_PAREN
+  num = .NUM, EOF
+  num = .NUM, ADD
+  num = .NUM, SUB
+  num = .NUM, MUL
+  num = .NUM, DIV
+  num = .NUM, REM
+  num = .NUM, POW
+  num = .NUM, C_PAREN
+  num = .SUB NUM, EOF
+  num = .SUB NUM, ADD
+  num = .SUB NUM, SUB
+  num = .SUB NUM, MUL
+  num = .SUB NUM, DIV
+  num = .SUB NUM, REM
+  num = .SUB NUM, POW
+  num = .SUB NUM, C_PAREN
+    on NUM shift I1
+    on O_PAREN shift I2
+    on SUB shift I4
+    on expr goto I16
+    on num goto I6
+I8:
+  expr = .expr ADD expr, EOF
+  expr = .expr ADD expr, ADD
+  expr = .expr ADD expr, SUB
+  expr = .expr ADD expr, MUL
+  expr = .expr ADD expr, DIV
+  expr = .expr ADD expr, REM
+  expr = .expr ADD expr, POW
+  expr = .expr ADD expr, C_PAREN
+  expr = .expr SUB expr, EOF
+  expr = .expr SUB expr, ADD
+  expr = .expr SUB expr, SUB
+  expr = .expr SUB expr, MUL
+  expr = .expr SUB expr, DIV
+  expr = .expr SUB expr, REM
+  expr = .expr SUB expr, POW
+  expr = .expr SUB expr, C_PAREN
+  expr = .expr MUL expr, EOF
+  expr = .expr MUL expr, ADD
+  expr = .expr MUL expr, SUB
+  expr = .expr MUL expr, MUL
+  expr = .expr MUL expr, DIV
+  expr = .expr MUL expr, REM
+  expr = .expr MUL expr, POW
+  expr = .expr MUL expr, C_PAREN
+  expr = .expr DIV expr, EOF
+  expr = .expr DIV expr, ADD
+  expr = .expr DIV expr, SUB
+  expr = .expr DIV expr, MUL
+  expr = .expr DIV expr, DIV
+  expr = .expr DIV expr, REM
+  expr = .expr DIV expr, POW
+  expr = .expr DIV expr, C_PAREN
+  expr = expr DIV .expr, EOF
+  expr = expr DIV .expr, ADD
+  expr = expr DIV .expr, SUB
+  expr = expr DIV .expr, MUL
+  expr = expr DIV .expr, DIV
+  expr = expr DIV .expr, REM
+  expr = expr DIV .expr, POW
+  expr = expr DIV .expr, C_PAREN
+  expr = .expr REM expr, EOF
+  expr = .expr REM expr, ADD
+  expr = .expr REM expr, SUB
+  expr = .expr REM expr, MUL
+  expr = .expr REM expr, DIV
+  expr = .expr REM expr, REM
+  expr = .expr REM expr, POW
+  expr = .expr REM expr, C_PAREN
+  expr = .expr POW expr, EOF
+  expr = .expr POW expr, ADD
+  expr = .expr POW expr, SUB
+  expr = .expr POW expr, MUL
+  expr = .expr POW expr, DIV
+  expr = .expr POW expr, REM
+  expr = .expr POW expr, POW
+  expr = .expr POW expr, C_PAREN
+  expr = .O_PAREN expr C_PAREN, EOF
+  expr = .O_PAREN expr C_PAREN, ADD
+  expr = .O_PAREN expr C_PAREN, SUB
+  expr = .O_PAREN expr C_PAREN, MUL
+  expr = .O_PAREN expr C_PAREN, DIV
+  expr = .O_PAREN expr C_PAREN, REM
+  expr = .O_PAREN expr C_PAREN, POW
+  expr = .O_PAREN expr C_PAREN, C_PAREN
+  expr = .num, EOF
+  expr = .num, ADD
+  expr = .num, SUB
+  expr = .num, MUL
+  expr = .num, DIV
+  expr = .num, REM
+  expr = .num, POW
+  expr = .num, C_PAREN
+  num = .NUM, EOF
+  num = .NUM, ADD
+  num = .NUM, SUB
+  num = .NUM, MUL
+  num = .NUM, DIV
+  num = .NUM, REM
+  num = .NUM, POW
+  num = .NUM, C_PAREN
+  num = .SUB NUM, EOF
+  num = .SUB NUM, ADD
+  num = .SUB NUM, SUB
+  num = .SUB NUM, MUL
+  num = .SUB NUM, DIV
+  num = .SUB NUM, REM
+  num = .SUB NUM, POW
+  num = .SUB NUM, C_PAREN
+    on NUM shift I1
+    on O_PAREN shift I2
+    on SUB shift I4
+    on expr goto I19
+    on num goto I6
+I9:
+  expr = .expr ADD expr, EOF
+  expr = .expr ADD expr, ADD
+  expr = .expr ADD expr, SUB
+  expr = .expr ADD expr, MUL
+  expr = .expr ADD expr, DIV
+  expr = .expr ADD expr, REM
+  expr = .expr ADD expr, POW
+  expr = .expr ADD expr, C_PAREN
+  expr = .expr SUB expr, EOF
+  expr = .expr SUB expr, ADD
+  expr = .expr SUB expr, SUB
+  expr = .expr SUB expr, MUL
+  expr = .expr SUB expr, DIV
+  expr = .expr SUB expr, REM
+  expr = .expr SUB expr, POW
+  expr = .expr SUB expr, C_PAREN
+  expr = .expr MUL expr, EOF
+  expr = .expr MUL expr, ADD
+  expr = .expr MUL expr, SUB
+  expr = .expr MUL expr, MUL
+  expr = .expr MUL expr, DIV
+  expr = .expr MUL expr, REM
+  expr = .expr MUL expr, POW
+  expr = .expr MUL expr, C_PAREN
+  expr = expr MUL .expr, EOF
+  expr = expr MUL .expr, ADD
+  expr = expr MUL .expr, SUB
+  expr = expr MUL .expr, MUL
+  expr = expr MUL .expr, DIV
+  expr = expr MUL .expr, REM
+  expr = expr MUL .expr, POW
+  expr = expr MUL .expr, C_PAREN
+  expr = .expr DIV expr, EOF
+  expr = .expr DIV expr, ADD
+  expr = .expr DIV expr, SUB
+  expr = .expr DIV expr, MUL
+  expr = .expr DIV expr, DIV
+  expr = .expr DIV expr, REM
+  expr = .expr DIV expr, POW
+  expr = .expr DIV expr, C_PAREN
+  expr = .expr REM expr, EOF
+  expr = .expr REM expr, ADD
+  expr = .expr REM expr, SUB
+  expr = .expr REM expr, MUL
+  expr = .expr REM expr, DIV
+  expr = .expr REM expr, REM
+  expr = .expr REM expr, POW
+  expr = .expr REM expr, C_PAREN
+  expr = .expr POW expr, EOF
+  expr = .expr POW expr, ADD
+  expr = .expr POW expr, SUB
+  expr = .expr POW expr, MUL
+  expr = .expr POW expr, DIV
+  expr = .expr POW expr, REM
+  expr = .expr POW expr, POW
+  expr = .expr POW expr, C_PAREN
+  expr = .O_PAREN expr C_PAREN, EOF
+  expr = .O_PAREN expr C_PAREN, ADD
+  expr = .O_PAREN expr C_PAREN, SUB
+  expr = .O_PAREN expr C_PAREN, MUL
+  expr = .O_PAREN expr C_PAREN, DIV
+  expr = .O_PAREN expr C_PAREN, REM
+  expr = .O_PAREN expr C_PAREN, POW
+  expr = .O_PAREN expr C_PAREN, C_PAREN
+  expr = .num, EOF
+  expr = .num, ADD
+  expr = .num, SUB
+  expr = .num, MUL
+  expr = .num, DIV
+  expr = .num, REM
+  expr = .num, POW
+  expr = .num, C_PAREN
+  num = .NUM, EOF
+  num = .NUM, ADD
+  num = .NUM, SUB
+  num = .NUM, MUL
+  num = .NUM, DIV
+  num = .NUM, REM
+  num = .NUM, POW
+  num = .NUM, C_PAREN
+  num = .SUB NUM, EOF
+  num = .SUB NUM, ADD
+  num = .SUB NUM, SUB
+  num = .SUB NUM, MUL
+  num = .SUB NUM, DIV
+  num = .SUB NUM, REM
+  num = .SUB NUM, POW
+  num = .SUB NUM, C_PAREN
+    on NUM shift I1
+    on O_PAREN shift I2
+    on SUB shift I4
+    on expr goto I18
+    on num goto I6
+I10:
+  expr = .expr ADD expr, EOF
+  expr = .expr ADD expr, ADD
+  expr = .expr ADD expr, SUB
+  expr = .expr ADD expr, MUL
+  expr = .expr ADD expr, DIV
+  expr = .expr ADD expr, REM
+  expr = .expr ADD expr, POW
+  expr = .expr ADD expr, C_PAREN
+  expr = .expr SUB expr, EOF
+  expr = .expr SUB expr, ADD
+  expr = .expr SUB expr, SUB
+  expr = .expr SUB expr, MUL
+  expr = .expr SUB expr, DIV
+  expr = .expr SUB expr, REM
+  expr = .expr SUB expr, POW
+  expr = .expr SUB expr, C_PAREN
+  expr = .expr MUL expr, EOF
+  expr = .expr MUL expr, ADD
+  expr = .expr MUL expr, SUB
+  expr = .expr MUL expr, MUL
+  expr = .expr MUL expr, DIV
+  expr = .expr MUL expr, REM
+  expr = .expr MUL expr, POW
+  expr = .expr MUL expr, C_PAREN
+  expr = .expr DIV expr, EOF
+  expr = .expr DIV expr, ADD
+  expr = .expr DIV expr, SUB
+  expr = .expr DIV expr, MUL
+  expr = .expr DIV expr, DIV
+  expr = .expr DIV expr, REM
+  expr = .expr DIV expr, POW
+  expr = .expr DIV expr, C_PAREN
+  expr = .expr REM expr, EOF
+  expr = .expr REM expr, ADD
+  expr = .expr REM expr, SUB
+  expr = .expr REM expr, MUL
+  expr = .expr REM expr, DIV
+  expr = .expr REM expr, REM
+  expr = .expr REM expr, POW
+  expr = .expr REM expr, C_PAREN
+  expr = .expr POW expr, EOF
+  expr = .expr POW expr, ADD
+  expr = .expr POW expr, SUB
+  expr = .expr POW expr, MUL
+  expr = .expr POW expr, DIV
+  expr = .expr POW expr, REM
+  expr = .expr POW expr, POW
+  expr = .expr POW expr, C_PAREN
+  expr = expr POW .expr, EOF
+  expr = expr POW .expr, ADD
+  expr = expr POW .expr, SUB
+  expr = expr POW .expr, MUL
+  expr = expr POW .expr, DIV
+  expr = expr POW .expr, REM
+  expr = expr POW .expr, POW
+  expr = expr POW .expr, C_PAREN
+  expr = .O_PAREN expr C_PAREN, EOF
+  expr = .O_PAREN expr C_PAREN, ADD
+  expr = .O_PAREN expr C_PAREN, SUB
+  expr = .O_PAREN expr C_PAREN, MUL
+  expr = .O_PAREN expr C_PAREN, DIV
+  expr = .O_PAREN expr C_PAREN, REM
+  expr = .O_PAREN expr C_PAREN, POW
+  expr = .O_PAREN expr C_PAREN, C_PAREN
+  expr = .num, EOF
+  expr = .num, ADD
+  expr = .num, SUB
+  expr = .num, MUL
+  expr = .num, DIV
+  expr = .num, REM
+  expr = .num, POW
+  expr = .num, C_PAREN
+  num = .NUM, EOF
+  num = .NUM, ADD
+  num = .NUM, SUB
+  num = .NUM, MUL
+  num = .NUM, DIV
+  num = .NUM, REM
+  num = .NUM, POW
+  num = .NUM, C_PAREN
+  num = .SUB NUM, EOF
+  num = .SUB NUM, ADD
+  num = .SUB NUM, SUB
+  num = .SUB NUM, MUL
+  num = .SUB NUM, DIV
+  num = .SUB NUM, REM
+  num = .SUB NUM, POW
+  num = .SUB NUM, C_PAREN
+    on NUM shift I1
+    on O_PAREN shift I2
+    on SUB shift I4
+    on expr goto I21
+    on num goto I6
+I11:
+  expr = .expr ADD expr, EOF
+  expr = .expr ADD expr, ADD
+  expr = .expr ADD expr, SUB
+  expr = .expr ADD expr, MUL
+  expr = .expr ADD expr, DIV
+  expr = .expr ADD expr, REM
+  expr = .expr ADD expr, POW
+  expr = .expr ADD expr, C_PAREN
+  expr = .expr SUB expr, EOF
+  expr = .expr SUB expr, ADD
+  expr = .expr SUB expr, SUB
+  expr = .expr SUB expr, MUL
+  expr = .expr SUB expr, DIV
+  expr = .expr SUB expr, REM
+  expr = .expr SUB expr, POW
+  expr = .expr SUB expr, C_PAREN
+  expr = .expr MUL expr, EOF
+  expr = .expr MUL expr, ADD
+  expr = .expr MUL expr, SUB
+  expr = .expr MUL expr, MUL
+  expr = .expr MUL expr, DIV
+  expr = .expr MUL expr, REM
+  expr = .expr MUL expr, POW
+  expr = .expr MUL expr, C_PAREN
+  expr = .expr DIV expr, EOF
+  expr = .expr DIV expr, ADD
+  expr = .expr DIV expr, SUB
+  expr = .expr DIV expr, MUL
+  expr = .expr DIV expr, DIV
+  expr = .expr DIV expr, REM
+  expr = .expr DIV expr, POW
+  expr = .expr DIV expr, C_PAREN
+  expr = .expr REM expr, EOF
+  expr = .expr REM expr, ADD
+  expr = .expr REM expr, SUB
+  expr = .expr REM expr, MUL
+  expr = .expr REM expr, DIV
+  expr = .expr REM expr, REM
+  expr = .expr REM expr, POW
+  expr = .expr REM expr, C_PAREN
+  expr = expr REM .expr, EOF
+  expr = expr REM .expr, ADD
+  expr = expr REM .expr, SUB
+  expr = expr REM .expr, MUL
+  expr = expr REM .expr, DIV
+  expr = expr REM .expr, REM
+  expr = expr REM .expr, POW
+  expr = expr REM .expr, C_PAREN
+  expr = .expr POW expr, EOF
+  expr = .expr POW expr, ADD
+  expr = .expr POW expr, SUB
+  expr = .expr POW expr, MUL
+  expr = .expr POW expr, DIV
+  expr = .expr POW expr, REM
+  expr = .expr POW expr, POW
+  expr = .expr POW expr, C_PAREN
+  expr = .O_PAREN expr C_PAREN, EOF
+  expr = .O_PAREN expr C_PAREN, ADD
+  expr = .O_PAREN expr C_PAREN, SUB
+  expr = .O_PAREN expr C_PAREN, MUL
+  expr = .O_PAREN expr C_PAREN, DIV
+  expr = .O_PAREN expr C_PAREN, REM
+  expr = .O_PAREN expr C_PAREN, POW
+  expr = .O_PAREN expr C_PAREN, C_PAREN
+  expr = .num, EOF
+  expr = .num, ADD
+  expr = .num, SUB
+  expr = .num, MUL
+  expr = .num, DIV
+  expr = .num, REM
+  expr = .num, POW
+  expr = .num, C_PAREN
+  num = .NUM, EOF
+  num = .NUM, ADD
+  num = .NUM, SUB
+  num = .NUM, MUL
+  num = .NUM, DIV
+  num = .NUM, REM
+  num = .NUM, POW
+  num = .NUM, C_PAREN
+  num = .SUB NUM, EOF
+  num = .SUB NUM, ADD
+  num = .SUB NUM, SUB
+  num = .SUB NUM, MUL
+  num = .SUB NUM, DIV
+  num = .SUB NUM, REM
+  num = .SUB NUM, POW
+  num = .SUB NUM, C_PAREN
+    on NUM shift I1
+    on O_PAREN shift I2
+    on SUB shift I4
+    on expr goto I20
+    on num goto I6
+I12:
+  expr = .expr ADD expr, EOF
+  expr = .expr ADD expr, ADD
+  expr = .expr ADD expr, SUB
+  expr = .expr ADD expr, MUL
+  expr = .expr ADD expr, DIV
+  expr = .expr ADD expr, REM
+  expr = .expr ADD expr, POW
+  expr = .expr ADD expr, C_PAREN
+  expr = .expr SUB expr, EOF
+  expr = .expr SUB expr, ADD
+  expr = .expr SUB expr, SUB
+  expr = .expr SUB expr, MUL
+  expr = .expr SUB expr, DIV
+  expr = .expr SUB expr, REM
+  expr = .expr SUB expr, POW
+  expr = .expr SUB expr, C_PAREN
+  expr = expr SUB .expr, EOF
+  expr = expr SUB .expr, ADD
+  expr = expr SUB .expr, SUB
+  expr = expr SUB .expr, MUL
+  expr = expr SUB .expr, DIV
+  expr = expr SUB .expr, REM
+  expr = expr SUB .expr, POW
+  expr = expr SUB .expr, C_PAREN
+  expr = .expr MUL expr, EOF
+  expr = .expr MUL expr, ADD
+  expr = .expr MUL expr, SUB
+  expr = .expr MUL expr, MUL
+  expr = .expr MUL expr, DIV
+  expr = .expr MUL expr, REM
+  expr = .expr MUL expr, POW
+  expr = .expr MUL expr, C_PAREN
+  expr = .expr DIV expr, EOF
+  expr = .expr DIV expr, ADD
+  expr = .expr DIV expr, SUB
+  expr = .expr DIV expr, MUL
+  expr = .expr DIV expr, DIV
+  expr = .expr DIV expr, REM
+  expr = .expr DIV expr, POW
+  expr = .expr DIV expr, C_PAREN
+  expr = .expr REM expr, EOF
+  expr = .expr REM expr, ADD
+  expr = .expr REM expr, SUB
+  expr = .expr REM expr, MUL
+  expr = .expr REM expr, DIV
+  expr = .expr REM expr, REM
+  expr = .expr REM expr, POW
+  expr = .expr REM expr, C_PAREN
+  expr = .expr POW expr, EOF
+  expr = .expr POW expr, ADD
+  expr = .expr POW expr, SUB
+  expr = .expr POW expr, MUL
+  expr = .expr POW expr, DIV
+  expr = .expr POW expr, REM
+  expr = .expr POW expr, POW
+  expr = .expr POW expr, C_PAREN
+  expr = .O_PAREN expr C_PAREN, EOF
+  expr = .O_PAREN expr C_PAREN, ADD
+  expr = .O_PAREN expr C_PAREN, SUB
+  expr = .O_PAREN expr C_PAREN, MUL
+  expr = .O_PAREN expr C_PAREN, DIV
+  expr = .O_PAREN expr C_PAREN, REM
+  expr = .O_PAREN expr C_PAREN, POW
+  expr = .O_PAREN expr C_PAREN, C_PAREN
+  expr = .num, EOF
+  expr = .num, ADD
+  expr = .num, SUB
+  expr = .num, MUL
+  expr = .num, DIV
+  expr = .num, REM
+  expr = .num, POW
+  expr = .num, C_PAREN
+  num = .NUM, EOF
+  num = .NUM, ADD
+  num = .NUM, SUB
+  num = .NUM, MUL
+  num = .NUM, DIV
+  num = .NUM, REM
+  num = .NUM, POW
+  num = .NUM, C_PAREN
+  num = .SUB NUM, EOF
+  num = .SUB NUM, ADD
+  num = .SUB NUM, SUB
+  num = .SUB NUM, MUL
+  num = .SUB NUM, DIV
+  num = .SUB NUM, REM
+  num = .SUB NUM, POW
+  num = .SUB NUM, C_PAREN
+    on NUM shift I1
+    on O_PAREN shift I2
+    on SUB shift I4
+    on expr goto I17
+    on num goto I6
+I13:
+  expr = expr .ADD expr, ADD
+  expr = expr .ADD expr, SUB
+  expr = expr .ADD expr, MUL
+  expr = expr .ADD expr, DIV
+  expr = expr .ADD expr, REM
+  expr = expr .ADD expr, POW
+  expr = expr .ADD expr, C_PAREN
+  expr = expr .SUB expr, ADD
+  expr = expr .SUB expr, SUB
+  expr = expr .SUB expr, MUL
+  expr = expr .SUB expr, DIV
+  expr = expr .SUB expr, REM
+  expr = expr .SUB expr, POW
+  expr = expr .SUB expr, C_PAREN
+  expr = expr .MUL expr, ADD
+  expr = expr .MUL expr, SUB
+  expr = expr .MUL expr, MUL
+  expr = expr .MUL expr, DIV
+  expr = expr .MUL expr, REM
+  expr = expr .MUL expr, POW
+  expr = expr .MUL expr, C_PAREN
+  expr = expr .DIV expr, ADD
+  expr = expr .DIV expr, SUB
+  expr = expr .DIV expr, MUL
+  expr = expr .DIV expr, DIV
+  expr = expr .DIV expr, REM
+  expr = expr .DIV expr, POW
+  expr = expr .DIV expr, C_PAREN
+  expr = expr .REM expr, ADD
+  expr = expr .REM expr, SUB
+  expr = expr .REM expr, MUL
+  expr = expr .REM expr, DIV
+  expr = expr .REM expr, REM
+  expr = expr .REM expr, POW
+  expr = expr .REM expr, C_PAREN
+  expr = expr .POW expr, ADD
+  expr = expr .POW expr, SUB
+  expr = expr .POW expr, MUL
+  expr = expr .POW expr, DIV
+  expr = expr .POW expr, REM
+  expr = expr .POW expr, POW
+  expr = expr .POW expr, C_PAREN
+  expr = O_PAREN expr .C_PAREN, EOF
+  expr = O_PAREN expr .C_PAREN, ADD
+  expr = O_PAREN expr .C_PAREN, SUB
+  expr = O_PAREN expr .C_PAREN, MUL
+  expr = O_PAREN expr .C_PAREN, DIV
+  expr = O_PAREN expr .C_PAREN, REM
+  expr = O_PAREN expr .C_PAREN, POW
+  expr = O_PAREN expr .C_PAREN, C_PAREN
+    on ADD shift I7
+    on C_PAREN shift I15
+    on DIV shift I8
+    on MUL shift I9
+    on POW shift I10
+    on REM shift I11
+    on SUB shift I12
+I14:
+  num = SUB NUM., EOF
+  num = SUB NUM., ADD
+  num = SUB NUM., SUB
+  num = SUB NUM., MUL
+  num = SUB NUM., DIV
+  num = SUB NUM., REM
+  num = SUB NUM., POW
+  num = SUB NUM., C_PAREN
+    on ADD reduce num
+    on C_PAREN reduce num
+    on DIV reduce num
+    on EOF reduce num
+    on MUL reduce num
+    on POW reduce num
+    on REM reduce num
+    on SUB reduce num
+I15:
+  expr = O_PAREN expr C_PAREN., EOF
+  expr = O_PAREN expr C_PAREN., ADD
+  expr = O_PAREN expr C_PAREN., SUB
+  expr = O_PAREN expr C_PAREN., MUL
+  expr = O_PAREN expr C_PAREN., DIV
+  expr = O_PAREN expr C_PAREN., REM
+  expr = O_PAREN expr C_PAREN., POW
+  expr = O_PAREN expr C_PAREN., C_PAREN
+    on ADD reduce expr
+    on C_PAREN reduce expr
+    on DIV reduce expr
+    on EOF reduce expr
+    on MUL reduce expr
+    on POW reduce expr
+    on REM reduce expr
+    on SUB reduce expr
+I16:
+  expr = expr .ADD expr, EOF
+  expr = expr .ADD expr, ADD
+  expr = expr .ADD expr, SUB
+  expr = expr .ADD expr, MUL
+  expr = expr .ADD expr, DIV
+  expr = expr .ADD expr, REM
+  expr = expr .ADD expr, POW
+  expr = expr .ADD expr, C_PAREN
+  expr = expr ADD expr., EOF
+  expr = expr ADD expr., ADD
+  expr = expr ADD expr., SUB
+  expr = expr ADD expr., MUL
+  expr = expr ADD expr., DIV
+  expr = expr ADD expr., REM
+  expr = expr ADD expr., POW
+  expr = expr ADD expr., C_PAREN
+  expr = expr .SUB expr, EOF
+  expr = expr .SUB expr, ADD
+  expr = expr .SUB expr, SUB
+  expr = expr .SUB expr, MUL
+  expr = expr .SUB expr, DIV
+  expr = expr .SUB expr, REM
+  expr = expr .SUB expr, POW
+  expr = expr .SUB expr, C_PAREN
+  expr = expr .MUL expr, EOF
+  expr = expr .MUL expr, ADD
+  expr = expr .MUL expr, SUB
+  expr = expr .MUL expr, MUL
+  expr = expr .MUL expr, DIV
+  expr = expr .MUL expr, REM
+  expr = expr .MUL expr, POW
+  expr = expr .MUL expr, C_PAREN
+  expr = expr .DIV expr, EOF
+  expr = expr .DIV expr, ADD
+  expr = expr .DIV expr, SUB
+  expr = expr .DIV expr, MUL
+  expr = expr .DIV expr, DIV
+  expr = expr .DIV expr, REM
+  expr = expr .DIV expr, POW
+  expr = expr .DIV expr, C_PAREN
+  expr = expr .REM expr, EOF
+  expr = expr .REM expr, ADD
+  expr = expr .REM expr, SUB
+  expr = expr .REM expr, MUL
+  expr = expr .REM expr, DIV
+  expr = expr .REM expr, REM
+  expr = expr .REM expr, POW
+  expr = expr .REM expr, C_PAREN
+  expr = expr .POW expr, EOF
+  expr = expr .POW expr, ADD
+  expr = expr .POW expr, SUB
+  expr = expr .POW expr, MUL
+  expr = expr .POW expr, DIV
+  expr = expr .POW expr, REM
+  expr = expr .POW expr, POW
+  expr = expr .POW expr, C_PAREN
+    on ADD reduce expr
+    on C_PAREN reduce expr
+    on DIV shift I8
+    on EOF reduce expr
+    on MUL shift I9
+    on POW shift I10
+    on REM shift I11
+    on SUB reduce expr
+I17:
+  expr = expr .ADD expr, EOF
+  expr = expr .ADD expr, ADD
+  expr = expr .ADD expr, SUB
+  expr = expr .ADD expr, MUL
+  expr = expr .ADD expr, DIV
+  expr = expr .ADD expr, REM
+  expr = expr .ADD expr, POW
+  expr = expr .ADD expr, C_PAREN
+  expr = expr .SUB expr, EOF
+  expr = expr .SUB expr, ADD
+  expr = expr .SUB expr, SUB
+  expr = expr .SUB expr, MUL
+  expr = expr .SUB expr, DIV
+  expr = expr .SUB expr, REM
+  expr = expr .SUB expr, POW
+  expr = expr .SUB expr, C_PAREN
+  expr = expr SUB expr., EOF
+  expr = expr SUB expr., ADD
+  expr = expr SUB expr., SUB
+  expr = expr SUB expr., MUL
+  expr = expr SUB expr., DIV
+  expr = expr SUB expr., REM
+  expr = expr SUB expr., POW
+  expr = expr SUB expr., C_PAREN
+  expr = expr .MUL expr, EOF
+  expr = expr .MUL expr, ADD
+  expr = expr .MUL expr, SUB
+  expr = expr .MUL expr, MUL
+  expr = expr .MUL expr, DIV
+  expr = expr .MUL expr, REM
+  expr = expr .MUL expr, POW
+  expr = expr .MUL expr, C_PAREN
+  expr = expr .DIV expr, EOF
+  expr = expr .DIV expr, ADD
+  expr = expr .DIV expr, SUB
+  expr = expr .DIV expr, MUL
+  expr = expr .DIV expr, DIV
+  expr = expr .DIV expr, REM
+  expr = expr .DIV expr, POW
+  expr = expr .DIV expr, C_PAREN
+  expr = expr .REM expr, EOF
+  expr = expr .REM expr, ADD
+  expr = expr .REM expr, SUB
+  expr = expr .REM expr, MUL
+  expr = expr .REM expr, DIV
+  expr = expr .REM expr, REM
+  expr = expr .REM expr, POW
+  expr = expr .REM expr, C_PAREN
+  expr = expr .POW expr, EOF
+  expr = expr .POW expr, ADD
+  expr = expr .POW expr, SUB
+  expr = expr .POW expr, MUL
+  expr = expr .POW expr, DIV
+  expr = expr .POW expr, REM
+  expr = expr .POW expr, POW
+  expr = expr .POW expr, C_PAREN
+    on ADD reduce expr
+    on C_PAREN reduce expr
+    on DIV shift I8
+    on EOF reduce expr
+    on MUL shift I9
+    on POW shift I10
+    on REM shift I11
+    on SUB reduce expr
+I18:
+  expr = expr .ADD expr, EOF
+  expr = expr .ADD expr, ADD
+  expr = expr .ADD expr, SUB
+  expr = expr .ADD expr, MUL
+  expr = expr .ADD expr, DIV
+  expr = expr .ADD expr, REM
+  expr = expr .ADD expr, POW
+  expr = expr .ADD expr, C_PAREN
+  expr = expr .SUB expr, EOF
+  expr = expr .SUB expr, ADD
+  expr = expr .SUB expr, SUB
+  expr = expr .SUB expr, MUL
+  expr = expr .SUB expr, DIV
+  expr = expr .SUB expr, REM
+  expr = expr .SUB expr, POW
+  expr = expr .SUB expr, C_PAREN
+  expr = expr .MUL expr, EOF
+  expr = expr .MUL expr, ADD
+  expr = expr .MUL expr, SUB
+  expr = expr .MUL expr, MUL
+  expr = expr .MUL expr, DIV
+  expr = expr .MUL expr, REM
+  expr = expr .MUL expr, POW
+  expr = expr .MUL expr, C_PAREN
+  expr = expr MUL expr., EOF
+  expr = expr MUL expr., ADD
+  expr = expr MUL expr., SUB
+  expr = expr MUL expr., MUL
+  expr = expr MUL expr., DIV
+  expr = expr MUL expr., REM
+  expr = expr MUL expr., POW
+  expr = expr MUL expr., C_PAREN
+  expr = expr .DIV expr, EOF
+  expr = expr .DIV expr, ADD
+  expr = expr .DIV expr, SUB
+  expr = expr .DIV expr, MUL
+  expr = expr .DIV expr, DIV
+  expr = expr .DIV expr, REM
+  expr = expr .DIV expr, POW
+  expr = expr .DIV expr, C_PAREN
+  expr = expr .REM expr, EOF
+  expr = expr .REM expr, ADD
+  expr = expr .REM expr, SUB
+  expr = expr .REM expr, MUL
+  expr = expr .REM expr, DIV
+  expr = expr .REM expr, REM
+  expr = expr .REM expr, POW
+  expr = expr .REM expr, C_PAREN
+  expr = expr .POW expr, EOF
+  expr = expr .POW expr, ADD
+  expr = expr .POW expr, SUB
+  expr = expr .POW expr, MUL
+  expr = expr .POW expr, DIV
+  expr = expr .POW expr, REM
+  expr = expr .POW expr, POW
+  expr = expr .POW expr, C_PAREN
+    on ADD reduce expr
+    on C_PAREN reduce expr
+    on DIV reduce expr
+    on EOF reduce expr
+    on MUL reduce expr
+    on POW shift I10
+    on REM reduce expr
+    on SUB reduce expr
+I19:
+  expr = expr .ADD expr, EOF
+  expr = expr .ADD expr, ADD
+  expr = expr .ADD expr, SUB
+  expr = expr .ADD expr, MUL
+  expr = expr .ADD expr, DIV
+  expr = expr .ADD expr, REM
+  expr = expr .ADD expr, POW
+  expr = expr .ADD expr, C_PAREN
+  expr = expr .SUB expr, EOF
+  expr = expr .SUB expr, ADD
+  expr = expr .SUB expr, SUB
+  expr = expr .SUB expr, MUL
+  expr = expr .SUB expr, DIV
+  expr = expr .SUB expr, REM
+  expr = expr .SUB expr, POW
+  expr = expr .SUB expr, C_PAREN
+  expr = expr .MUL expr, EOF
+  expr = expr .MUL expr, ADD
+  expr = expr .MUL expr, SUB
+  expr = expr .MUL expr, MUL
+  expr = expr .MUL expr, DIV
+  expr = expr .MUL expr, REM
+  expr = expr .MUL expr, POW
+  expr = expr .MUL expr, C_PAREN
+  expr = expr .DIV expr, EOF
+  expr = expr .DIV expr, ADD
+  expr = expr .DIV expr, SUB
+  expr = expr .DIV expr, MUL
+  expr = expr .DIV expr, DIV
+  expr = expr .DIV expr, REM
+  expr = expr .DIV expr, POW
+  expr = expr .DIV expr, C_PAREN
+  expr = expr DIV expr., EOF
+  expr = expr DIV expr., ADD
+  expr = expr DIV expr., SUB
+  expr = expr DIV expr., MUL
+  expr = expr DIV expr., DIV
+  expr = expr DIV expr., REM
+  expr = expr DIV expr., POW
+  expr = expr DIV expr., C_PAREN
+  expr = expr .REM expr, EOF
+  expr = expr .REM expr, ADD
+  expr = expr .REM expr, SUB
+  expr = expr .REM expr, MUL
+  expr = expr .REM expr, DIV
+  expr = expr .REM expr, REM
+  expr = expr .REM expr, POW
+  expr = expr .REM expr, C_PAREN
+  expr = expr .POW expr, EOF
+  expr = expr .POW expr, ADD
+  expr = expr .POW expr, SUB
+  expr = expr .POW expr, MUL
+  expr = expr .POW expr, DIV
+  expr = expr .POW expr, REM
+  expr = expr .POW expr, POW
+  expr = expr .POW expr, C_PAREN
+    on ADD reduce expr
+    on C_PAREN reduce expr
+    on DIV reduce expr
+    on EOF reduce expr
+    on MUL reduce expr
+    on POW shift I10
+    on REM reduce expr
+    on SUB reduce expr
+I20:
+  expr = expr .ADD expr, EOF
+  expr = expr .ADD expr, ADD
+  expr = expr .ADD expr, SUB
+  expr = expr .ADD expr, MUL
+  expr = expr .ADD expr, DIV
+  expr = expr .ADD expr, REM
+  expr = expr .ADD expr, POW
+  expr = expr .ADD expr, C_PAREN
+  expr = expr .SUB expr, EOF
+  expr = expr .SUB expr, ADD
+  expr = expr .SUB expr, SUB
+  expr = expr .SUB expr, MUL
+  expr = expr .SUB expr, DIV
+  expr = expr .SUB expr, REM
+  expr = expr .SUB expr, POW
+  expr = expr .SUB expr, C_PAREN
+  expr = expr .MUL expr, EOF
+  expr = expr .MUL expr, ADD
+  expr = expr .MUL expr, SUB
+  expr = expr .MUL expr, MUL
+  expr = expr .MUL expr, DIV
+  expr = expr .MUL expr, REM
+  expr = expr .MUL expr, POW
+  expr = expr .MUL expr, C_PAREN
+  expr = expr .DIV expr, EOF
+  expr = expr .DIV expr, ADD
+  expr = expr .DIV expr, SUB
+  expr = expr .DIV expr, MUL
+  expr = expr .DIV expr, DIV
+  expr = expr .DIV expr, REM
+  expr = expr .DIV expr, POW
+  expr = expr .DIV expr, C_PAREN
+  expr = expr .REM expr, EOF
+  expr = expr .REM expr, ADD
+  expr = expr .REM expr, SUB
+  expr = expr .REM expr, MUL
+  expr = expr .REM expr, DIV
+  expr = expr .REM expr, REM
+  expr = expr .REM expr, POW
+  expr = expr .REM expr, C_PAREN
+  expr = expr REM expr., EOF
+  expr = expr REM expr., ADD
+  expr = expr REM expr., SUB
+  expr = expr REM expr., MUL
+  expr = expr REM expr., DIV
+  expr = expr REM expr., REM
+  expr = expr REM expr., POW
+  expr = expr REM expr., C_PAREN
+  expr = expr .POW expr, EOF
+  expr = expr .POW expr, ADD
+  expr = expr .POW expr, SUB
+  expr = expr .POW expr, MUL
+  expr = expr .POW expr, DIV
+  expr = expr .POW expr, REM
+  expr = expr .POW expr, POW
+  expr = expr .POW expr, C_PAREN
+    on ADD reduce expr
+    on C_PAREN reduce expr
+    on DIV reduce expr
+    on EOF reduce expr
+    on MUL reduce expr
+    on POW shift I10
+    on REM reduce expr
+    on SUB reduce expr
+I21:
+  expr = expr .ADD expr, EOF
+  expr = expr .ADD expr, ADD
+  expr = expr .ADD expr, SUB
+  expr = expr .ADD expr, MUL
+  expr = expr .ADD expr, DIV
+  expr = expr .ADD expr, REM
+  expr = expr .ADD expr, POW
+  expr = expr .ADD expr, C_PAREN
+  expr = expr .SUB expr, EOF
+  expr = expr .SUB expr, ADD
+  expr = expr .SUB expr, SUB
+  expr = expr .SUB expr, MUL
+  expr = expr .SUB expr, DIV
+  expr = expr .SUB expr, REM
+  expr = expr .SUB expr, POW
+  expr = expr .SUB expr, C_PAREN
+  expr = expr .MUL expr, EOF
+  expr = expr .MUL expr, ADD
+  expr = expr .MUL expr, SUB
+  expr = expr .MUL expr, MUL
+  expr = expr .MUL expr, DIV
+  expr = expr .MUL expr, REM
+  expr = expr .MUL expr, POW
+  expr = expr .MUL expr, C_PAREN
+  expr = expr .DIV expr, EOF
+  expr = expr .DIV expr, ADD
+  expr = expr .DIV expr, SUB
+  expr = expr .DIV expr, MUL
+  expr = expr .DIV expr, DIV
+  expr = expr .DIV expr, REM
+  expr = expr .DIV expr, POW
+  expr = expr .DIV expr, C_PAREN
+  expr = expr .REM expr, EOF
+  expr = expr .REM expr, ADD
+  expr = expr .REM expr, SUB
+  expr = expr .REM expr, MUL
+  expr = expr .REM expr, DIV
+  expr = expr .REM expr, REM
+  expr = expr .REM expr, POW
+  expr = expr .REM expr, C_PAREN
+  expr = expr .POW expr, EOF
+  expr = expr .POW expr, ADD
+  expr = expr .POW expr, SUB
+  expr = expr .POW expr, MUL
+  expr = expr .POW expr, DIV
+  expr = expr .POW expr, REM
+  expr = expr .POW expr, POW
+  expr = expr .POW expr, C_PAREN
+  expr = expr POW expr., EOF
+  expr = expr POW expr., ADD
+  expr = expr POW expr., SUB
+  expr = expr POW expr., MUL
+  expr = expr POW expr., DIV
+  expr = expr POW expr., REM
+  expr = expr POW expr., POW
+  expr = expr POW expr., C_PAREN
+    on ADD reduce expr
+    on C_PAREN reduce expr
+    on DIV reduce expr
+    on EOF reduce expr
+    on MUL reduce expr
+    on POW reduce expr
+    on REM reduce expr
+    on SUB reduce expr
+
+Lexer Modes
+============
+$default:
+digraph G {
+  rankdir="LR";
+  0 -> 1 [label=" "];
+  0 -> 2 [label="\\r"];
+  0 -> 3 [label="\\n"];
+  0 -> 4 [label="\\t"];
+  0 -> 5 [label=")"];
+  0 -> 6 [label="("];
+  0 -> 7 [label="^"];
+  0 -> 8 [label="%"];
+  0 -> 9 [label="/"];
+  0 -> 10 [label="*"];
+  0 -> 11 [label="\\-"];
+  0 -> 12 [label="+"];
+  0 -> 13 [label="0-9"];
+  1 -> 1 [label=" "];
+  1 -> 2 [label="\\r"];
+  1 -> 3 [label="\\n"];
+  1 -> 4 [label="\\t"];
+  2 -> 1 [label=" "];
+  2 -> 2 [label="\\r"];
+  2 -> 3 [label="\\n"];
+  2 -> 4 [label="\\t"];
+  3 -> 1 [label=" "];
+  3 -> 2 [label="\\r"];
+  3 -> 3 [label="\\n"];
+  3 -> 4 [label="\\t"];
+  4 -> 1 [label=" "];
+  4 -> 2 [label="\\r"];
+  4 -> 3 [label="\\n"];
+  4 -> 4 [label="\\t"];
+  13 -> 13 [label="0-9"];
+  0 [label="0", shape="circle"];
+  1 [label="1", shape="circle"];
+  2 [label="2", shape="circle"];
+  3 [label="3", shape="circle"];
+  4 [label="4", shape="circle"];
+  5 [label="5", shape="doublecircle"];
+  6 [label="6", shape="doublecircle"];
+  7 [label="7", shape="doublecircle"];
+  8 [label="8", shape="doublecircle"];
+  9 [label="9", shape="doublecircle"];
+  10 [label="10", shape="doublecircle"];
+  11 [label="11", shape="doublecircle"];
+  12 [label="12", shape="doublecircle"];
+  13 [label="13", shape="doublecircle"];
+}
+
+Tests
+=====
+Input:
+1 + 2 * 3
+
+Output:
+7
+
+Input:
+1 + 2
+* 3
+
+
+Output:
+7
+
+Input:
+-10
+
+Output:
+-10
+
+Input:
+
+
+Output:
+expr:1:1: unexpected EOF
+Errors occurred.
+
+Input:
+1 + 2 + 
+
+Output:
+expr:1:9: unexpected EOF
+Errors occurred.
+
+Input:
+1 +* 2
+
+Output:
+expr:1:4: unexpected MUL
+Errors occurred.
+

@@ -3,6 +3,7 @@ package codegen2
 import (
 	gotoken "go/token"
 	gotypes "go/types"
+	"io"
 
 	"github.com/dcaiafa/lox/internal/errlogger"
 	"github.com/dcaiafa/lox/internal/lexergen/mode"
@@ -13,6 +14,7 @@ type context struct {
 	Errs          *errlogger.ErrLogger
 	Fset          *gotoken.FileSet
 	Dir           string
+	Report        io.Writer
 	ParserGrammar *lr2.Grammar
 	ParserTable   *lr2.ParserTable
 	GoPackageName string

@@ -21,10 +21,15 @@ func (c *context) ParseGo() bool {
 		Placeholder: true,
 		Package:     c.GoPackageName,
 	})
-	parserGenPath, err := filepath.Abs(filepath.Join(c.Dir, parserGenGo))
+	lexerGenPlaceholder := renderLexerTemplatePlaceholder(c.GoPackageName)
+
+	absDir, err := filepath.Abs(c.Dir)
 	if err != nil {
 		panic(err)
 	}
+
+	lexerGenPath := filepath.Join(absDir, lexerGenGo)
+	parserGenPath := filepath.Join(absDir, parserGenGo)
 
 	// Parse and analyze Go sources in the project directory.
 	cfg := &packages.Config{
@@ -32,9 +37,9 @@ func (c *context) ParseGo() bool {
 		Dir:  filepath.Clean(c.Dir),
 		Fset: c.Fset,
 		Overlay: map[string][]byte{
-			// Inject the placeholder parser.gen.go implementation.
-			// If there is an existing parser.gen.go, it will be ignored.
+			// Inject the placeholder implementations.
 			parserGenPath: []byte(parserGenPlaceholder),
+			lexerGenPath:  []byte(lexerGenPlaceholder),
 		},
 	}
 	pkgs, err := packages.Load(cfg, ".")

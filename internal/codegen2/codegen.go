@@ -3,6 +3,7 @@ package codegen2
 import (
 	gotoken "go/token"
 	gotypes "go/types"
+	"io"
 	"strings"
 
 	"github.com/dcaiafa/lox/internal/errlogger"
@@ -56,16 +57,18 @@ func RuleGenerated(r *lr2.Rule) generated {
 }
 
 type Config struct {
-	Fset *gotoken.FileSet
-	Errs *errlogger.ErrLogger
-	Dir  string
+	Fset   *gotoken.FileSet
+	Errs   *errlogger.ErrLogger
+	Dir    string
+	Report io.Writer
 }
 
 func Generate(cfg *Config) bool {
 	ctx := &context{
-		Fset: cfg.Fset,
-		Errs: cfg.Errs,
-		Dir:  cfg.Dir,
+		Fset:   cfg.Fset,
+		Errs:   cfg.Errs,
+		Dir:    cfg.Dir,
+		Report: cfg.Report,
 	}
 	return ctx.ParseLox() &&
 		ctx.PreParseGo() &&
