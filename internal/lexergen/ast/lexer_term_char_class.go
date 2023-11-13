@@ -22,7 +22,7 @@ func (t *LexerTermCharClass) NFACons(ctx *Context) *mode.NFAComposite {
 			E: item.To,
 		}
 	}
-	ranges = mode.NormalizeRanges(ranges)
+	ranges = mode.FlattenRanges(ranges)
 	if t.Neg {
 		ranges = mode.NegateRanges(ranges)
 	}

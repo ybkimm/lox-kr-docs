@@ -9,7 +9,11 @@ import (
 	"github.com/dcaiafa/lox/internal/util/stack"
 )
 
-func NormalizeRanges(ranges []Range) []Range {
+func NormalizeRanges(ranges []Range, onChange func(o, a, b Range)) []Range {
+	panic("not implemented")
+}
+
+func FlattenRanges(ranges []Range) []Range {
 	sort.Slice(ranges, func(i, j int) bool {
 		switch {
 		case ranges[i].B < ranges[j].B:
@@ -42,7 +46,7 @@ func NormalizeRanges(ranges []Range) []Range {
 	for _, r := range ranges {
 		if !ranges2.Empty() {
 			tip := ranges2.Peek()
-			if tip.Intersects(r) {
+			if tip.Touches(r) {
 				ranges2.Pop()
 				ranges2.Push(Range{B: min(tip.B, r.B), E: max(tip.E, r.E)})
 				continue
@@ -84,6 +88,14 @@ func (r Range) Intersects(o Range) bool {
 		a, b = b, a
 	}
 	return b.B <= a.E
+}
+
+func (r Range) Touches(o Range) bool {
+	a, b := r, o
+	if a.B > b.B {
+		a, b = b, a
+	}
+	return b.B <= a.E || b.B-1 == a.E
 }
 
 func (r Range) String() string {
