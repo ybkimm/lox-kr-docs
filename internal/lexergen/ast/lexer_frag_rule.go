@@ -15,6 +15,7 @@ func (r *FragRule) RunPass(ctx *Context, pass Pass) {
 	switch pass {
 	case GenerateGrammar:
 		nfaCons := r.Expr.NFACons(ctx)
+		nfaCons.E.Accept = true
 		actions := &mode.Actions{
 			Pos: r.Bounds().Begin,
 		}

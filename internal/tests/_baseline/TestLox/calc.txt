@@ -1344,10 +1344,10 @@ digraph G {
   4 -> 4 [label="\\t"];
   13 -> 13 [label="0-9"];
   0 [label="0", shape="circle"];
-  1 [label="1", shape="circle"];
-  2 [label="2", shape="circle"];
-  3 [label="3", shape="circle"];
-  4 [label="4", shape="circle"];
+  1 [label="1", shape="doublecircle"];
+  2 [label="2", shape="doublecircle"];
+  3 [label="3", shape="doublecircle"];
+  4 [label="4", shape="doublecircle"];
   5 [label="5", shape="doublecircle"];
   6 [label="6", shape="doublecircle"];
   7 [label="7", shape="doublecircle"];

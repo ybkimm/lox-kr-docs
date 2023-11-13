@@ -1,6 +1,7 @@
 package dfa
 
 import (
+	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -104,4 +105,49 @@ digraph G {
   4 [label="4", shape="doublecircle"];
 }
 `))
+}
+
+func TestOptimization(t *testing.T) {
+	n := nfa.NewStateFactory()
+
+	s := make([]*nfa.State, 12)
+	for i := range s {
+		s[i] = n.NewState()
+	}
+
+	transitions := []struct {
+		From  *nfa.State
+		Input string
+		To    *nfa.State
+	}{
+		{s[0], "ε", s[1]},
+		{s[1], "ε", s[2]},
+		{s[2], "s", s[3]},
+		{s[3], "ε", s[10]},
+		{s[1], "ε", s[4]},
+		{s[4], "r", s[5]},
+		{s[5], "ε", s[10]},
+		{s[1], "ε", s[6]},
+		{s[6], "n", s[7]},
+		{s[7], "ε", s[10]},
+		{s[1], "ε", s[8]},
+		{s[8], "t", s[9]},
+		{s[9], "ε", s[10]},
+		{s[10], "ε", s[11]},
+		{s[11], "ε", s[0]},
+	}
+
+	for _, tr := range transitions {
+		var input any = tr.Input
+		if tr.Input == "ε" {
+			input = nfa.Epsilon
+		}
+		tr.From.AddTransition(tr.To, input)
+	}
+
+	s[0].Accept = true
+
+	d := NFAToDFA(s[0])
+
+	d.Print(os.Stdout)
 }
