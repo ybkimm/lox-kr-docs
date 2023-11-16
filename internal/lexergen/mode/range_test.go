@@ -1,8 +1,12 @@
 package mode
 
 import (
+	"math/rand"
 	"reflect"
+	"slices"
 	"testing"
+
+	"github.com/dcaiafa/lox/internal/util/set"
 )
 
 func TestRangeContains(t *testing.T) {
@@ -152,4 +156,104 @@ func TestFlattenRanges(t *testing.T) {
 	//      -
 	// R:   --- ----
 	test("4", []int{9, 9, 8, 8, 7, 7, 6, 6, 4, 4, 3, 3, 2, 2}, []int{2, 4, 6, 9})
+}
+
+func TestNormalizeRanges(t *testing.T) {
+	test := func(name string, input, output []int) {
+		t.Run(name, func(t *testing.T) {
+			inputRanges := Itor(input)
+			rand.Shuffle(len(inputRanges), func(i, j int) {
+				inputRanges[i], inputRanges[j] =
+					inputRanges[j], inputRanges[i]
+			})
+
+			res := set.Set[Range]{}
+			res.AddSlice(Itor(input))
+			NormalizeRanges(inputRanges, func(o, a, b, c Range) {
+				if !res.Has(o) {
+					t.Fatalf("Range doesn't exist: %v", o)
+				}
+				res.Remove(o)
+				res.Add(a)
+				res.Add(b)
+				if c != b {
+					res.Add(c)
+				}
+			})
+			resSlice := res.Elements()
+			slices.SortFunc(resSlice, CompareRanges)
+			expected := Itor(output)
+			if !reflect.DeepEqual(resSlice, expected) {
+				t.Log("Expected:")
+				DumpRanges(t, expected)
+				t.Log("Actual:")
+				DumpRanges(t, resSlice)
+				t.Fatalf("Unexpected result")
+			}
+		})
+	}
+	//   0123456789
+	// x ---
+	// y ------
+	// ===================
+	// x ---
+	// a    ---
+	test("1", []int{0, 2, 0, 5}, []int{0, 2, 3, 5})
+
+	//   0123456789
+	// x ------
+	// y    ---
+	// ===================
+	// a ---
+	// y    ---
+	test("2", []int{0, 5, 3, 5}, []int{0, 2, 3, 5})
+
+	//   0123456789
+	// x ------
+	// y    ------
+	// ==================
+	// a ---
+	// b    ---
+	// c       ---
+	test("3", []int{0, 5, 3, 8}, []int{0, 2, 3, 5, 6, 8})
+
+	//   0123456789
+	//   ---------
+	//      ---
+	// ==================
+	//   ---
+	//      ---
+	//         ---
+	test("4", []int{0, 8, 3, 5}, []int{0, 2, 3, 5, 6, 8})
+
+	//   0123456789
+	//   ---------
+	//      ---
+	//      -
+	//           -
+	//            -
+	// ==================
+	//   ---
+	//      -
+	//       --
+	//         --
+	//           -
+	//            -
+
+	test("complex1",
+		[]int{
+			0, 8,
+			3, 5,
+			3, 3,
+			8, 8,
+			9, 9,
+		},
+		[]int{
+			0, 2,
+			3, 3,
+			4, 5,
+			6, 7,
+			8, 8,
+			9, 9,
+		})
 }
