@@ -1,11 +1,11 @@
-package mode
+package rang3
 
 type rangeHeap []Range
 
 func (h rangeHeap) Len() int { return len(h) }
 
 func (h rangeHeap) Less(i, j int) bool {
-	return CompareRanges(h[i], h[j]) < 0
+	return Compare(h[i], h[j]) < 0
 }
 
 func (h rangeHeap) Swap(i, j int) {

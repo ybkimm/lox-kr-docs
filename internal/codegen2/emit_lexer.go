@@ -11,6 +11,7 @@ import (
 	"github.com/dcaiafa/lox/internal/assert"
 	"github.com/dcaiafa/lox/internal/lexergen/dfa"
 	"github.com/dcaiafa/lox/internal/lexergen/mode"
+	"github.com/dcaiafa/lox/internal/lexergen/rang3"
 )
 
 const lexerTemplatePlaceholder = `
@@ -134,7 +135,7 @@ func (c *context) EmitLexer() bool {
 			var row []uint32
 			// Goto/Consume (0) actions.
 			state.Transitions.ForEach(func(eventRaw any, toState *dfa.State) {
-				event := eventRaw.(mode.Range)
+				event := eventRaw.(rang3.Range)
 				row = append(row, 0, uint32(event.B), uint32(event.E), toState.ID)
 			})
 			actions := state.Data.(*mode.Actions)

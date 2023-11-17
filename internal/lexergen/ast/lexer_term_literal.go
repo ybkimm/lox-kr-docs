@@ -4,6 +4,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/dcaiafa/lox/internal/lexergen/mode"
+	"github.com/dcaiafa/lox/internal/lexergen/rang3"
 )
 
 type LexerTermLiteral struct {
@@ -39,7 +40,7 @@ func (t *LexerTermLiteral) NFACons(ctx *Context) *mode.NFAComposite {
 		r, size := utf8.DecodeRuneInString(str)
 		str = str[size:]
 		s := nfa.NewState()
-		nfaCons.E.AddTransition(s, mode.Range{B: r, E: r})
+		nfaCons.E.AddTransition(s, rang3.Range{B: r, E: r})
 		nfaCons.E = s
 	}
 	return nfaCons

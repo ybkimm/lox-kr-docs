@@ -1,4 +1,4 @@
-package mode
+package rang3
 
 import (
 	"math/rand"
@@ -115,7 +115,7 @@ func DumpRanges(t *testing.T, rs []Range) {
 func TestFlattenRanges(t *testing.T) {
 	test := func(name string, input, output []int) {
 		t.Run(name, func(t *testing.T) {
-			res := FlattenRanges(Itor(input))
+			res := Flatten(Itor(input))
 			expected := Itor(output)
 			if !reflect.DeepEqual(res, expected) {
 				t.Log("Expected:")
@@ -169,7 +169,7 @@ func TestNormalizeRanges(t *testing.T) {
 
 			res := set.Set[Range]{}
 			res.AddSlice(Itor(input))
-			NormalizeRanges(inputRanges, func(o, a, b, c Range) {
+			Normalize(inputRanges, func(o, a, b, c Range) {
 				if !res.Has(o) {
 					t.Fatalf("Range doesn't exist: %v", o)
 				}
@@ -181,7 +181,7 @@ func TestNormalizeRanges(t *testing.T) {
 				}
 			})
 			resSlice := res.Elements()
-			slices.SortFunc(resSlice, CompareRanges)
+			slices.SortFunc(resSlice, Compare)
 			expected := Itor(output)
 			if !reflect.DeepEqual(resSlice, expected) {
 				t.Log("Expected:")
@@ -239,7 +239,6 @@ func TestNormalizeRanges(t *testing.T) {
 	//         --
 	//           -
 	//            -
-
 	test("complex1",
 		[]int{
 			0, 8,

@@ -3,6 +3,7 @@ package ast
 import (
 	"github.com/dcaiafa/lox/internal/lexergen/mode"
 	"github.com/dcaiafa/lox/internal/lexergen/nfa"
+	"github.com/dcaiafa/lox/internal/lexergen/rang3"
 )
 
 type LexerTermCharClass struct {
@@ -15,16 +16,16 @@ type LexerTermCharClass struct {
 func (t *LexerTermCharClass) RunPass(ctx *Context, pass Pass) {}
 
 func (t *LexerTermCharClass) NFACons(ctx *Context) *mode.NFAComposite {
-	ranges := make([]mode.Range, len(t.CharClassItems))
+	ranges := make([]rang3.Range, len(t.CharClassItems))
 	for i, item := range t.CharClassItems {
-		ranges[i] = mode.Range{
+		ranges[i] = rang3.Range{
 			B: item.From,
 			E: item.To,
 		}
 	}
-	ranges = mode.FlattenRanges(ranges)
+	ranges = rang3.Flatten(ranges)
 	if t.Neg {
-		ranges = mode.NegateRanges(ranges)
+		ranges = rang3.Negate(ranges)
 	}
 
 	nfaFactory := ctx.Mode().StateFactory

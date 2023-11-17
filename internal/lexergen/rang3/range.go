@@ -1,4 +1,4 @@
-package mode
+package rang3
 
 import (
 	"container/heap"
@@ -64,7 +64,7 @@ func (r Range) String() string {
 	}
 }
 
-func CompareRanges(a, b Range) int {
+func Compare(a, b Range) int {
 	switch {
 	case a.B < b.B:
 		return -1
@@ -79,7 +79,7 @@ func CompareRanges(a, b Range) int {
 	}
 }
 
-func NormalizeRanges(ranges []Range, onChange func(o, a, b, c Range)) {
+func Normalize(ranges []Range, onChange func(o, a, b, c Range)) {
 	rh := rangeHeap(ranges)
 	heap.Init(&rh)
 
@@ -154,9 +154,9 @@ func NormalizeRanges(ranges []Range, onChange func(o, a, b, c Range)) {
 	}
 }
 
-func FlattenRanges(ranges []Range) []Range {
+func Flatten(ranges []Range) []Range {
 	slices.SortFunc(ranges, func(a, b Range) int {
-		return CompareRanges(a, b)
+		return Compare(a, b)
 	})
 
 	sort.Slice(ranges, func(i, j int) bool {
@@ -202,7 +202,7 @@ func FlattenRanges(ranges []Range) []Range {
 	return ranges2.Elements()
 }
 
-func NegateRanges(ranges []Range) []Range {
+func Negate(ranges []Range) []Range {
 	v := stack.Stack[Range]{}
 	v.SetCapacity(len(ranges))
 	var b rune = 0
