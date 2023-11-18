@@ -1,12 +1,17 @@
 package mode
 
 import (
+	"fmt"
 	gotoken "go/token"
 
 	"github.com/dcaiafa/lox/internal/assert"
 	"github.com/dcaiafa/lox/internal/errlogger"
 	"github.com/dcaiafa/lox/internal/lexergen/dfa"
 	"github.com/dcaiafa/lox/internal/lexergen/nfa"
+	"github.com/dcaiafa/lox/internal/lexergen/rang3"
+	"github.com/dcaiafa/lox/internal/util/array"
+	"github.com/dcaiafa/lox/internal/util/set"
+	"github.com/dcaiafa/lox/internal/util/stack"
 )
 
 type Mode struct {
@@ -43,6 +48,8 @@ func (m *ModeBuilder) Build(errs *errlogger.ErrLogger, fset *gotoken.FileSet) *M
 	for _, rule := range m.Rules {
 		start.AddTransition(rule.B, nfa.Epsilon)
 	}
+
+	normalizeInputs(start)
 
 	d := dfa.NFAToDFA(start)
 
@@ -104,4 +111,64 @@ func New(name string) *ModeBuilder {
 		Name:         name,
 		StateFactory: nfa.NewStateFactory(),
 	}
+}
+
+func normalizeInputs(s *nfa.State) {
+	graph := make(map[rang3.Range][]*nfa.State)
+	visited := set.Set[*nfa.State]{}
+	pending := stack.Stack[*nfa.State]{}
+	pending.Push(s)
+
+	for !pending.Empty() {
+		s = pending.Pop()
+		if visited.Has(s) {
+			continue
+		}
+		visited.Add(s)
+		s.Transitions.ForEach(func(input any, toStates *array.Array[*nfa.State]) {
+			for _, toState := range toStates.Elements() {
+				pending.Push(toState)
+			}
+			inputRange, ok := input.(rang3.Range)
+			if !ok {
+				// Probably an ε.
+				return
+			}
+			graph[inputRange] = append(graph[inputRange], s)
+		})
+	}
+
+	for r, states := range graph {
+		fmt.Println("Input", r)
+		for _, state := range states {
+			fmt.Println(" ", state.ID)
+		}
+	}
+
+	ranges := make([]rang3.Range, 0, len(graph))
+	for r := range graph {
+		ranges = append(ranges, r)
+	}
+
+	rang3.Normalize(ranges, func(o, a, b, c rang3.Range) {
+		states := graph[o]
+		assert.True(len(states) > 0)
+		for _, s := range states {
+			toStates := s.Transitions.GetOrZero(o)
+			s.Transitions.Remove(o)
+			for _, toState := range toStates.Elements() {
+				s.AddTransition(toState, a)
+				s.AddTransition(toState, b)
+				if c != b {
+					s.AddTransition(toState, c)
+				}
+			}
+		}
+		delete(graph, o)
+		graph[a] = append(graph[a], states...)
+		graph[b] = append(graph[b], states...)
+		if c != b {
+			graph[c] = append(graph[c], states...)
+		}
+	})
 }
