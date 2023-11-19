@@ -8,6 +8,7 @@ import (
 	"slices"
 	"sort"
 
+	"github.com/dcaiafa/lox/internal/assert"
 	"github.com/dcaiafa/lox/internal/lexergen/nfa"
 	"github.com/dcaiafa/lox/internal/util/array"
 	"github.com/dcaiafa/lox/internal/util/set"
@@ -148,9 +149,12 @@ func NFAToDFA(n *nfa.State) *DFA {
 		})
 	}
 
-	return &DFA{
+	dfa := &DFA{
 		States: assignIDs(start),
 	}
+	optimize(dfa)
+
+	return dfa
 }
 
 func eClosure(nfaStates set.Set[*nfa.State]) *State {
@@ -222,6 +226,103 @@ func assignIDs(s *State) []*State {
 			}
 		}
 	}
-
 	return states
+}
+
+type group struct {
+	set.Set[uint32]
+	rep *State
+}
+
+func optimize(d *DFA) {
+	accepting := new(group)
+	nonAccepting := new(group)
+
+	for _, s := range d.States {
+		if s.Accept {
+			accepting.Add(s.ID)
+		} else {
+			nonAccepting.Add(s.ID)
+		}
+	}
+
+	partition := []*group{
+		accepting,
+		nonAccepting,
+	}
+
+	for {
+		for i, g := range partition {
+			fmt.Println("Group", i, g.Elements())
+		}
+
+		partition2 := make([]*group, 0, len(partition)+1)
+		for _, g := range partition {
+			gs := subpartition(d, g)
+			partition2 = append(partition2, gs...)
+		}
+
+		if len(partition) == len(partition2) {
+			break
+		}
+		partition = partition2
+	}
+
+	var startGroupIndex int
+	stateToGroup := make(map[*State]*group)
+	for gi, g := range partition {
+		g.rep = new(State)
+		g.ForEach(func(sid uint32) {
+			if sid == 0 {
+				startGroupIndex = gi
+			}
+			s := d.States[sid]
+			g.rep.Accept = g.rep.Accept || s.Accept
+			g.rep.NFAStates = append(g.rep.NFAStates, s.NFAStates...)
+			stateToGroup[s] = g
+		})
+	}
+
+	for _, s := range d.States {
+		fromState := stateToGroup[s]
+		assert.True(fromState != nil)
+
+		s.Transitions.ForEach(func(inp any, toState *State) {
+			toGroup := stateToGroup[toState]
+			assert.True(toGroup != nil)
+			fromState.rep.AddTransition(toGroup.rep, inp)
+		})
+	}
+
+	// Place group with the start event at index 0 so that it becomes the starting
+	// event of the new DFA.
+	partition[0], partition[startGroupIndex] =
+		partition[startGroupIndex], partition[0]
+
+	newStates := make([]*State, len(partition))
+	for i, g := range partition {
+		newStates[i] = g.rep
+		newStates[i].ID = uint32(i)
+	}
+
+	d.States = newStates
+}
+
+func subpartition(d *DFA, g *group) []*group {
+	var a group
+	for _, sid := range g.Elements() {
+		s := d.States[sid]
+		s.Transitions.ForEach(func(input any, toState *State) {
+			if !g.Has(toState.ID) {
+				a.Add(s.ID)
+			}
+		})
+	}
+	if a.Len() == g.Len() || a.Len() == 0 {
+		return []*group{g}
+	}
+	b := group{
+		Set: *set.Sub(&g.Set, &a.Set),
+	}
+	return []*group{&a, &b}
 }

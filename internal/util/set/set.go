@@ -86,3 +86,13 @@ func (s *Set[T]) Clone() Set[T] {
 	})
 	return c
 }
+
+func Sub[T comparable](a, b *Set[T]) *Set[T] {
+	var c Set[T]
+	a.ForEach(func(e T) {
+		if !b.Has(e) {
+			c.Add(e)
+		}
+	})
+	return &c
+}

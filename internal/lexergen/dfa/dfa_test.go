@@ -88,21 +88,18 @@ func TestNFAToDFA(t *testing.T) {
 	requireEqual(t, strings.TrimSpace(str.String()), strings.TrimSpace(`
 digraph G {
   rankdir="LR";
-  0 -> 1 [label="b"];
+  0 -> 0 [label="b"];
   0 -> 2 [label="a"];
-  1 -> 1 [label="b"];
   1 -> 2 [label="a"];
+  1 -> 3 [label="b"];
+  2 -> 1 [label="b"];
   2 -> 2 [label="a"];
-  2 -> 3 [label="b"];
+  3 -> 0 [label="b"];
   3 -> 2 [label="a"];
-  3 -> 4 [label="b"];
-  4 -> 1 [label="b"];
-  4 -> 2 [label="a"];
   0 [label="0", shape="circle"];
   1 [label="1", shape="circle"];
   2 [label="2", shape="circle"];
-  3 [label="3", shape="circle"];
-  4 [label="4", shape="doublecircle"];
+  3 [label="3", shape="doublecircle"];
 }
 `))
 }
@@ -110,7 +107,7 @@ digraph G {
 func TestOptimization(t *testing.T) {
 	n := nfa.NewStateFactory()
 
-	s := make([]*nfa.State, 12)
+	s := make([]*nfa.State, 13)
 	for i := range s {
 		s[i] = n.NewState()
 	}
@@ -135,6 +132,7 @@ func TestOptimization(t *testing.T) {
 		{s[9], "ε", s[10]},
 		{s[10], "ε", s[11]},
 		{s[11], "ε", s[0]},
+		{s[11], "ε", s[12]},
 	}
 
 	for _, tr := range transitions {
@@ -145,7 +143,7 @@ func TestOptimization(t *testing.T) {
 		tr.From.AddTransition(tr.To, input)
 	}
 
-	s[0].Accept = true
+	s[12].Accept = true
 
 	d := NFAToDFA(s[0])
 
