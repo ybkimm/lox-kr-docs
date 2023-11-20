@@ -1,7 +1,6 @@
 package mode
 
 import (
-	"fmt"
 	gotoken "go/token"
 
 	"github.com/dcaiafa/lox/internal/assert"
@@ -136,13 +135,6 @@ func normalizeInputs(s *nfa.State) {
 			}
 			graph[inputRange] = append(graph[inputRange], s)
 		})
-	}
-
-	for r, states := range graph {
-		fmt.Println("Input", r)
-		for _, state := range states {
-			fmt.Println(" ", state.ID)
-		}
 	}
 
 	ranges := make([]rang3.Range, 0, len(graph))

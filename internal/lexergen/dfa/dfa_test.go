@@ -1,12 +1,13 @@
 package dfa
 
 import (
-	"os"
 	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/dcaiafa/lox/internal/lexergen/nfa"
+	"github.com/dcaiafa/lox/internal/lexergen/rang3"
+	"github.com/dcaiafa/lox/internal/testutil"
 	"github.com/dcaiafa/lox/internal/util/set"
 )
 
@@ -89,22 +90,22 @@ func TestNFAToDFA(t *testing.T) {
 digraph G {
   rankdir="LR";
   0 -> 0 [label="b"];
-  0 -> 2 [label="a"];
-  1 -> 2 [label="a"];
-  1 -> 3 [label="b"];
+  0 -> 3 [label="a"];
+  1 -> 0 [label="b"];
+  1 -> 3 [label="a"];
   2 -> 1 [label="b"];
-  2 -> 2 [label="a"];
-  3 -> 0 [label="b"];
-  3 -> 2 [label="a"];
+  2 -> 3 [label="a"];
+  3 -> 2 [label="b"];
+  3 -> 3 [label="a"];
   0 [label="0", shape="circle"];
-  1 [label="1", shape="circle"];
+  1 [label="1", shape="doublecircle"];
   2 [label="2", shape="circle"];
-  3 [label="3", shape="doublecircle"];
+  3 [label="3", shape="circle"];
 }
 `))
 }
 
-func TestOptimization(t *testing.T) {
+func TestNFAToDFA2(t *testing.T) {
 	n := nfa.NewStateFactory()
 
 	s := make([]*nfa.State, 13)
@@ -147,5 +148,105 @@ func TestOptimization(t *testing.T) {
 
 	d := NFAToDFA(s[0])
 
-	d.Print(os.Stdout)
+	var res strings.Builder
+	d.Print(&res)
+
+	testutil.RequireEqualStr(t, res.String(), `
+digraph G {
+  rankdir="LR";
+  0 -> 1 [label="s"];
+  0 -> 1 [label="r"];
+  0 -> 1 [label="n"];
+  0 -> 1 [label="t"];
+  1 -> 1 [label="s"];
+  1 -> 1 [label="r"];
+  1 -> 1 [label="n"];
+  1 -> 1 [label="t"];
+  0 [label="0", shape="circle"];
+  1 [label="1", shape="doublecircle"];
+}
+`)
+
+}
+
+func TestNFAToDFA3(t *testing.T) {
+	n := nfa.NewStateFactory()
+
+	s := make([]*nfa.State, 17)
+	for i := range s {
+		s[i] = n.NewState()
+	}
+
+	transitions := []struct {
+		From  int
+		Input string
+		To    int
+	}{
+		{0, "ε", 1},
+		{1, "09", 2},
+		{2, "09", 2},
+		{2, "ε", 3},
+
+		{0, "ε", 4},
+		{4, "+", 5},
+		{5, "ε", 6},
+
+		{0, "ε", 7},
+		{7, "-", 8},
+		{8, "ε", 9},
+
+		{0, "ε", 10},
+		{10, "ε", 11},
+		{11, "r", 12},
+		{12, "ε", 15},
+		{10, "ε", 13},
+		{13, "n", 14},
+		{14, "ε", 15},
+		{15, "ε", 10},
+		{15, "ε", 16},
+	}
+
+	s[3].Accept = true
+	s[6].Accept = true
+	s[9].Accept = true
+	s[16].Accept = true
+
+	for _, tr := range transitions {
+		var input any
+		switch {
+		case tr.Input == "ε":
+			input = nfa.Epsilon
+		case len(tr.Input) == 2:
+			input = rang3.Range{B: rune(tr.Input[0]), E: rune(tr.Input[1])}
+		case len(tr.Input) == 1:
+			input = rang3.Range{B: rune(tr.Input[0]), E: rune(tr.Input[0])}
+		default:
+			panic("not reached")
+		}
+		s[tr.From].AddTransition(s[tr.To], input)
+	}
+
+	d := NFAToDFA(s[0])
+
+	var res strings.Builder
+	d.Print(&res)
+
+	testutil.RequireEqualStr(t, res.String(), `
+digraph G {
+  rankdir="LR";
+  0 -> 1 [label="r"];
+  0 -> 1 [label="n"];
+  0 -> 2 [label="\\-"];
+  0 -> 3 [label="+"];
+  0 -> 4 [label="0-9"];
+  1 -> 1 [label="r"];
+  1 -> 1 [label="n"];
+  4 -> 4 [label="0-9"];
+  0 [label="0", shape="circle"];
+  1 [label="1", shape="doublecircle"];
+  2 [label="2", shape="doublecircle"];
+  3 [label="3", shape="doublecircle"];
+  4 [label="4", shape="doublecircle"];
+}
+`)
 }

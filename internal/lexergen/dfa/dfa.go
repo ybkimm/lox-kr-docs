@@ -152,6 +152,7 @@ func NFAToDFA(n *nfa.State) *DFA {
 	dfa := &DFA{
 		States: assignIDs(start),
 	}
+
 	optimize(dfa)
 
 	return dfa
@@ -229,100 +230,170 @@ func assignIDs(s *State) []*State {
 	return states
 }
 
-type group struct {
-	set.Set[uint32]
-	rep *State
+type partitions struct {
+	stateToGroup stablemap.Map[*State, int]
+	groupToState stablemap.Map[int, *set.Set[*State]]
+}
+
+func newPartitions(states []*State) *partitions {
+	p := new(partitions)
+	for _, s := range states {
+		if s.Accept {
+			p.add(s, 1)
+		} else {
+			p.add(s, 0)
+		}
+	}
+	return p
+}
+
+func (p *partitions) add(s *State, group int) {
+	p.stateToGroup.Put(s, group)
+	states, ok := p.groupToState.Get(group)
+	if !ok {
+		states = new(set.Set[*State])
+		p.groupToState.Put(group, states)
+	}
+	states.Add(s)
+}
+
+func (p *partitions) remove(s *State) {
+	group, ok := p.stateToGroup.Get(s)
+	assert.True(ok)
+	states, ok := p.groupToState.Get(group)
+	assert.True(ok)
+	states.Remove(s)
+}
+
+func (p *partitions) Move(s *State, group int) {
+	p.remove(s)
+	p.add(s, group)
+}
+
+func (p *partitions) Count() int {
+	return p.groupToState.Len()
+}
+
+func (p *partitions) GetGroup(group int) *set.Set[*State] {
+	states, ok := p.groupToState.Get(group)
+	assert.True(ok)
+	return states
+}
+
+func (p *partitions) GetStateGroup(s *State) int {
+	group, ok := p.stateToGroup.Get(s)
+	assert.True(ok)
+	return group
 }
 
 func optimize(d *DFA) {
-	accepting := new(group)
-	nonAccepting := new(group)
+	p := newPartitions(d.States)
 
-	for _, s := range d.States {
-		if s.Accept {
-			accepting.Add(s.ID)
-		} else {
-			nonAccepting.Add(s.ID)
-		}
-	}
-
-	partition := []*group{
-		accepting,
-		nonAccepting,
-	}
-
+	partitionCount := p.Count()
 	for {
-		for i, g := range partition {
-			fmt.Println("Group", i, g.Elements())
+		for i := 0; i < partitionCount; i++ {
+			subPartition(p, i)
 		}
-
-		partition2 := make([]*group, 0, len(partition)+1)
-		for _, g := range partition {
-			gs := subpartition(d, g)
-			partition2 = append(partition2, gs...)
-		}
-
-		if len(partition) == len(partition2) {
+		if p.Count() == partitionCount {
 			break
 		}
-		partition = partition2
+		partitionCount = p.Count()
 	}
 
-	var startGroupIndex int
-	stateToGroup := make(map[*State]*group)
-	for gi, g := range partition {
-		g.rep = new(State)
-		g.ForEach(func(sid uint32) {
-			if sid == 0 {
-				startGroupIndex = gi
+	newStates := make([]*State, p.Count())
+	for i := range newStates {
+		newStates[i] = new(State)
+	}
+
+	var startGroup int
+	for group := 0; group < p.Count(); group++ {
+		groupStates := p.GetGroup(group)
+		groupStates.ForEach(func(s *State) {
+			if s.ID == 0 {
+				startGroup = group
 			}
-			s := d.States[sid]
-			g.rep.Accept = g.rep.Accept || s.Accept
-			g.rep.NFAStates = append(g.rep.NFAStates, s.NFAStates...)
-			stateToGroup[s] = g
+			newStates[group].Accept = newStates[group].Accept || s.Accept
+			newStates[group].NFAStates = append(
+				newStates[group].NFAStates,
+				s.NFAStates...)
 		})
 	}
 
 	for _, s := range d.States {
-		fromState := stateToGroup[s]
-		assert.True(fromState != nil)
+		fromGroup := p.GetStateGroup(s)
+		fromState := newStates[fromGroup]
 
-		s.Transitions.ForEach(func(inp any, toState *State) {
-			toGroup := stateToGroup[toState]
-			assert.True(toGroup != nil)
-			fromState.rep.AddTransition(toGroup.rep, inp)
+		s.Transitions.ForEach(func(input any, ts *State) {
+			toGroup := p.GetStateGroup(ts)
+			toState := newStates[toGroup]
+			fromState.AddTransition(toState, input)
 		})
 	}
 
 	// Place group with the start event at index 0 so that it becomes the starting
 	// event of the new DFA.
-	partition[0], partition[startGroupIndex] =
-		partition[startGroupIndex], partition[0]
+	newStates[0], newStates[startGroup] = newStates[startGroup], newStates[0]
 
-	newStates := make([]*State, len(partition))
-	for i, g := range partition {
-		newStates[i] = g.rep
+	for i := range newStates {
 		newStates[i].ID = uint32(i)
 	}
 
 	d.States = newStates
 }
 
-func subpartition(d *DFA, g *group) []*group {
-	var a group
-	for _, sid := range g.Elements() {
-		s := d.States[sid]
+func subPartition(p *partitions, group int) {
+	transitionGroup := func(s *State, input any) int {
+		toState, ok := s.Transitions.Get(input)
+		if !ok {
+			return -1
+		}
+		return p.GetStateGroup(toState)
+	}
+
+	newGroup := p.Count()
+	states := p.GetGroup(group)
+
+	var inputs set.Set[any]
+	states.ForEach(func(s *State) {
 		s.Transitions.ForEach(func(input any, toState *State) {
-			if !g.Has(toState.ID) {
-				a.Add(s.ID)
+			inputs.Add(input)
+		})
+	})
+
+	var first *State
+	var move set.Set[*State]
+	states.ForEach(func(s *State) {
+		if first == nil {
+			first = s
+			return
+		}
+		if first.Accept {
+			assert.True(s.Accept)
+			var nfaFirst, nfaS set.Set[*nfa.State]
+			for _, ns := range first.NFAStates {
+				if ns.Accept {
+					nfaFirst.Add(ns)
+				}
+			}
+			for _, ns := range s.NFAStates {
+				if ns.Accept {
+					nfaS.Add(ns)
+				}
+			}
+			if !nfaFirst.Equal(nfaS) {
+				move.Add(s)
+				return
+			}
+		}
+		inputs.ForEach(func(input any) {
+			toGroupFirst := transitionGroup(first, input)
+			toGroupS := transitionGroup(s, input)
+			if toGroupFirst != toGroupS {
+				move.Add(s)
 			}
 		})
-	}
-	if a.Len() == g.Len() || a.Len() == 0 {
-		return []*group{g}
-	}
-	b := group{
-		Set: *set.Sub(&g.Set, &a.Set),
-	}
-	return []*group{&a, &b}
+	})
+	move.ForEach(func(s *State) {
+		p.Move(s, newGroup)
+	})
 }

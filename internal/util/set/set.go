@@ -70,7 +70,7 @@ func (s *Set[T]) Equal(o Set[T]) bool {
 	s.ForEach(func(x T) {
 		isEqual = isEqual && o.Has(x)
 	})
-	return true
+	return isEqual
 }
 
 func (s *Set[T]) ForEach(fn func(e T)) {
