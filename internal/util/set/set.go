@@ -46,23 +46,23 @@ func (s *Set[T]) Remove(x T) {
 	s.set.Remove(x)
 }
 
-func (s *Set[T]) Has(v T) bool {
+func (s Set[T]) Has(v T) bool {
 	return s.set.Has(v)
 }
 
-func (s *Set[T]) Empty() bool {
+func (s Set[T]) Empty() bool {
 	return s.set.Len() == 0
 }
 
-func (s *Set[T]) Len() int {
+func (s Set[T]) Len() int {
 	return s.set.Len()
 }
 
-func (s *Set[T]) Elements() []T {
+func (s Set[T]) Elements() []T {
 	return s.set.Keys()
 }
 
-func (s *Set[T]) Equal(o Set[T]) bool {
+func (s Set[T]) Equal(o Set[T]) bool {
 	if s.Len() != o.Len() {
 		return false
 	}
@@ -85,14 +85,4 @@ func (s *Set[T]) Clone() Set[T] {
 		c.Add(e)
 	})
 	return c
-}
-
-func Sub[T comparable](a, b *Set[T]) *Set[T] {
-	var c Set[T]
-	a.ForEach(func(e T) {
-		if !b.Has(e) {
-			c.Add(e)
-		}
-	})
-	return &c
 }
