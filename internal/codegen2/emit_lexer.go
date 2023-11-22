@@ -57,7 +57,8 @@ const (
 	_lexerConsume  = 0
 	_lexerAccept   = 1
 	_lexerDiscard  = 2
-	_lexerEOF      = 3
+	_lexerTryAgain = 3
+	_lexerEOF      = 4
 	_lexerError    = -1
 )
 
@@ -139,7 +140,7 @@ func (l *_LexerStateMachine) PushRune(r rune) int {
 			return _lexerDiscard
 		case 5: // Accum
 			l.state = 0
-			return _lexerConsume
+			return _lexerTryAgain
 		}
 	}
 

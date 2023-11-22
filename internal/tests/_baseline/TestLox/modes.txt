@@ -1,0 +1,605 @@
+Parser Table
+============
+I0:
+  S' = .S, EOF
+  S = .token*, EOF
+  token = .NUM, EOF
+  token = .NUM, NUM
+  token = .NUM, ADD
+  token = .NUM, SUB
+  token = .NUM, OBRACKET
+  token = .NUM, CBRACKET
+  token = .NUM, CLASS_DASH
+  token = .NUM, CLASS_CHAR
+  token = .NUM, STRING
+  token = .ADD, EOF
+  token = .ADD, NUM
+  token = .ADD, ADD
+  token = .ADD, SUB
+  token = .ADD, OBRACKET
+  token = .ADD, CBRACKET
+  token = .ADD, CLASS_DASH
+  token = .ADD, CLASS_CHAR
+  token = .ADD, STRING
+  token = .SUB, EOF
+  token = .SUB, NUM
+  token = .SUB, ADD
+  token = .SUB, SUB
+  token = .SUB, OBRACKET
+  token = .SUB, CBRACKET
+  token = .SUB, CLASS_DASH
+  token = .SUB, CLASS_CHAR
+  token = .SUB, STRING
+  token = .OBRACKET, EOF
+  token = .OBRACKET, NUM
+  token = .OBRACKET, ADD
+  token = .OBRACKET, SUB
+  token = .OBRACKET, OBRACKET
+  token = .OBRACKET, CBRACKET
+  token = .OBRACKET, CLASS_DASH
+  token = .OBRACKET, CLASS_CHAR
+  token = .OBRACKET, STRING
+  token = .CBRACKET, EOF
+  token = .CBRACKET, NUM
+  token = .CBRACKET, ADD
+  token = .CBRACKET, SUB
+  token = .CBRACKET, OBRACKET
+  token = .CBRACKET, CBRACKET
+  token = .CBRACKET, CLASS_DASH
+  token = .CBRACKET, CLASS_CHAR
+  token = .CBRACKET, STRING
+  token = .CLASS_DASH, EOF
+  token = .CLASS_DASH, NUM
+  token = .CLASS_DASH, ADD
+  token = .CLASS_DASH, SUB
+  token = .CLASS_DASH, OBRACKET
+  token = .CLASS_DASH, CBRACKET
+  token = .CLASS_DASH, CLASS_DASH
+  token = .CLASS_DASH, CLASS_CHAR
+  token = .CLASS_DASH, STRING
+  token = .CLASS_CHAR, EOF
+  token = .CLASS_CHAR, NUM
+  token = .CLASS_CHAR, ADD
+  token = .CLASS_CHAR, SUB
+  token = .CLASS_CHAR, OBRACKET
+  token = .CLASS_CHAR, CBRACKET
+  token = .CLASS_CHAR, CLASS_DASH
+  token = .CLASS_CHAR, CLASS_CHAR
+  token = .CLASS_CHAR, STRING
+  token = .STRING, EOF
+  token = .STRING, NUM
+  token = .STRING, ADD
+  token = .STRING, SUB
+  token = .STRING, OBRACKET
+  token = .STRING, CBRACKET
+  token = .STRING, CLASS_DASH
+  token = .STRING, CLASS_CHAR
+  token = .STRING, STRING
+  token* = .token+, EOF
+  token* = ., EOF
+  token+ = .token+ token, EOF
+  token+ = .token+ token, NUM
+  token+ = .token+ token, ADD
+  token+ = .token+ token, SUB
+  token+ = .token+ token, OBRACKET
+  token+ = .token+ token, CBRACKET
+  token+ = .token+ token, CLASS_DASH
+  token+ = .token+ token, CLASS_CHAR
+  token+ = .token+ token, STRING
+  token+ = .token, EOF
+  token+ = .token, NUM
+  token+ = .token, ADD
+  token+ = .token, SUB
+  token+ = .token, OBRACKET
+  token+ = .token, CBRACKET
+  token+ = .token, CLASS_DASH
+  token+ = .token, CLASS_CHAR
+  token+ = .token, STRING
+    on ADD shift I1
+    on CBRACKET shift I2
+    on CLASS_CHAR shift I3
+    on CLASS_DASH shift I4
+    on EOF reduce token*
+    on NUM shift I5
+    on OBRACKET shift I6
+    on STRING shift I8
+    on SUB shift I9
+    on S goto I7
+    on token goto I10
+    on token* goto I11
+    on token+ goto I12
+I1:
+  token = ADD., EOF
+  token = ADD., NUM
+  token = ADD., ADD
+  token = ADD., SUB
+  token = ADD., OBRACKET
+  token = ADD., CBRACKET
+  token = ADD., CLASS_DASH
+  token = ADD., CLASS_CHAR
+  token = ADD., STRING
+    on ADD reduce token
+    on CBRACKET reduce token
+    on CLASS_CHAR reduce token
+    on CLASS_DASH reduce token
+    on EOF reduce token
+    on NUM reduce token
+    on OBRACKET reduce token
+    on STRING reduce token
+    on SUB reduce token
+I2:
+  token = CBRACKET., EOF
+  token = CBRACKET., NUM
+  token = CBRACKET., ADD
+  token = CBRACKET., SUB
+  token = CBRACKET., OBRACKET
+  token = CBRACKET., CBRACKET
+  token = CBRACKET., CLASS_DASH
+  token = CBRACKET., CLASS_CHAR
+  token = CBRACKET., STRING
+    on ADD reduce token
+    on CBRACKET reduce token
+    on CLASS_CHAR reduce token
+    on CLASS_DASH reduce token
+    on EOF reduce token
+    on NUM reduce token
+    on OBRACKET reduce token
+    on STRING reduce token
+    on SUB reduce token
+I3:
+  token = CLASS_CHAR., EOF
+  token = CLASS_CHAR., NUM
+  token = CLASS_CHAR., ADD
+  token = CLASS_CHAR., SUB
+  token = CLASS_CHAR., OBRACKET
+  token = CLASS_CHAR., CBRACKET
+  token = CLASS_CHAR., CLASS_DASH
+  token = CLASS_CHAR., CLASS_CHAR
+  token = CLASS_CHAR., STRING
+    on ADD reduce token
+    on CBRACKET reduce token
+    on CLASS_CHAR reduce token
+    on CLASS_DASH reduce token
+    on EOF reduce token
+    on NUM reduce token
+    on OBRACKET reduce token
+    on STRING reduce token
+    on SUB reduce token
+I4:
+  token = CLASS_DASH., EOF
+  token = CLASS_DASH., NUM
+  token = CLASS_DASH., ADD
+  token = CLASS_DASH., SUB
+  token = CLASS_DASH., OBRACKET
+  token = CLASS_DASH., CBRACKET
+  token = CLASS_DASH., CLASS_DASH
+  token = CLASS_DASH., CLASS_CHAR
+  token = CLASS_DASH., STRING
+    on ADD reduce token
+    on CBRACKET reduce token
+    on CLASS_CHAR reduce token
+    on CLASS_DASH reduce token
+    on EOF reduce token
+    on NUM reduce token
+    on OBRACKET reduce token
+    on STRING reduce token
+    on SUB reduce token
+I5:
+  token = NUM., EOF
+  token = NUM., NUM
+  token = NUM., ADD
+  token = NUM., SUB
+  token = NUM., OBRACKET
+  token = NUM., CBRACKET
+  token = NUM., CLASS_DASH
+  token = NUM., CLASS_CHAR
+  token = NUM., STRING
+    on ADD reduce token
+    on CBRACKET reduce token
+    on CLASS_CHAR reduce token
+    on CLASS_DASH reduce token
+    on EOF reduce token
+    on NUM reduce token
+    on OBRACKET reduce token
+    on STRING reduce token
+    on SUB reduce token
+I6:
+  token = OBRACKET., EOF
+  token = OBRACKET., NUM
+  token = OBRACKET., ADD
+  token = OBRACKET., SUB
+  token = OBRACKET., OBRACKET
+  token = OBRACKET., CBRACKET
+  token = OBRACKET., CLASS_DASH
+  token = OBRACKET., CLASS_CHAR
+  token = OBRACKET., STRING
+    on ADD reduce token
+    on CBRACKET reduce token
+    on CLASS_CHAR reduce token
+    on CLASS_DASH reduce token
+    on EOF reduce token
+    on NUM reduce token
+    on OBRACKET reduce token
+    on STRING reduce token
+    on SUB reduce token
+I7:
+  S' = S., EOF
+    on EOF accept
+I8:
+  token = STRING., EOF
+  token = STRING., NUM
+  token = STRING., ADD
+  token = STRING., SUB
+  token = STRING., OBRACKET
+  token = STRING., CBRACKET
+  token = STRING., CLASS_DASH
+  token = STRING., CLASS_CHAR
+  token = STRING., STRING
+    on ADD reduce token
+    on CBRACKET reduce token
+    on CLASS_CHAR reduce token
+    on CLASS_DASH reduce token
+    on EOF reduce token
+    on NUM reduce token
+    on OBRACKET reduce token
+    on STRING reduce token
+    on SUB reduce token
+I9:
+  token = SUB., EOF
+  token = SUB., NUM
+  token = SUB., ADD
+  token = SUB., SUB
+  token = SUB., OBRACKET
+  token = SUB., CBRACKET
+  token = SUB., CLASS_DASH
+  token = SUB., CLASS_CHAR
+  token = SUB., STRING
+    on ADD reduce token
+    on CBRACKET reduce token
+    on CLASS_CHAR reduce token
+    on CLASS_DASH reduce token
+    on EOF reduce token
+    on NUM reduce token
+    on OBRACKET reduce token
+    on STRING reduce token
+    on SUB reduce token
+I10:
+  token+ = token., EOF
+  token+ = token., NUM
+  token+ = token., ADD
+  token+ = token., SUB
+  token+ = token., OBRACKET
+  token+ = token., CBRACKET
+  token+ = token., CLASS_DASH
+  token+ = token., CLASS_CHAR
+  token+ = token., STRING
+    on ADD reduce token+
+    on CBRACKET reduce token+
+    on CLASS_CHAR reduce token+
+    on CLASS_DASH reduce token+
+    on EOF reduce token+
+    on NUM reduce token+
+    on OBRACKET reduce token+
+    on STRING reduce token+
+    on SUB reduce token+
+I11:
+  S = token*., EOF
+    on EOF reduce S
+I12:
+  token = .NUM, EOF
+  token = .NUM, NUM
+  token = .NUM, ADD
+  token = .NUM, SUB
+  token = .NUM, OBRACKET
+  token = .NUM, CBRACKET
+  token = .NUM, CLASS_DASH
+  token = .NUM, CLASS_CHAR
+  token = .NUM, STRING
+  token = .ADD, EOF
+  token = .ADD, NUM
+  token = .ADD, ADD
+  token = .ADD, SUB
+  token = .ADD, OBRACKET
+  token = .ADD, CBRACKET
+  token = .ADD, CLASS_DASH
+  token = .ADD, CLASS_CHAR
+  token = .ADD, STRING
+  token = .SUB, EOF
+  token = .SUB, NUM
+  token = .SUB, ADD
+  token = .SUB, SUB
+  token = .SUB, OBRACKET
+  token = .SUB, CBRACKET
+  token = .SUB, CLASS_DASH
+  token = .SUB, CLASS_CHAR
+  token = .SUB, STRING
+  token = .OBRACKET, EOF
+  token = .OBRACKET, NUM
+  token = .OBRACKET, ADD
+  token = .OBRACKET, SUB
+  token = .OBRACKET, OBRACKET
+  token = .OBRACKET, CBRACKET
+  token = .OBRACKET, CLASS_DASH
+  token = .OBRACKET, CLASS_CHAR
+  token = .OBRACKET, STRING
+  token = .CBRACKET, EOF
+  token = .CBRACKET, NUM
+  token = .CBRACKET, ADD
+  token = .CBRACKET, SUB
+  token = .CBRACKET, OBRACKET
+  token = .CBRACKET, CBRACKET
+  token = .CBRACKET, CLASS_DASH
+  token = .CBRACKET, CLASS_CHAR
+  token = .CBRACKET, STRING
+  token = .CLASS_DASH, EOF
+  token = .CLASS_DASH, NUM
+  token = .CLASS_DASH, ADD
+  token = .CLASS_DASH, SUB
+  token = .CLASS_DASH, OBRACKET
+  token = .CLASS_DASH, CBRACKET
+  token = .CLASS_DASH, CLASS_DASH
+  token = .CLASS_DASH, CLASS_CHAR
+  token = .CLASS_DASH, STRING
+  token = .CLASS_CHAR, EOF
+  token = .CLASS_CHAR, NUM
+  token = .CLASS_CHAR, ADD
+  token = .CLASS_CHAR, SUB
+  token = .CLASS_CHAR, OBRACKET
+  token = .CLASS_CHAR, CBRACKET
+  token = .CLASS_CHAR, CLASS_DASH
+  token = .CLASS_CHAR, CLASS_CHAR
+  token = .CLASS_CHAR, STRING
+  token = .STRING, EOF
+  token = .STRING, NUM
+  token = .STRING, ADD
+  token = .STRING, SUB
+  token = .STRING, OBRACKET
+  token = .STRING, CBRACKET
+  token = .STRING, CLASS_DASH
+  token = .STRING, CLASS_CHAR
+  token = .STRING, STRING
+  token* = token+., EOF
+  token+ = token+ .token, EOF
+  token+ = token+ .token, NUM
+  token+ = token+ .token, ADD
+  token+ = token+ .token, SUB
+  token+ = token+ .token, OBRACKET
+  token+ = token+ .token, CBRACKET
+  token+ = token+ .token, CLASS_DASH
+  token+ = token+ .token, CLASS_CHAR
+  token+ = token+ .token, STRING
+    on ADD shift I1
+    on CBRACKET shift I2
+    on CLASS_CHAR shift I3
+    on CLASS_DASH shift I4
+    on EOF reduce token*
+    on NUM shift I5
+    on OBRACKET shift I6
+    on STRING shift I8
+    on SUB shift I9
+    on token goto I13
+I13:
+  token+ = token+ token., EOF
+  token+ = token+ token., NUM
+  token+ = token+ token., ADD
+  token+ = token+ token., SUB
+  token+ = token+ token., OBRACKET
+  token+ = token+ token., CBRACKET
+  token+ = token+ token., CLASS_DASH
+  token+ = token+ token., CLASS_CHAR
+  token+ = token+ token., STRING
+    on ADD reduce token+
+    on CBRACKET reduce token+
+    on CLASS_CHAR reduce token+
+    on CLASS_DASH reduce token+
+    on EOF reduce token+
+    on NUM reduce token+
+    on OBRACKET reduce token+
+    on STRING reduce token+
+    on SUB reduce token+
+
+Lexer Modes
+============
+$default:
+digraph G {
+  rankdir="LR";
+  0 -> 1 [label="\""];
+  0 -> 2 [label="["];
+  0 -> 3 [label="\\t-\\n"];
+  0 -> 3 [label="\\r"];
+  0 -> 3 [label=" "];
+  0 -> 4 [label="\\-"];
+  0 -> 5 [label="+"];
+  0 -> 6 [label="0-9"];
+  3 -> 3 [label="\\t-\\n"];
+  3 -> 3 [label="\\r"];
+  3 -> 3 [label=" "];
+  6 -> 6 [label="0-9"];
+  0 [label="0", shape="circle"];
+  1 [label="1", shape="doublecircle"];
+  2 [label="2", shape="doublecircle"];
+  3 [label="3", shape="doublecircle"];
+  4 [label="4", shape="doublecircle"];
+  5 [label="5", shape="doublecircle"];
+  6 [label="6", shape="doublecircle"];
+}
+
+CharClass:
+digraph G {
+  rankdir="LR";
+  0 -> 1 [label="\\u0000-\\t"];
+  0 -> 1 [label="\\u000b-\\u000c"];
+  0 -> 1 [label="\\u000e-,"];
+  0 -> 1 [label=".-Z"];
+  0 -> 1 [label="["];
+  0 -> 1 [label="^-m"];
+  0 -> 1 [label="n"];
+  0 -> 1 [label="o-q"];
+  0 -> 1 [label="r"];
+  0 -> 1 [label="s"];
+  0 -> 1 [label="t"];
+  0 -> 1 [label="u-\\uffff"];
+  0 -> 2 [label="\\"];
+  0 -> 3 [label="\\-"];
+  0 -> 4 [label="]"];
+  2 -> 1 [label="\\-"];
+  2 -> 1 [label="\\"];
+  2 -> 1 [label="n"];
+  2 -> 1 [label="r"];
+  2 -> 1 [label="t"];
+  2 -> 1 [label="]"];
+  2 -> 1 [label="["];
+  0 [label="0", shape="circle"];
+  1 [label="1", shape="doublecircle"];
+  2 [label="2", shape="circle"];
+  3 [label="3", shape="doublecircle"];
+  4 [label="4", shape="doublecircle"];
+}
+
+StringLiteral:
+digraph G {
+  rankdir="LR";
+  0 -> 1 [label="\\u0000-\\t"];
+  0 -> 1 [label="\\u000b-\\u000c"];
+  0 -> 1 [label="\\u000e-!"];
+  0 -> 1 [label="#-/"];
+  0 -> 1 [label="0-9"];
+  0 -> 1 [label=":-@"];
+  0 -> 1 [label="A-F"];
+  0 -> 1 [label="G-["];
+  0 -> 1 [label="]-`"];
+  0 -> 1 [label="a-f"];
+  0 -> 1 [label="g-m"];
+  0 -> 1 [label="n"];
+  0 -> 1 [label="o-q"];
+  0 -> 1 [label="r"];
+  0 -> 1 [label="s"];
+  0 -> 1 [label="t"];
+  0 -> 1 [label="u"];
+  0 -> 1 [label="v-\\uffff"];
+  0 -> 3 [label="\\"];
+  0 -> 9 [label="\""];
+  2 -> 8 [label="0-9"];
+  2 -> 8 [label="A-F"];
+  2 -> 8 [label="a-f"];
+  3 -> 2 [label="u"];
+  3 -> 7 [label="\""];
+  3 -> 7 [label="n"];
+  3 -> 7 [label="r"];
+  3 -> 7 [label="t"];
+  4 -> 5 [label="0-9"];
+  4 -> 5 [label="A-F"];
+  4 -> 5 [label="a-f"];
+  6 -> 4 [label="0-9"];
+  6 -> 4 [label="A-F"];
+  6 -> 4 [label="a-f"];
+  8 -> 6 [label="0-9"];
+  8 -> 6 [label="A-F"];
+  8 -> 6 [label="a-f"];
+  0 [label="0", shape="circle"];
+  1 [label="1", shape="doublecircle"];
+  2 [label="2", shape="circle"];
+  3 [label="3", shape="doublecircle"];
+  4 [label="4", shape="circle"];
+  5 [label="5", shape="doublecircle"];
+  6 [label="6", shape="circle"];
+  7 [label="7", shape="doublecircle"];
+  8 [label="8", shape="circle"];
+  9 [label="9", shape="doublecircle"];
+}
+
+Tests
+=====
+Input:
+[a-zA-Z]
+[\n \] \[]
+
+
+Output:
+OBRACKET [
+CLASS_CHAR a
+CLASS_DASH -
+CLASS_CHAR z
+CLASS_CHAR A
+CLASS_DASH -
+CLASS_CHAR Z
+CBRACKET ]
+OBRACKET [
+CLASS_CHAR \n
+CLASS_CHAR  
+CLASS_CHAR \]
+CLASS_CHAR  
+CLASS_CHAR \[
+CBRACKET ]
+
+Input:
+[a-f
+]
+
+
+Output:
+OBRACKET [
+CLASS_CHAR a
+CLASS_DASH -
+expr:1:5: unexpected character: 
+
+expr:2:1: unexpected character: ]
+Errors occurred.
+
+Input:
+"foo"
+"Hello\n \"Bob\" \u01f3"
+
+
+Output:
+STRING "foo"
+STRING "Hello\n \"Bob\" \u01f3"
+
+Input:
+"\u012"
+
+
+Output:
+expr:1:1: unexpected character: "
+Errors occurred.
+
+Input:
+[a-z]
+"foo"
+[0]
+"bar"
+
+
+Output:
+OBRACKET [
+CLASS_CHAR a
+CLASS_DASH -
+CLASS_CHAR z
+CBRACKET ]
+STRING "foo"
+OBRACKET [
+CLASS_CHAR 0
+CBRACKET ]
+STRING "bar"
+
+Input:
+10 - 20
+[10-20]
+10 + 20
+
+
+Output:
+NUM 10
+SUB -
+NUM 20
+OBRACKET [
+CLASS_CHAR 1
+CLASS_CHAR 0
+CLASS_DASH -
+CLASS_CHAR 2
+CLASS_CHAR 0
+CBRACKET ]
+NUM 10
+ADD +
+NUM 20
+

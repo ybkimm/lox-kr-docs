@@ -3,6 +3,14 @@ sources:
     data: |
       @lexer
 
+      @macro HEX_CHAR = [0-9a-fA-F] ;
+
+      NUM = [0-9]+ ;
+      ADD = '+'    ;
+      SUB = '-'    ;
+
+      @frag [ \r\n\t]+  @skip ;
+
       OBRACKET = '[' @push_mode(CharClass) ;
       @mode CharClass {
         CBRACKET   = ']' @pop_mode ;
@@ -10,17 +18,27 @@ sources:
         CLASS_CHAR = '\\'([nrt\\-] | ']' | '[') | ~[\r\n\\] ;
       }
 
-      @frag [ \r\n\t]+  @skip ;
+      @frag '"' @push_mode(StringLiteral) ;
+      @mode StringLiteral {
+        STRING = '"' @pop_mode ;
+        @frag '\\' [nrt"] ;
+        @frag '\\u' HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR ;
+        @frag ~[\r\n] ;
+      }
 
       @parser
 
       @start
       S = token* ;
 
-      token = OBRACKET 
+      token = NUM
+            | ADD
+            | SUB
+            | OBRACKET 
             | CBRACKET
             | CLASS_DASH
             | CLASS_CHAR
+            | STRING
             ;
 
   - name: parser.go
@@ -96,4 +114,22 @@ inputs:
   - |
     [a-f
     ]
+
+  - |
+    "foo"
+    "Hello\n \"Bob\" \u01f3"
+
+  - |
+    "\u012"
+
+  - |
+    [a-z]
+    "foo"
+    [0]
+    "bar"
+
+  - |
+    10 - 20
+    [10-20]
+    10 + 20
 

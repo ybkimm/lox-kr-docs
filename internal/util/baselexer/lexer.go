@@ -102,7 +102,10 @@ func (l *Lexer) ReadToken() (Token, int) {
 		case 2: // discard
 			l.start = -1
 
-		case 3: // EOF
+		case 3: // try again
+			// fallthrough
+
+		case 4: // EOF
 			t := Token{
 				Type: EOF,
 				Pos:  l.pos,
