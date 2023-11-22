@@ -69,16 +69,20 @@ func (l *_LexerStateMachine) PushRune(r rune) int {
 	i++
 	end := i + count
 
-	for ; i < end; i += 4 {
+	gotoEnd := i + int(l.mode[i])* 3
+	i++
+	for ; i < gotoEnd; i += 3 {
+		if r >= rune(l.mode[i]) &&
+			r <= rune(l.mode[i+1]) {
+			l.state = int(l.mode[i+2])
+			return _lexerConsume
+		}
+	}
+
+	for ; i < end; i += 2 {
 		switch l.mode[i] {
-		case 0: // Goto
-			if r >= rune(l.mode[i+1]) &&
-				r <= rune(l.mode[i+2]) {
-				l.state = int(l.mode[i+3])
-				return _lexerConsume
-			}
 		case 3: // Accept
-			l.token = int(l.mode[i+3])
+			l.token = int(l.mode[i+1])
 			l.state = 0
 			return _lexerAccept
 		case 4: // Discard
@@ -87,8 +91,6 @@ func (l *_LexerStateMachine) PushRune(r rune) int {
 		case 5: // Accum
 			l.state = 0
 			return _lexerConsume
-		default:
-			panic("not-reached")
 		}
 	}
 
@@ -133,26 +135,29 @@ func (c *context) EmitLexer() bool {
 		table := newTable[uint32]()
 		for _, state := range m.DFA.States {
 			var row []uint32
-			// Goto/Consume (0) actions.
+			actions := state.Data.(*mode.Actions)
+
+			row = append(row, uint32(state.Transitions.Len()))
 			state.Transitions.ForEach(func(eventRaw any, toState *dfa.State) {
 				event := eventRaw.(rang3.Range)
-				row = append(row, 0, uint32(event.B), uint32(event.E), toState.ID)
+				row = append(row, uint32(event.B), uint32(event.E), toState.ID)
 			})
-			actions := state.Data.(*mode.Actions)
+
 			if actions != nil {
 				for _, action := range actions.Actions {
 					switch action.Type {
 					case mode.ActionAccept:
-						row = append(row, 3, 0, 0, uint32(action.Terminal))
+						row = append(row, 3, uint32(action.Terminal))
 					case mode.ActionDiscard:
-						row = append(row, 4, 0, 0, 0)
+						row = append(row, 4, 0)
 					case mode.ActionAccum:
-						row = append(row, 5, 0, 0, 0)
+						row = append(row, 5, 0)
 					default:
 						panic("unreachable")
 					}
 				}
 			}
+
 			assert.True(len(row) > 0)
 			table.AddRow(int(state.ID), row)
 		}

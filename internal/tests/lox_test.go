@@ -64,10 +64,6 @@ func TestLox(t *testing.T) {
 			}
 
 			resBuf := new(strings.Builder)
-			defer func() {
-				baseline.Assert(t, resBuf.String())
-			}()
-
 			fset := gotoken.NewFileSet()
 			errs := errlogger.New()
 			ok := codegen2.Generate(&codegen2.Config{
@@ -102,6 +98,8 @@ func TestLox(t *testing.T) {
 				resBuf.Write(out)
 				fmt.Fprintln(resBuf, "")
 			}
+
+			baseline.Assert(t, resBuf.String())
 		})
 	}
 }
