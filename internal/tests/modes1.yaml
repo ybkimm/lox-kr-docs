@@ -1,0 +1,99 @@
+sources:
+  - name: modes.lox
+    data: |
+      @lexer
+
+      OBRACKET = '[' @push_mode(CharClass) ;
+      @mode CharClass {
+        CBRACKET   = ']' @pop_mode ;
+        CLASS_DASH = '-' ; 
+        CLASS_CHAR = '\\'([nrt\\-] | ']' | '[') | ~[\r\n\\] ;
+      }
+
+      @frag [ \r\n\t]+  @skip ;
+
+      @parser
+
+      @start
+      S = token* ;
+
+      token = OBRACKET 
+            | CBRACKET
+            | CLASS_DASH
+            | CLASS_CHAR
+            ;
+
+  - name: parser.go
+    data: |
+      package main
+
+      import (
+        gotoken "go/token"
+        "io"
+        "os"
+        "fmt"
+
+        "github.com/dcaiafa/lox/internal/errlogger"
+        "github.com/dcaiafa/lox/internal/util/baselexer"
+      )
+
+      type Token = baselexer.Token
+
+      func main() {
+        input, err := io.ReadAll(os.Stdin)
+        if err != nil {
+          panic(err)
+        }
+
+        fset := gotoken.NewFileSet()
+        file := fset.AddFile("expr", -1, len(input))
+        errs := errlogger.New()
+
+        onError := func(l *baselexer.Lexer) {
+          errs.Errorf(file.Position(l.Pos()), "unexpected character: %c", l.Peek())
+        }
+
+        var parser parser
+        parser.errs = errs
+        parser.fset = fset
+        lex := baselexer.New(new(_LexerStateMachine), onError, file, input)
+        _ = parser.parse(lex)
+
+        if errs.HasError() {
+          fmt.Println("Errors occurred.")
+          return
+        }
+      }
+
+      type parser struct {
+        lox
+        fset   *gotoken.FileSet
+        errs   *errlogger.ErrLogger
+      }
+
+      func (p *parser) on_S(tokens []Token) any {
+        return nil
+      }
+
+      func (p *parser) on_token(t Token) Token {
+        fmt.Println(_TokenToString(t.Type), string(t.Str))
+        return t
+      }
+
+      func (p *parser) onError() {
+        if p.errorToken().Type != ERROR {
+          p.errs.Errorf(
+            p.fset.Position(p.errorToken().Pos),
+            "unexpected %v", _TokenToString(p.errorToken().Type))
+        }
+      }
+
+inputs:
+  - |
+    [a-zA-Z]
+    [\n \] \[]
+
+  - |
+    [a-f
+    ]
+

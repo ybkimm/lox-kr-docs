@@ -45,6 +45,14 @@ var _lexerMode{{mode.Index}} = []uint32 {
 
 {{ end }}
 
+
+var _lexerModes = [][]uint32 {
+{{ range _, mode := modes() }}
+	_lexerMode{{mode.Index}},
+{{ end }}
+}
+
+
 const (
 	_lexerConsume  = 0
 	_lexerAccept   = 1
@@ -57,6 +65,7 @@ type _LexerStateMachine struct {
 	token int
 	state int
 	mode  []uint32
+	modeStack _Stack[[]uint32]
 }
 
 func (l *_LexerStateMachine) PushRune(r rune) int {
@@ -64,9 +73,11 @@ func (l *_LexerStateMachine) PushRune(r rune) int {
 		l.mode = _lexerMode0
 	}
 
+	mode := l.mode
+
 	// Find the table row corresponding to state.
-	i := int(l.mode[int(l.state)])
-	count := int(l.mode[i])
+	i := int(mode[int(l.state)])
+	count := int(mode[i])
 	i++
 	end := i + count
 
@@ -79,28 +90,28 @@ func (l *_LexerStateMachine) PushRune(r rune) int {
 	//     gotoState  uint32
 	//   }
 	//   [actionCount]struct {
-  //     actionType  uint32
+	//     actionType  uint32
 	//     actionParam uint32
 	//   }
 	//
 	// Where 'actionCount' is determined by the amount of uint32 left in the row.
-  
-	gotoN := int(l.mode[i])
+
+	gotoN := int(mode[i])
 	i++
 
 	// Use binary-search to find the next state.
 	b := 0
 	e := gotoN
 	for b < e {
-		j := b + (e - b) / 2
-		k := i + j * 3
+		j := b + (e-b)/2
+		k := i + j*3
 		switch {
-		case r >= rune(l.mode[k]) && r <= rune(l.mode[k + 1]):
-			l.state = int(l.mode[k + 2])
+		case r >= rune(mode[k]) && r <= rune(mode[k+1]):
+			l.state = int(mode[k+2])
 			return _lexerConsume
-		case r < rune(l.mode[k]):
+		case r < rune(mode[k]):
 			e = j
-		case r > rune(l.mode[k+1]):
+		case r > rune(mode[k+1]):
 			b = j + 1
 		default:
 			panic("not reached")
@@ -111,9 +122,16 @@ func (l *_LexerStateMachine) PushRune(r rune) int {
 	i += gotoN * 3
 
 	for ; i < end; i += 2 {
-		switch l.mode[i] {
+		switch mode[i] {
+		case 1: // PushMode
+			modeIndex := int(mode[i+1])
+			l.modeStack.Push(mode)
+			l.mode = _lexerModes[modeIndex]
+		case 2: // PopMode
+			l.mode = l.modeStack.Peek(0)
+			l.modeStack.Pop(1)
 		case 3: // Accept
-			l.token = int(l.mode[i+1])
+			l.token = int(mode[i+1])
 			l.state = 0
 			return _lexerAccept
 		case 4: // Discard
@@ -129,8 +147,7 @@ func (l *_LexerStateMachine) PushRune(r rune) int {
 		return _lexerEOF
 	}
 
-	return _lexerError
-}
+	return _lexerError}
 
 func (l *_LexerStateMachine) Reset() {
 	l.mode = nil
@@ -184,6 +201,12 @@ func (c *context) EmitLexer() bool {
 			if actions != nil {
 				for _, action := range actions.Actions {
 					switch action.Type {
+					case mode.ActionPushMode:
+						mode := c.LexerModes[action.Mode]
+						assert.True(mode != nil)
+						row = append(row, 1, uint32(mode.Index))
+					case mode.ActionPopMode:
+						row = append(row, 2, 0)
 					case mode.ActionAccept:
 						row = append(row, 3, uint32(action.Terminal))
 					case mode.ActionDiscard:
