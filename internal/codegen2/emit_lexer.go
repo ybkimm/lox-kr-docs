@@ -64,20 +64,51 @@ func (l *_LexerStateMachine) PushRune(r rune) int {
 		l.mode = _lexerMode0
 	}
 
+	// Find the table row corresponding to state.
 	i := int(l.mode[int(l.state)])
 	count := int(l.mode[i])
 	i++
 	end := i + count
 
-	gotoEnd := i + int(l.mode[i])* 3
+	// The format of the row is as follows:
+	//
+	//   gotoCount uint32
+	//   [gotoCount]struct{
+	//     rangeBegin uint32
+	//     rangeEnd   uint32
+	//     gotoState  uint32
+	//   }
+	//   [actionCount]struct {
+  //     actionType  uint32
+	//     actionParam uint32
+	//   }
+	//
+	// Where 'actionCount' is determined by the amount of uint32 left in the row.
+  
+	gotoN := int(l.mode[i])
 	i++
-	for ; i < gotoEnd; i += 3 {
-		if r >= rune(l.mode[i]) &&
-			r <= rune(l.mode[i+1]) {
-			l.state = int(l.mode[i+2])
+
+	// Use binary-search to find the next state.
+	b := 0
+	e := gotoN
+	for b < e {
+		j := b + (e - b) / 2
+		k := i + j * 3
+		switch {
+		case r >= rune(l.mode[k]) && r <= rune(l.mode[k + 1]):
+			l.state = int(l.mode[k + 2])
 			return _lexerConsume
+		case r < rune(l.mode[k]):
+			e = j
+		case r > rune(l.mode[k+1]):
+			b = j + 1
+		default:
+			panic("not reached")
 		}
 	}
+
+	// Move 'i' to the beginning of the actions section.
+	i += gotoN * 3
 
 	for ; i < end; i += 2 {
 		switch l.mode[i] {
@@ -138,10 +169,17 @@ func (c *context) EmitLexer() bool {
 			actions := state.Data.(*mode.Actions)
 
 			row = append(row, uint32(state.Transitions.Len()))
+			inputs := make([]rang3.Range, 0, state.Transitions.Len())
 			state.Transitions.ForEach(func(eventRaw any, toState *dfa.State) {
-				event := eventRaw.(rang3.Range)
-				row = append(row, uint32(event.B), uint32(event.E), toState.ID)
+				inputs = append(inputs, eventRaw.(rang3.Range))
 			})
+			slices.SortFunc(inputs, rang3.Compare)
+
+			for _, input := range inputs {
+				toState, ok := state.Transitions.Get(input)
+				assert.True(ok)
+				row = append(row, uint32(input.B), uint32(input.E), toState.ID)
+			}
 
 			if actions != nil {
 				for _, action := range actions.Actions {
