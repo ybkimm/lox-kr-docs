@@ -9,7 +9,7 @@ sources:
       ADD = '+'    ;
       SUB = '-'    ;
 
-      @frag [ \r\n\t]+  @skip ;
+      @frag [ \r\n\t]+  @discard ;
 
       OBRACKET = '[' @push_mode(CharClass) ;
       @mode CharClass {
@@ -65,7 +65,7 @@ sources:
 
         fset := gotoken.NewFileSet()
         file := fset.AddFile("expr", -1, len(input))
-        errs := errlogger.New()
+        errs := errlogger.New(os.Stderr)
 
         onError := func(l *baselexer.Lexer) {
           errs.Errorf(file.Position(l.Pos()), "unexpected character: %c", l.Peek())

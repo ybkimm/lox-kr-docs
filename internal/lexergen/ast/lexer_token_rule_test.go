@@ -12,7 +12,7 @@ func TestLexerTokenRule(t *testing.T) {
 	t.Run("cant-skip", func(t *testing.T) {
 		spec, ctx := parse(t, `
 @lexer
-FOO = 'foo' @skip ;
+FOO = 'foo' @discard ;
 `)
 		ctx.Analyze(spec, ast.AllPasses)
 		testutil.RequireTrue(t, ctx.Errs.HasError())

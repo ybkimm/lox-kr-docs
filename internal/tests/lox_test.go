@@ -64,6 +64,7 @@ func TestLox(t *testing.T) {
 			}
 
 			resBuf := new(strings.Builder)
+
 			fset := gotoken.NewFileSet()
 			errs := errlogger.New(resBuf)
 			ok := codegen2.Generate(&codegen2.Config{
@@ -75,6 +76,7 @@ func TestLox(t *testing.T) {
 
 			if !ok {
 				fmt.Fprintln(resBuf, "Failed to generate")
+				baseline.Assert(t, resBuf.String())
 				return
 			}
 

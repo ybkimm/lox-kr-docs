@@ -10,7 +10,7 @@ POW = '^' ;
 O_PAREN = '(' ;
 C_PAREN = ')' ;
 
-@frag ' '+  @skip ;
+@frag ' '+  @discard ;
 
 @parser
 

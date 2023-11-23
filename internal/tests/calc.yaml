@@ -13,7 +13,7 @@ sources:
       O_PAREN = '(' ;
       C_PAREN = ')' ;
 
-      @frag [ \r\n\t]+  @skip ;
+      @frag [ \r\n\t]+  @discard ;
 
       @parser
 
@@ -58,7 +58,7 @@ sources:
 
         fset := gotoken.NewFileSet()
         file := fset.AddFile("expr", -1, len(input))
-        errs := errlogger.New()
+        errs := errlogger.New(os.Stderr)
 
         onError := func(l *baselexer.Lexer) {
           errs.Errorf(file.Position(l.Pos()), "unexpected character: %c", l.Peek())
