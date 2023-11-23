@@ -95,7 +95,7 @@ func (p *parser) on_parser_term__token(tok Token) *ast.ParserTerm {
 	case ID:
 		return &ast.ParserTerm{Name: string(tok.Str)}
 	case LITERAL:
-		return &ast.ParserTerm{Alias: unescape(tok.Str)}
+		return &ast.ParserTerm{Alias: fixLiteral(tok.Str)}
 	case ERROR_KEYWORD:
 		return &ast.ParserTerm{Type: ast.ParserTermError}
 	default:
@@ -232,7 +232,7 @@ func (p *parser) on_lexer_term__tok(tok Token) ast.LexerTerm {
 	switch tok.Type {
 	case LITERAL:
 		return &ast.LexerTermLiteral{
-			Literal: unescape(tok.Str),
+			Literal: fixLiteral(tok.Str),
 		}
 	case ID:
 		return &ast.LexerTermRef{
@@ -317,6 +317,10 @@ func (p *parser) onError() {
 	p.errs.Errorf(
 		p.file.Position(p.errorToken().Pos),
 		"unexpected %v", p.errorToken())
+}
+
+func fixLiteral(lit []byte) string {
+	return unescape(lit[1 : len(lit)-1])
 }
 
 func unescape(lit []byte) string {
