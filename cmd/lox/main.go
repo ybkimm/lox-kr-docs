@@ -22,8 +22,9 @@ func main() {
 
 func realMain() error {
 	var (
-		flagReport = flag.Bool("report", false, "")
-		flagProf   = flag.String("cpu-prof", "", "")
+		flagReport  = flag.Bool("report", false, "")
+		flagParser2 = flag.Bool("parser2", false, "")
+		flagProf    = flag.String("cpu-prof", "", "")
 	)
 
 	flag.Parse()
@@ -51,10 +52,11 @@ func realMain() error {
 	}
 
 	ok := codegen2.Generate(&codegen2.Config{
-		Fset:   fset,
-		Errs:   errs,
-		Dir:    dir,
-		Report: reportOut,
+		Fset:       fset,
+		Errs:       errs,
+		Dir:        dir,
+		Report:     reportOut,
+		UseParser2: *flagParser2,
 	})
 	if !ok {
 		return fmt.Errorf("errors ocurred")

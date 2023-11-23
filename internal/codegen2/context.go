@@ -11,6 +11,7 @@ import (
 )
 
 type context struct {
+	UseParser2    bool
 	Errs          *errlogger.ErrLogger
 	Fset          *gotoken.FileSet
 	Dir           string
