@@ -4,25 +4,29 @@ import (
 	gotoken "go/token"
 	"math"
 	"strconv"
+
+	"github.com/dcaiafa/lox/internal/util/baselexer"
 )
 
 func Eval(expr string) (float64, error) {
 	fset := gotoken.NewFileSet()
 	file := fset.AddFile("expr", -1, len(expr))
-	errLogger := &ErrLogger{
+	errs := &ErrLogger{
 		Fset: fset,
 	}
 
-	onError := func(l *Lexer) {
-		errLogger.Errorf(l.Pos(), "unexpected character: %c", l.Peek())
+	onError := func(l *baselexer.Lexer) {
+		errs.Errorf(l.Pos(), "unexpected character: %c", l.Peek())
 	}
 
 	var parser calcParser
-	parser.errLogger = errLogger
-	lex := NewLexer(new(_LexerStateMachine), onError, file, []byte(expr))
+	parser.errLogger = errs
+	lex := baselexer.New(new(_LexerStateMachine), onError, file, []byte(expr))
 	_ = parser.parse(lex)
-	return parser.result, errLogger.Err()
+	return parser.result, errs.Err()
 }
+
+type Token = baselexer.Token
 
 type calcParser struct {
 	lox
