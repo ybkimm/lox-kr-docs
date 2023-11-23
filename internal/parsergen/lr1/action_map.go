@@ -4,7 +4,7 @@ import (
 	"sort"
 
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
-	"github.com/dcaiafa/lox/internal/util/set"
+	"github.com/dcaiafa/lox/internal/base/set"
 )
 
 type symActions map[grammar.Symbol]ActionSet

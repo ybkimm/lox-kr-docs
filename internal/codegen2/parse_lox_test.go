@@ -9,7 +9,7 @@ import (
 
 	"github.com/dcaiafa/lox/internal/errlogger"
 	"github.com/dcaiafa/lox/internal/testutil"
-	"github.com/dcaiafa/lox/internal/util/baseline"
+	"github.com/dcaiafa/lox/internal/base/baseline"
 )
 
 func TestParseLox(t *testing.T) {

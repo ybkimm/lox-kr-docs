@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/dcaiafa/lox/internal/util/logger"
+	"github.com/dcaiafa/lox/internal/base/logger"
 )
 
 type ParserTable struct {

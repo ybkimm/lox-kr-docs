@@ -1,6 +1,6 @@
 package lr2
 
-import "github.com/dcaiafa/lox/internal/util/set"
+import "github.com/dcaiafa/lox/internal/base/set"
 
 // First returns the set of Terminals that could be derived first from a set of
 // symbols composed of Rules or Terminals. The Dragon Book section 4.4 has a

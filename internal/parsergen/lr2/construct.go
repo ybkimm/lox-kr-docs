@@ -3,9 +3,9 @@ package lr2
 import (
 	"slices"
 
-	"github.com/dcaiafa/lox/internal/assert"
-	"github.com/dcaiafa/lox/internal/util/array"
-	"github.com/dcaiafa/lox/internal/util/set"
+	"github.com/dcaiafa/lox/internal/base/assert"
+	"github.com/dcaiafa/lox/internal/base/array"
+	"github.com/dcaiafa/lox/internal/base/set"
 )
 
 func ConstructLALR(g *Grammar) *ParserTable {

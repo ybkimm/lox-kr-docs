@@ -8,7 +8,7 @@ import (
 
 	"github.com/dcaiafa/lox/internal/errlogger"
 	"github.com/dcaiafa/lox/internal/lexergen/ast"
-	"github.com/dcaiafa/lox/internal/util/baselexer"
+	"github.com/dcaiafa/lox/internal/base/baselexer"
 )
 
 type Token = baselexer.Token

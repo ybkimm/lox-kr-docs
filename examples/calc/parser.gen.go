@@ -2,7 +2,7 @@ package main
 
 import (
   _i0 "errors"
-  _i1 "github.com/dcaiafa/lox/internal/util/baselexer"
+  _i1 "github.com/dcaiafa/lox/internal/base/baselexer"
 )
 
 var _LHS = []int32 {

@@ -6,7 +6,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/dcaiafa/lox/internal/util/set"
+	"github.com/dcaiafa/lox/internal/base/set"
 )
 
 func TestRangeContains(t *testing.T) {

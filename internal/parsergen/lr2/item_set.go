@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"strings"
 
-	"github.com/dcaiafa/lox/internal/util/set"
+	"github.com/dcaiafa/lox/internal/base/set"
 )
 
 type ItemSet struct {

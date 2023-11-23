@@ -9,9 +9,9 @@ import (
 	"sort"
 
 	"github.com/dcaiafa/lox/internal/lexergen/nfa"
-	"github.com/dcaiafa/lox/internal/util/set"
-	"github.com/dcaiafa/lox/internal/util/stablemap"
-	"github.com/dcaiafa/lox/internal/util/stack"
+	"github.com/dcaiafa/lox/internal/base/set"
+	"github.com/dcaiafa/lox/internal/base/stablemap"
+	"github.com/dcaiafa/lox/internal/base/stack"
 )
 
 type DFA struct {

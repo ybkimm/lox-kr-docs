@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/dcaiafa/lox/internal/errlogger"
-	"github.com/dcaiafa/lox/internal/util/set"
+	"github.com/dcaiafa/lox/internal/base/set"
 )
 
 func TestFirst1(t *testing.T) {

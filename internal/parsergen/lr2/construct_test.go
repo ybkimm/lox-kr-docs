@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dcaiafa/lox/internal/util/baseline"
+	"github.com/dcaiafa/lox/internal/base/baseline"
 )
 
 func runConstructTest(t *testing.T, name string, g *Grammar) {

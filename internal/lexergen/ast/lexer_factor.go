@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"github.com/dcaiafa/lox/internal/assert"
+	"github.com/dcaiafa/lox/internal/base/assert"
 	"github.com/dcaiafa/lox/internal/lexergen/mode"
 	"github.com/dcaiafa/lox/internal/lexergen/nfa"
 )

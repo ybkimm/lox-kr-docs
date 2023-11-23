@@ -3,7 +3,7 @@ package lr2
 import (
 	"testing"
 
-	"github.com/dcaiafa/lox/internal/util/set"
+	"github.com/dcaiafa/lox/internal/base/set"
 )
 
 func TestFirst(t *testing.T) {

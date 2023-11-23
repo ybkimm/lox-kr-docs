@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
-	"github.com/dcaiafa/lox/internal/util/set"
+	"github.com/dcaiafa/lox/internal/base/set"
 )
 
 type ItemSet struct {

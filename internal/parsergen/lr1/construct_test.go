@@ -8,7 +8,7 @@ import (
 
 	"github.com/dcaiafa/lox/internal/errlogger"
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
-	"github.com/dcaiafa/lox/internal/util/baseline"
+	"github.com/dcaiafa/lox/internal/base/baseline"
 )
 
 func runAllConstructTest(t *testing.T, name string, g *grammar.Grammar) {

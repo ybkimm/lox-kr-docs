@@ -4,7 +4,7 @@ import (
 	"cmp"
 	"slices"
 
-	"github.com/dcaiafa/lox/internal/util/set"
+	"github.com/dcaiafa/lox/internal/base/set"
 )
 
 // Next returns the list of unique symbols on the right side of the dot in Items

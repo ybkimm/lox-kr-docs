@@ -3,9 +3,9 @@ package lr1
 import (
 	"sort"
 
-	"github.com/dcaiafa/lox/internal/assert"
+	"github.com/dcaiafa/lox/internal/base/assert"
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
-	"github.com/dcaiafa/lox/internal/util/set"
+	"github.com/dcaiafa/lox/internal/base/set"
 )
 
 func ConstructLR(g *grammar.AugmentedGrammar) *ParserTable {

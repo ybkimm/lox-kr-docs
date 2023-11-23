@@ -5,7 +5,7 @@ import (
 	"io"
 
 	"github.com/dcaiafa/lox/internal/errlogger"
-	"github.com/dcaiafa/lox/internal/util/set"
+	"github.com/dcaiafa/lox/internal/base/set"
 )
 
 var epsilon = &Terminal{Name: "ε"}

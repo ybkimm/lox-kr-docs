@@ -12,7 +12,7 @@ import (
 
 	"github.com/dcaiafa/lox/internal/codegen2"
 	"github.com/dcaiafa/lox/internal/errlogger"
-	"github.com/dcaiafa/lox/internal/util/baseline"
+	"github.com/dcaiafa/lox/internal/base/baseline"
 	"gopkg.in/yaml.v3"
 )
 

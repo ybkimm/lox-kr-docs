@@ -8,8 +8,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/dcaiafa/lox/internal/assert"
-	"github.com/dcaiafa/lox/internal/util/logger"
+	"github.com/dcaiafa/lox/internal/base/assert"
+	"github.com/dcaiafa/lox/internal/base/logger"
 )
 
 const (

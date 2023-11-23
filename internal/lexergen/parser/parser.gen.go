@@ -3,7 +3,7 @@ package parser
 import (
   _i0 "errors"
   _i1 "github.com/dcaiafa/lox/internal/lexergen/ast"
-  _i2 "github.com/dcaiafa/lox/internal/util/baselexer"
+  _i2 "github.com/dcaiafa/lox/internal/base/baselexer"
 )
 
 var _LHS = []int32 {

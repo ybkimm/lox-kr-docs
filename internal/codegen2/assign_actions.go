@@ -4,9 +4,9 @@ import (
 	gotypes "go/types"
 	"strings"
 
-	"github.com/dcaiafa/lox/internal/assert"
+	"github.com/dcaiafa/lox/internal/base/assert"
 	"github.com/dcaiafa/lox/internal/parsergen/lr2"
-	"github.com/dcaiafa/lox/internal/util/set"
+	"github.com/dcaiafa/lox/internal/base/set"
 )
 
 func (c *context) AssignActions() bool {

@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/CloudyKit/jet/v6"
-	"github.com/dcaiafa/lox/internal/assert"
+	"github.com/dcaiafa/lox/internal/base/assert"
 	"github.com/dcaiafa/lox/internal/lexergen/dfa"
 	"github.com/dcaiafa/lox/internal/lexergen/mode"
 	"github.com/dcaiafa/lox/internal/lexergen/rang3"

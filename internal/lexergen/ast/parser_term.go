@@ -3,7 +3,7 @@ package ast
 import (
 	"fmt"
 
-	"github.com/dcaiafa/lox/internal/assert"
+	"github.com/dcaiafa/lox/internal/base/assert"
 	"github.com/dcaiafa/lox/internal/parsergen/lr2"
 )
 

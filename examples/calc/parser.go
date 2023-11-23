@@ -5,7 +5,7 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/dcaiafa/lox/internal/util/baselexer"
+	"github.com/dcaiafa/lox/internal/base/baselexer"
 )
 
 func Eval(expr string) (float64, error) {

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/dcaiafa/lox/internal/util/stack"
+	"github.com/dcaiafa/lox/internal/base/stack"
 )
 
 type Range struct {

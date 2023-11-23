@@ -6,7 +6,7 @@ import (
 	gotypes "go/types"
 	"path/filepath"
 
-	"github.com/dcaiafa/lox/internal/assert"
+	"github.com/dcaiafa/lox/internal/base/assert"
 	"golang.org/x/tools/go/packages"
 )
 

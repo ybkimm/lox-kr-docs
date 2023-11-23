@@ -3,15 +3,15 @@ package mode
 import (
 	gotoken "go/token"
 
-	"github.com/dcaiafa/lox/internal/assert"
+	"github.com/dcaiafa/lox/internal/base/assert"
 	"github.com/dcaiafa/lox/internal/errlogger"
 	"github.com/dcaiafa/lox/internal/lexergen/dfa"
 	"github.com/dcaiafa/lox/internal/lexergen/nfa"
 	"github.com/dcaiafa/lox/internal/lexergen/rang3"
-	"github.com/dcaiafa/lox/internal/util/array"
-	"github.com/dcaiafa/lox/internal/util/set"
-	"github.com/dcaiafa/lox/internal/util/stablemap"
-	"github.com/dcaiafa/lox/internal/util/stack"
+	"github.com/dcaiafa/lox/internal/base/array"
+	"github.com/dcaiafa/lox/internal/base/set"
+	"github.com/dcaiafa/lox/internal/base/stablemap"
+	"github.com/dcaiafa/lox/internal/base/stack"
 )
 
 type Mode struct {

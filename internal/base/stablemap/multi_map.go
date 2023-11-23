@@ -1,6 +1,6 @@
 package stablemap
 
-import "github.com/dcaiafa/lox/internal/util/array"
+import "github.com/dcaiafa/lox/internal/base/array"
 
 type MultiMap[K comparable, V any] struct {
 	Map[K, *array.Array[V]]

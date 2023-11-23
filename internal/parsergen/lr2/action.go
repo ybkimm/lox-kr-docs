@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/dcaiafa/lox/internal/util/array"
+	"github.com/dcaiafa/lox/internal/base/array"
 )
 
 type ActionType int

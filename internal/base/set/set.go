@@ -1,7 +1,7 @@
 package set
 
 import (
-	"github.com/dcaiafa/lox/internal/util/stablemap"
+	"github.com/dcaiafa/lox/internal/base/stablemap"
 )
 
 type Set[T comparable] struct {

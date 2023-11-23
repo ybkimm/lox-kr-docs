@@ -8,7 +8,7 @@ import (
 	"github.com/dcaiafa/lox/internal/lexergen/nfa"
 	"github.com/dcaiafa/lox/internal/lexergen/rang3"
 	"github.com/dcaiafa/lox/internal/testutil"
-	"github.com/dcaiafa/lox/internal/util/set"
+	"github.com/dcaiafa/lox/internal/base/set"
 )
 
 func requireEqual[T any](t *testing.T, actual, expected T) {
