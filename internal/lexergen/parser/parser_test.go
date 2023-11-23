@@ -22,7 +22,7 @@ CHAR = '\'' (ESCAPE_CHAR | ~['\r\n\\]+) '\'' ;
 @macro ID_CHAR = [a-zA-Z_-] ;
 @macro ID_CHAR2 = [\u0041-\u005A\u0061-\u007a\u002d\u005f] ;
 
-COMMENT = '#' ~[\n]* @skip ;
+COMMENT = '#' ~[\n]* @discard ;
 WS      = [ \t] ;
 
 OCURLY = '{'   @push_mode(DEFAULT) ;

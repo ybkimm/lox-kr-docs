@@ -28,7 +28,7 @@ ONE_OR_MORE_NG   = '+?' ;
 PARSER         = '@parser'    ;
 LEXER          = '@lexer'     ;
 START          = '@start'     ;
-SKIP           = '@skip'      ;
+DISCARD        = '@discard'   ;
 MACRO          = '@macro'     ;
 FRAG           = '@frag'      ;
 MODE           = '@mode'      ;
@@ -38,6 +38,13 @@ ERROR_KEYWORD  = '@error'     ;
 LEFT           = '@left'      ;
 LIST           = '@list'      ;
 RIGHT          = '@right'     ;
+
+// KEYWORD is a catch-all for keyword errors. Normally, keywords are a subset
+// of identifiers, but in Lox they start with @. Without KEYWORD, a typo like
+// @frog would result in an unhelpful lexer error like "invalid character 'o'".
+// N.B.: KEYWORD must be defined after all the actual keywords so they take
+// priority.
+KEYWORD = '@' [a-z_]+ ;
 
 ID = [A-Za-z] [A-Za-z0-9_]* ;
 
@@ -68,10 +75,10 @@ OBRACKET = '[' @push_mode(ClassChar) ;
 }
 
 // Comments
-@frag '//' ~[\n]*  @skip ;
+@frag '//' ~[\n]*  @discard ;
 
 // Whitespace
-@frag [\r\n\t ]+  @skip ;
+@frag [\r\n\t ]+  @discard ;
 
 @parser 
 
@@ -127,9 +134,9 @@ char_class = '~'? '[' char_class_item+ ']' ;
 
 char_class_item = CLASS_CHAR | '-' ;
 
-action           = action_skip
+action           = action_discard
                  | action_push_mode
                  | action_pop_mode ;
-action_skip      = SKIP ;
-action_push_mode = PUSH_MODE '(' ID ')' ;
-action_pop_mode  = POP_MODE ;
+action_discard   = '@discard' ;
+action_push_mode = '@push_mode' '(' ID ')' ;
+action_pop_mode  = '@pop_mode' ;

@@ -288,7 +288,7 @@ func (p *parser) on_action(action ast.Action) ast.Action {
 	return action
 }
 
-func (p *parser) on_action_skip(_ Token) *ast.ActionSkip {
+func (p *parser) on_action_discard(_ Token) *ast.ActionSkip {
 	return &ast.ActionSkip{}
 }
 
@@ -314,9 +314,10 @@ func (p *parser) onReduce(r any, begin, end Token) {
 }
 
 func (p *parser) onError() {
+	tok := p.errorToken()
 	p.errs.Errorf(
-		p.file.Position(p.errorToken().Pos),
-		"unexpected %v", p.errorToken())
+		p.file.Position(tok.Pos),
+		"unexpected %v %q", _TokenToString(tok.Type), string(tok.Str))
 }
 
 func fixLiteral(lit []byte) string {

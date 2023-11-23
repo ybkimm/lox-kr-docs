@@ -21,7 +21,7 @@ const (
 	PARSER int = 16
 	LEXER int = 17
 	START int = 18
-	SKIP int = 19
+	DISCARD int = 19
 	MACRO int = 20
 	FRAG int = 21
 	MODE int = 22
@@ -31,13 +31,14 @@ const (
 	LEFT int = 26
 	LIST int = 27
 	RIGHT int = 28
-	ID int = 29
-	NUM int = 30
-	LITERAL int = 31
-	OBRACKET int = 32
-	CBRACKET int = 33
-	CLASS_DASH int = 34
-	CLASS_CHAR int = 35
+	KEYWORD int = 29
+	ID int = 30
+	NUM int = 31
+	LITERAL int = 32
+	OBRACKET int = 33
+	CBRACKET int = 34
+	CLASS_DASH int = 35
+	CLASS_CHAR int = 36
 )
 
 func _TokenToString(t int) string {
@@ -80,8 +81,8 @@ func _TokenToString(t int) string {
 		return "LEXER"
 	case START: 
 		return "START"
-	case SKIP: 
-		return "SKIP"
+	case DISCARD: 
+		return "DISCARD"
 	case MACRO: 
 		return "MACRO"
 	case FRAG: 
@@ -100,6 +101,8 @@ func _TokenToString(t int) string {
 		return "LIST"
 	case RIGHT: 
 		return "RIGHT"
+	case KEYWORD: 
+		return "KEYWORD"
 	case ID: 
 		return "ID"
 	case NUM: 
