@@ -3,11 +3,15 @@ package parser
 import (
 	gotoken "go/token"
 	"strconv"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/dcaiafa/lox/internal/errlogger"
 	"github.com/dcaiafa/lox/internal/lexergen/ast"
+	"github.com/dcaiafa/lox/internal/util/baselexer"
 )
+
+type Token = baselexer.Token
 
 type parser struct {
 	lox
@@ -17,7 +21,12 @@ type parser struct {
 }
 
 func Parse(file *gotoken.File, data []byte, errs *errlogger.ErrLogger) *ast.Unit {
-	lex := newLex(file, data, errs)
+	onError := func(l *baselexer.Lexer) {
+		errs.Errorf(file.Position(l.Pos()), "unexpected character: %c", l.Peek())
+	}
+
+	lex := baselexer.New(new(_LexerStateMachine), onError, file, data)
+
 	p := &parser{
 		file: file,
 		errs: errs,
@@ -59,7 +68,7 @@ func (p *parser) on_parser_statement(s ast.Statement) ast.Statement {
 func (p *parser) on_parser_rule(start Token, name Token, _ Token, prods []*ast.ParserProd, _ Token) *ast.ParserRule {
 	return &ast.ParserRule{
 		IsStart: start.Type == START,
-		Name:    name.Str,
+		Name:    string(name.Str),
 		Prods:   prods,
 	}
 }
@@ -84,9 +93,9 @@ func (p *parser) on_parser_term_card(term *ast.ParserTerm, typ ast.ParserTermTyp
 func (p *parser) on_parser_term__token(tok Token) *ast.ParserTerm {
 	switch tok.Type {
 	case ID:
-		return &ast.ParserTerm{Name: tok.Str}
+		return &ast.ParserTerm{Name: string(tok.Str)}
 	case LITERAL:
-		return &ast.ParserTerm{Alias: tok.Str}
+		return &ast.ParserTerm{Alias: fixLiteral(tok.Str)}
 	case ERROR_KEYWORD:
 		return &ast.ParserTerm{Type: ast.ParserTermError}
 	default:
@@ -132,7 +141,7 @@ func (p *parser) on_parser_qualif(assoc Token, _ Token, prec Token, _ Token) *as
 	}
 
 	var err error
-	q.Precedence, err = strconv.Atoi(prec.Str)
+	q.Precedence, err = strconv.Atoi(string(prec.Str))
 	if err != nil {
 		panic(err)
 	}
@@ -160,14 +169,14 @@ func (p *parser) on_lexer_rule(r ast.Statement) ast.Statement {
 
 func (p *parser) on_mode(_ Token, name Token, _ Token, rules []ast.Statement, _ Token) *ast.Mode {
 	return &ast.Mode{
-		Name:  name.Str,
+		Name:  string(name.Str),
 		Rules: rules,
 	}
 }
 
 func (p *parser) on_token_rule(id Token, _ Token, expr *ast.LexerExpr, actions []ast.Action, _ Token) *ast.TokenRule {
 	return &ast.TokenRule{
-		Name:    id.Str,
+		Name:    string(id.Str),
 		Expr:    expr,
 		Actions: actions,
 	}
@@ -182,7 +191,7 @@ func (p *parser) on_frag_rule(_ Token, expr *ast.LexerExpr, actions []ast.Action
 
 func (p *parser) on_macro_rule(_ Token, name Token, _ Token, expr *ast.LexerExpr, _ Token) *ast.MacroRule {
 	return &ast.MacroRule{
-		Name: name.Str,
+		Name: string(name.Str),
 		Expr: expr,
 	}
 }
@@ -223,11 +232,11 @@ func (p *parser) on_lexer_term__tok(tok Token) ast.LexerTerm {
 	switch tok.Type {
 	case LITERAL:
 		return &ast.LexerTermLiteral{
-			Literal: tok.Str,
+			Literal: fixLiteral(tok.Str),
 		}
 	case ID:
 		return &ast.LexerTermRef{
-			Ref: tok.Str,
+			Ref: string(tok.Str),
 		}
 	default:
 		panic("unreachable")
@@ -246,7 +255,7 @@ func (p *parser) on_char_class(neg Token, _ Token, chars []Token, _ Token) *ast.
 	items := make([]*ast.CharClassItem, 0, len(chars))
 
 	toRune := func(t Token) rune {
-		r, _ := utf8.DecodeRuneInString(t.Str)
+		r, _ := utf8.DecodeRuneInString(unescape(t.Str))
 		return r
 	}
 	addItem := func(b, e Token) {
@@ -285,7 +294,7 @@ func (p *parser) on_action_skip(_ Token) *ast.ActionSkip {
 
 func (p *parser) on_action_push_mode(_, _ Token, mode Token, _ Token) *ast.ActionPushMode {
 	return &ast.ActionPushMode{
-		Mode: mode.Str,
+		Mode: string(mode.Str),
 	}
 }
 
@@ -308,4 +317,60 @@ func (p *parser) onError() {
 	p.errs.Errorf(
 		p.file.Position(p.errorToken().Pos),
 		"unexpected %v", p.errorToken())
+}
+
+func fixLiteral(lit []byte) string {
+	return unescape(lit[1 : len(lit)-1])
+}
+
+func unescape(lit []byte) string {
+	var str strings.Builder
+
+	for i := 0; i < len(lit); i++ {
+		if lit[i] == '\\' {
+			switch lit[i+1] {
+			case 'n':
+				str.WriteRune('\n')
+				i++
+			case 'r':
+				str.WriteRune('\r')
+				i++
+			case 't':
+				str.WriteRune('\t')
+				i++
+			case '\'':
+				str.WriteRune('\'')
+				i++
+			case '\\':
+				str.WriteRune('\\')
+				i++
+			case '-':
+				str.WriteRune('-')
+				i++
+			case 'x':
+				str.WriteByte(byte(hexToRune(string(lit[i+2 : i+4]))))
+				i += 3
+			case 'u':
+				str.WriteRune(hexToRune(string(lit[i+2 : i+6])))
+				i += 5
+			case 'U':
+				str.WriteRune(hexToRune(string(lit[i+2 : i+10])))
+				i += 9
+			default:
+				panic("unreachable")
+			}
+		} else {
+			str.WriteByte(lit[i])
+		}
+	}
+
+	return str.String()
+}
+
+func hexToRune(str string) rune {
+	v, err := strconv.ParseUint(string(str), 16, 32)
+	if err != nil {
+		panic(err)
+	}
+	return rune(v)
 }

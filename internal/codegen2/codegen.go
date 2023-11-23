@@ -57,20 +57,18 @@ func RuleGenerated(r *lr2.Rule) generated {
 }
 
 type Config struct {
-	Fset       *gotoken.FileSet
-	Errs       *errlogger.ErrLogger
-	Dir        string
-	Report     io.Writer
-	UseParser2 bool
+	Fset   *gotoken.FileSet
+	Errs   *errlogger.ErrLogger
+	Dir    string
+	Report io.Writer
 }
 
 func Generate(cfg *Config) bool {
 	ctx := &context{
-		Fset:       cfg.Fset,
-		Errs:       cfg.Errs,
-		Dir:        cfg.Dir,
-		Report:     cfg.Report,
-		UseParser2: cfg.UseParser2,
+		Fset:   cfg.Fset,
+		Errs:   cfg.Errs,
+		Dir:    cfg.Dir,
+		Report: cfg.Report,
 	}
 	return ctx.ParseLox() &&
 		ctx.PreParseGo() &&

@@ -13,13 +13,9 @@ SEMICOLON   = ';'  ;
 COMMA       = ','  ;
 EQ          = '='  ;
 OR          = '|'  ;
-ARROW       = '->' ;
 OCURLY      = '{'  ;
 CCURLY      = '}'  ;
-CLASS_DASH  = '-'  ;
 TILDE       ='~'   ;
-OBRACKET    = '['  ;
-CBRACKET    = ']'  ;
 OPAREN      = '('  ;
 CPAREN      = ')'  ;
 
@@ -43,15 +39,46 @@ LEFT           = '@left'      ;
 LIST           = '@list'      ;
 RIGHT          = '@right'     ;
 
-ID          = [A-Za-z] [A-Za-z0-9_]* ;
-LITERAL     = '\'' [ 
-CLASS_CHAR 
-NUM 
+ID = [A-Za-z] [A-Za-z0-9_]* ;
 
+@macro HEX_CHAR = [0-9a-fA-F] ;
 
+NUM = [0-9]+ ;
 
-spec    = section* ;
-section = parser_section | lexer_section ;
+@frag '\'' @push_mode(Literal) ;
+@mode Literal {
+  LITERAL = '\'' @pop_mode ;
+  @frag '\\' [\\'nrt] ;
+  @frag '\\x' HEX_CHAR HEX_CHAR ;
+  @frag '\\u' HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR ;
+  @frag '\\U' HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR ;
+  @frag ~[\n] ;
+}
+
+OBRACKET = '[' @push_mode(ClassChar) ;
+@mode ClassChar {
+  CBRACKET = ']' @pop_mode ;
+  CLASS_DASH = '-' ;
+  CLASS_CHAR = '\\' [\\nrt\-] 
+             | '\\x' HEX_CHAR HEX_CHAR
+             | '\\u' HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR 
+             | '\\U' HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR
+             | ~[\n-]
+             ;
+}
+
+// Comments
+@frag '//' ~[\n]*  @skip ;
+
+// Whitespace
+@frag [\r\n\t ]+  @skip ;
+
+@parser 
+
+@start spec = section* ;
+
+section = parser_section
+        | lexer_section ;
 
 // Parser
 // ======

@@ -10,7 +10,6 @@ import (
 	"github.com/dcaiafa/lox/internal/lexergen/ast"
 	"github.com/dcaiafa/lox/internal/lexergen/mode"
 	"github.com/dcaiafa/lox/internal/lexergen/parser"
-	"github.com/dcaiafa/lox/internal/lexergen/parser2"
 	"github.com/dcaiafa/lox/internal/parsergen/lr2"
 )
 
@@ -38,13 +37,7 @@ func (c *context) ParseLox() bool {
 		}
 		file := c.Fset.AddFile(loxFileName, -1, len(data))
 
-		var unit *ast.Unit
-		if c.UseParser2 {
-			unit = parser2.Parse(file, data, c.Errs)
-		} else {
-			unit = parser.Parse(file, data, c.Errs)
-		}
-
+		unit := parser.Parse(file, data, c.Errs)
 		if c.Errs.HasError() {
 			return false
 		}

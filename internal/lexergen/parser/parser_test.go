@@ -9,11 +9,12 @@ import (
 
 var testInput = `
 @lexer
+C =  '\\' ;
 
 INFO = 'info' ;
 EQ   = '==' ;
 
-CHAR = '\'' (ESCAPE_CHAR | ~['\r\n\\]+) '\'';
+CHAR = '\'' (ESCAPE_CHAR | ~['\r\n\\]+) '\'' ;
 @macro ESCAPE_CHAR = '\\' [nrt'\\] ;
 
 @macro HEX_DIGIT = [a-fA-F0-9] ;
@@ -29,7 +30,7 @@ CCURLY = '}'   @pop_mode ;
 EXEC_PREFIX = 'e\''  @push_mode(EXEC) ;
 
 @mode EXEC {
-	@frag '"'   @push_mode(EXEC_DQUOTE) ;
+	@frag '"' @push_mode(EXEC_DQUOTE) ;
 
 	EXEC_WS      = [ \t\r\n]+ ;
   EXEC_HOME    = '~' ;
@@ -48,10 +49,19 @@ EXEC_PREFIX = 'e\''  @push_mode(EXEC) ;
 func TestParser(t *testing.T) {
 	fset := gotoken.NewFileSet()
 	data := []byte(testInput)
-	file := fset.AddFile("input.loxl", -1, len(data))
+	file := fset.AddFile("input.lox", -1, len(data))
 	errs := errlogger.New()
 	Parse(file, []byte(data), errs)
 	if errs.HasError() {
 		t.Fatal("Parse failed")
+	}
+}
+
+func TestUnescape(t *testing.T) {
+	input := `abc\n\r\t\'\\\-\U00101234\u12e4\xff\x07012`
+	expect := "abc\n\r\t'\\-\U00101234\u12e4\xff\x07012"
+	output := unescape([]byte(input))
+	if output != expect {
+		t.Fatalf("expected: %q (%d); actual: %q (%d)", expect, len(expect), output, len(output))
 	}
 }
