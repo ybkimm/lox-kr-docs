@@ -9,7 +9,7 @@ import (
 
 	"github.com/dcaiafa/lox/internal/lexergen/ast"
 	"github.com/dcaiafa/lox/internal/lexergen/mode"
-	"github.com/dcaiafa/lox/internal/lexergen/parser"
+	"github.com/dcaiafa/lox/internal/parser"
 	"github.com/dcaiafa/lox/internal/parsergen/lr2"
 )
 

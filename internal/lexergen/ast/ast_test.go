@@ -7,7 +7,7 @@ import (
 
 	"github.com/dcaiafa/lox/internal/errlogger"
 	"github.com/dcaiafa/lox/internal/lexergen/ast"
-	"github.com/dcaiafa/lox/internal/lexergen/parser"
+	"github.com/dcaiafa/lox/internal/parser"
 )
 
 func requireEqualStr(t *testing.T, actual, expected string) {
