@@ -2,6 +2,7 @@ package main
 
 import (
   _i0 "errors"
+  _i1 "github.com/dcaiafa/lox/internal/util/baselexer"
 )
 
 var _LHS = []int32 {
@@ -181,44 +182,44 @@ func (p *calcParser) _Act(prod int32) any {
 			case 2:
 				return p.on_expr__binary(
 				  _cast[float64](p._sym.Peek(2)),
-				  _cast[Token](p._sym.Peek(1)),
+				  _cast[_i1.Token](p._sym.Peek(1)),
 				  _cast[float64](p._sym.Peek(0)),
 		    )
 			case 3:
 				return p.on_expr__binary(
 				  _cast[float64](p._sym.Peek(2)),
-				  _cast[Token](p._sym.Peek(1)),
+				  _cast[_i1.Token](p._sym.Peek(1)),
 				  _cast[float64](p._sym.Peek(0)),
 		    )
 			case 4:
 				return p.on_expr__binary(
 				  _cast[float64](p._sym.Peek(2)),
-				  _cast[Token](p._sym.Peek(1)),
+				  _cast[_i1.Token](p._sym.Peek(1)),
 				  _cast[float64](p._sym.Peek(0)),
 		    )
 			case 5:
 				return p.on_expr__binary(
 				  _cast[float64](p._sym.Peek(2)),
-				  _cast[Token](p._sym.Peek(1)),
+				  _cast[_i1.Token](p._sym.Peek(1)),
 				  _cast[float64](p._sym.Peek(0)),
 		    )
 			case 6:
 				return p.on_expr__binary(
 				  _cast[float64](p._sym.Peek(2)),
-				  _cast[Token](p._sym.Peek(1)),
+				  _cast[_i1.Token](p._sym.Peek(1)),
 				  _cast[float64](p._sym.Peek(0)),
 		    )
 			case 7:
 				return p.on_expr__binary(
 				  _cast[float64](p._sym.Peek(2)),
-				  _cast[Token](p._sym.Peek(1)),
+				  _cast[_i1.Token](p._sym.Peek(1)),
 				  _cast[float64](p._sym.Peek(0)),
 		    )
 			case 8:
 				return p.on_expr__paren(
-				  _cast[Token](p._sym.Peek(2)),
+				  _cast[_i1.Token](p._sym.Peek(2)),
 				  _cast[float64](p._sym.Peek(1)),
-				  _cast[Token](p._sym.Peek(0)),
+				  _cast[_i1.Token](p._sym.Peek(0)),
 		    )
 			case 9:
 				return p.on_expr__num(
@@ -226,12 +227,12 @@ func (p *calcParser) _Act(prod int32) any {
 		    )
 			case 10:
 				return p.on_num(
-				  _cast[Token](p._sym.Peek(0)),
+				  _cast[_i1.Token](p._sym.Peek(0)),
 		    )
 			case 11:
 				return p.on_num__minus(
-				  _cast[Token](p._sym.Peek(1)),
-				  _cast[Token](p._sym.Peek(0)),
+				  _cast[_i1.Token](p._sym.Peek(1)),
+				  _cast[_i1.Token](p._sym.Peek(0)),
 		    )
 	default:
 		panic("unreachable")

@@ -17,7 +17,7 @@ C_PAREN = ')' ;
 @start
 S = expr ;
 
-expr = expr '+' expr    @leoft(1)
+expr = expr '+' expr    @left(1)
      | expr '-' expr    @left(1)
      | expr '*' expr    @left(2)
      | expr '/' expr    @left(2)
