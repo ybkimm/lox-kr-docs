@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dcaiafa/lox/internal/lexergen/ast"
+	"github.com/dcaiafa/lox/internal/ast"
 )
 
 func TestTermRef(t *testing.T) {

@@ -7,7 +7,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/dcaiafa/lox/internal/base/errlogger"
-	"github.com/dcaiafa/lox/internal/lexergen/ast"
+	"github.com/dcaiafa/lox/internal/ast"
 	"github.com/dcaiafa/lox/internal/base/baselexer"
 )
 

@@ -2,7 +2,29 @@ package ast
 
 import (
 	gotoken "go/token"
+
+	"github.com/dcaiafa/lox/internal/lexergen/mode"
 )
+
+type Pass int
+
+const (
+	CreateNames Pass = iota
+	Check
+	Normalize
+	GenerateGrammar
+)
+
+const AllPasses Pass = GenerateGrammar
+
+const Print = 1000
+
+var passes = []Pass{
+	CreateNames,
+	Check,
+	Normalize,
+	GenerateGrammar,
+}
 
 type Bounds struct {
 	Begin gotoken.Pos
@@ -10,6 +32,7 @@ type Bounds struct {
 }
 
 type AST interface {
+	RunPass(ctx *Context, pass Pass)
 	SetBounds(b Bounds)
 	Bounds() Bounds
 }
@@ -26,37 +49,30 @@ func (a *baseAST) Bounds() Bounds {
 	return a.bounds
 }
 
-type TermType int
+type Statement interface {
+	AST
+	isStatement()
+}
+
+type baseStatement struct {
+	baseAST
+}
+
+func (s *baseStatement) isStatement() {}
+
+type LexerTerm interface {
+	AST
+	NFACons(ctx *Context) *mode.NFAComposite
+}
+
+type Card int
 
 const (
-	Simple     TermType = iota
-	ZeroOrMore          // *
-	OneOrMore           // +
-	ZeroOrOne           // ?
-	List                // @list
-	Error               // @error
+	One Card = iota
+	ZeroOrOne
+	ZeroOrMore
+	OneOrMore
 )
-
-type Parser struct {
-	baseAST
-	Decls []ParserDecl
-}
-
-type ParserDecl interface {
-	AST
-	isParserDecl()
-}
-
-type parserDecl struct{}
-
-func (d *parserDecl) isParserDecl() {}
-
-type Rule struct {
-	baseAST
-	parserDecl
-	Name  string
-	Prods []*Prod
-}
 
 type Associativity int
 
@@ -69,31 +85,4 @@ type ProdQualifier struct {
 	baseAST
 	Precedence    int
 	Associativity Associativity
-}
-
-type Prod struct {
-	baseAST
-	Terms     []*Term
-	Qualifier *ProdQualifier
-}
-
-type Term struct {
-	baseAST
-	Type  TermType
-	Name  string
-	Alias string
-	Child *Term
-	Sep   *Term
-}
-
-type CustomTokenDecl struct {
-	baseAST
-	parserDecl
-	CustomTokens []*CustomToken
-}
-
-type CustomToken struct {
-	baseAST
-	Name  string
-	Alias string
 }

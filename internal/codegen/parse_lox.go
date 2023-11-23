@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"slices"
 
-	"github.com/dcaiafa/lox/internal/lexergen/ast"
+	"github.com/dcaiafa/lox/internal/ast"
 	"github.com/dcaiafa/lox/internal/lexergen/mode"
 	"github.com/dcaiafa/lox/internal/parser"
 	"github.com/dcaiafa/lox/internal/parsergen/lr1"

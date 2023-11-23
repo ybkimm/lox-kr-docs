@@ -2,7 +2,7 @@ package parser
 
 import (
   _i0 "errors"
-  _i1 "github.com/dcaiafa/lox/internal/lexergen/ast"
+  _i1 "github.com/dcaiafa/lox/internal/ast"
   _i2 "github.com/dcaiafa/lox/internal/base/baselexer"
 )
 
