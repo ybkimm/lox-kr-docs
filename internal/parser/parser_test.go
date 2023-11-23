@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/dcaiafa/lox/internal/errlogger"
+	"github.com/dcaiafa/lox/internal/base/errlogger"
 )
 
 var testInput = `

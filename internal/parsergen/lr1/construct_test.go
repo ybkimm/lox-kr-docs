@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dcaiafa/lox/internal/errlogger"
+	"github.com/dcaiafa/lox/internal/base/errlogger"
 	"github.com/dcaiafa/lox/internal/parsergen/grammar"
 	"github.com/dcaiafa/lox/internal/base/baseline"
 )

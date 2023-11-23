@@ -4,7 +4,7 @@ import (
 	gotoken "go/token"
 
 	"github.com/dcaiafa/lox/internal/base/assert"
-	"github.com/dcaiafa/lox/internal/errlogger"
+	"github.com/dcaiafa/lox/internal/base/errlogger"
 	"github.com/dcaiafa/lox/internal/lexergen/dfa"
 	"github.com/dcaiafa/lox/internal/lexergen/nfa"
 	"github.com/dcaiafa/lox/internal/lexergen/rang3"
