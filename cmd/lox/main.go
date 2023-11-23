@@ -43,7 +43,7 @@ func realMain() error {
 	}
 
 	fset := gotoken.NewFileSet()
-	errs := errlogger.New()
+	errs := errlogger.New(os.Stderr)
 
 	var reportOut io.Writer
 	if *flagReport {

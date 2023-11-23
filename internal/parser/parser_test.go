@@ -15,7 +15,7 @@ func TestParser(t *testing.T) {
 		t.Fatal(err)
 	}
 	file := fset.AddFile("foo.lox", -1, len(data))
-	errs := errlogger.New()
+	errs := errlogger.New(os.Stderr)
 	spec := Parse(file, []byte(data), errs)
 	if errs.HasError() {
 		t.Fatal("Parse failed")

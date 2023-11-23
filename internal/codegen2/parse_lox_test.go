@@ -63,7 +63,7 @@ C_PAREN = ')' ;
 `)
 
 	fset := gotoken.NewFileSet()
-	errs := errlogger.New()
+	errs := errlogger.New(os.Stderr)
 
 	ctx := &context{
 		Fset: fset,

@@ -65,7 +65,7 @@ func TestLox(t *testing.T) {
 
 			resBuf := new(strings.Builder)
 			fset := gotoken.NewFileSet()
-			errs := errlogger.New()
+			errs := errlogger.New(resBuf)
 			ok := codegen2.Generate(&codegen2.Config{
 				Fset:   fset,
 				Errs:   errs,

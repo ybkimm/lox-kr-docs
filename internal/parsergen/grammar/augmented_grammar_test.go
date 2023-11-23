@@ -1,6 +1,7 @@
 package grammar
 
 import (
+	"os"
 	"testing"
 
 	"github.com/dcaiafa/lox/internal/errlogger"
@@ -59,7 +60,7 @@ func TestFirst1(t *testing.T) {
 		},
 	}
 
-	errs := errlogger.New()
+	errs := errlogger.New(os.Stderr)
 
 	g := sg.ToAugmentedGrammar(errs)
 	if errs.HasError() {
@@ -130,7 +131,7 @@ func TestFirst2(t *testing.T) {
 		},
 	}
 
-	errs := errlogger.New()
+	errs := errlogger.New(os.Stderr)
 
 	g := sg.ToAugmentedGrammar(errs)
 	if errs.HasError() {

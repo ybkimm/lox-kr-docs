@@ -54,7 +54,7 @@ func (r *TokenRule) RunPass(ctx *Context, pass Pass) {
 			act := actAST.GetAction()
 			if act.Type == mode.ActionDiscard {
 				ctx.Errs.Errorf(
-					ctx.Position(r), "Tokens cannot be discarded; use @frag instead")
+					ctx.Position(r), "tokens cannot be discarded; use @frag instead")
 				return
 			}
 			actions.Actions = append(actions.Actions, act)

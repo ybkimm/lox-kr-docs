@@ -2,6 +2,7 @@ package parser
 
 import (
 	gotoken "go/token"
+	"os"
 	"testing"
 
 	"github.com/dcaiafa/lox/internal/errlogger"
@@ -50,7 +51,7 @@ func TestParser(t *testing.T) {
 	fset := gotoken.NewFileSet()
 	data := []byte(testInput)
 	file := fset.AddFile("input.lox", -1, len(data))
-	errs := errlogger.New()
+	errs := errlogger.New(os.Stderr)
 	Parse(file, []byte(data), errs)
 	if errs.HasError() {
 		t.Fatal("Parse failed")

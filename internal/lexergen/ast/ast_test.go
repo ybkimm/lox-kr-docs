@@ -21,7 +21,7 @@ func requireEqualStr(t *testing.T, actual, expected string) {
 
 func parse(t *testing.T, input string) (*ast.Spec, *ast.Context) {
 	fset := gotoken.NewFileSet()
-	errs := errlogger.New()
+	errs := errlogger.New(&strings.Builder{})
 	file := fset.AddFile("input.lox", -1, len(input))
 	unit := parser.Parse(file, []byte(input), errs)
 	if errs.HasError() {

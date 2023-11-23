@@ -2,6 +2,7 @@ package lr1
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 
@@ -24,7 +25,7 @@ func runConstructTest(
 	g *grammar.Grammar,
 ) {
 	t.Run(name, func(t *testing.T) {
-		errs := errlogger.New()
+		errs := errlogger.New(os.Stderr)
 
 		ag := g.ToAugmentedGrammar(errs)
 		if errs.HasError() {
