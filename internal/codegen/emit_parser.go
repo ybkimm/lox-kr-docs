@@ -1,4 +1,4 @@
-package codegen2
+package codegen
 
 import (
 	"math"

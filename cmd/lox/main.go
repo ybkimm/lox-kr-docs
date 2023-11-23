@@ -8,7 +8,7 @@ import (
 	"os"
 	"runtime/pprof"
 
-	"github.com/dcaiafa/lox/internal/codegen2"
+	"github.com/dcaiafa/lox/internal/codegen"
 	"github.com/dcaiafa/lox/internal/errlogger"
 )
 
@@ -50,7 +50,7 @@ func realMain() error {
 		reportOut = os.Stdout
 	}
 
-	ok := codegen2.Generate(&codegen2.Config{
+	ok := codegen.Generate(&codegen.Config{
 		Fset:   fset,
 		Errs:   errs,
 		Dir:    dir,
