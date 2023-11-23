@@ -1,0 +1,108 @@
+//
+//     __         ______     __  __
+//    /\ \       /\  __ \   /\_\_\_\
+//    \ \ \____  \ \ \/\ \  \/_/\_\/_
+//     \ \_____\  \ \_____\   /\_\/\_\
+//      \/_____/   \/_____/   \/_/\/_/
+//
+//
+
+@lexer 
+
+SEMICOLON   = ';'  ;
+COMMA       = ','  ;
+EQ          = '='  ;
+OR          = '|'  ;
+ARROW       = '->' ;
+OCURLY      = '{'  ;
+CCURLY      = '}'  ;
+CLASS_DASH  = '-'  ;
+TILDE       ='~'   ;
+OBRACKET    = '['  ;
+CBRACKET    = ']'  ;
+OPAREN      = '('  ;
+CPAREN      = ')'  ;
+
+ZERO_OR_ONE      = '?'  ;
+ZERO_OR_MORE     = '*'  ;
+ONE_OR_MORE      = '+'  ;
+ZERO_OR_MORE_NG  = '*?' ;
+ONE_OR_MORE_NG   = '+?' ;
+
+PARSER         = '@parser'    ;
+LEXER          = '@lexer'     ;
+START          = '@start'     ;
+SKIP           = '@skip'      ;
+MACRO          = '@macro'     ;
+FRAG           = '@frag'      ;
+MODE           = '@mode'      ;
+PUSH_MODE      = '@push_mode' ;
+POP_MODE       = '@pop_mode'  ;
+ERROR_KEYWORD  = '@error'     ;
+LEFT           = '@left'      ;
+LIST           = '@list'      ;
+RIGHT          = '@right'     ;
+
+ID          = [A-Za-z] [A-Za-z0-9_]* ;
+LITERAL     = '\'' [ 
+CLASS_CHAR 
+NUM 
+
+
+
+spec    = section* ;
+section = parser_section | lexer_section ;
+
+// Parser
+// ======
+
+parser_section   = PARSER parser_statement* ;
+parser_statement = parser_rule ;
+
+parser_rule      = '@start'? ID '=' @list(parser_prod, '|') ';' ;
+parser_prod      = parser_term_card+ parser_qualif? ;
+parser_term_card = parser_term parser_card? ;
+parser_term      = ID | LITERAL | '@error' | parser_list ;
+parser_list      = '@list' '(' parser_term ',' parser_term ')' ;
+parser_card      = '*' | '+' | '?' ;
+parser_qualif    = '@left' '(' NUM ')'
+                 | '@right' '(' NUM ')' ;
+
+// Lexer
+// =====
+
+lexer_section = LEXER lexer_statement* ;
+
+lexer_statement = mode | lexer_rule ;
+
+lexer_rule = token_rule
+           | frag_rule
+           | macro_rule ;
+
+mode = MODE ID '{' lexer_rule* '}' ;
+
+token_rule  = ID '=' lexer_expr action* ';' ;
+frag_rule   = FRAG lexer_expr action* ';' ;
+macro_rule  = MACRO ID '=' lexer_expr ';' ;
+
+lexer_expr = @list(lexer_factor, '|') ;
+
+lexer_factor    = lexer_term_card+ ;
+lexer_term_card = lexer_term lexer_card? ;
+lexer_card      = '?' | '*' | '+' ;
+
+lexer_term   = LITERAL
+       | ID
+       | char_class 
+       | '(' lexer_expr ')' ;
+
+char_class = '~'? '[' char_class_item+ ']' ;
+
+char_class_item = CLASS_CHAR | '-' ;
+
+action           = action_skip
+                 | action_push_mode
+                 | action_pop_mode ;
+action_skip      = SKIP ;
+action_push_mode = PUSH_MODE '(' ID ')' ;
+action_pop_mode  = POP_MODE ;

@@ -115,7 +115,7 @@ func DumpRanges(t *testing.T, rs []Range) {
 func TestFlattenRanges(t *testing.T) {
 	test := func(name string, input, output []int) {
 		t.Run(name, func(t *testing.T) {
-			res := Flatten(Itor(input))
+			res := Flatten(Itor(input), nil)
 			expected := Itor(output)
 			if !reflect.DeepEqual(res, expected) {
 				t.Log("Expected:")

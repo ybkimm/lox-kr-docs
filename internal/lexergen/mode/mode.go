@@ -10,6 +10,7 @@ import (
 	"github.com/dcaiafa/lox/internal/lexergen/rang3"
 	"github.com/dcaiafa/lox/internal/util/array"
 	"github.com/dcaiafa/lox/internal/util/set"
+	"github.com/dcaiafa/lox/internal/util/stablemap"
 	"github.com/dcaiafa/lox/internal/util/stack"
 )
 
@@ -51,6 +52,8 @@ func (m *ModeBuilder) Build(errs *errlogger.ErrLogger, fset *gotoken.FileSet) *M
 	normalizeInputs(start)
 
 	d := dfa.NFAToDFA(start)
+
+	mergeTransitions(d)
 
 	for _, state := range d.States {
 		state.Data = m.pickAction(errs, fset, state)
@@ -163,4 +166,25 @@ func normalizeInputs(s *nfa.State) {
 			graph[c] = append(graph[c], states...)
 		}
 	})
+}
+
+func mergeTransitions(d *dfa.DFA) {
+	for _, state := range d.States {
+		var stateTransGroup stablemap.MultiMap[*dfa.State, rang3.Range]
+		state.Transitions.ForEach(func(input any, toState *dfa.State) {
+			stateTransGroup.Add(toState, input.(rang3.Range))
+		})
+		stateTransGroup.ForEach(
+			func(toState *dfa.State, inputs *array.Array[rang3.Range]) {
+				if inputs.Len() > 1 {
+					rang3.Flatten(inputs.Elements(), func(oa, ob, n rang3.Range) {
+						assert.True(state.Transitions.GetOrZero(oa) == toState)
+						state.Transitions.Remove(oa)
+						assert.True(state.Transitions.GetOrZero(ob) == toState)
+						state.Transitions.Remove(ob)
+						state.AddTransition(toState, n)
+					})
+				}
+			})
+	}
 }

@@ -154,7 +154,7 @@ func Normalize(ranges []Range, onChange func(o, a, b, c Range)) {
 	}
 }
 
-func Flatten(ranges []Range) []Range {
+func Flatten(ranges []Range, onChange func(oa, ob, n Range)) []Range {
 	slices.SortFunc(ranges, func(a, b Range) int {
 		return Compare(a, b)
 	})
@@ -192,13 +192,18 @@ func Flatten(ranges []Range) []Range {
 		if !ranges2.Empty() {
 			tip := ranges2.Peek()
 			if tip.Touches(r) {
+				n := Range{B: min(tip.B, r.B), E: max(tip.E, r.E)}
 				ranges2.Pop()
-				ranges2.Push(Range{B: min(tip.B, r.B), E: max(tip.E, r.E)})
+				ranges2.Push(n)
+				if onChange != nil {
+					onChange(tip, r, n)
+				}
 				continue
 			}
 		}
 		ranges2.Push(r)
 	}
+
 	return ranges2.Elements()
 }
 

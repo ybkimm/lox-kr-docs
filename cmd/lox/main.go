@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	gotoken "go/token"
+	"io"
 	"os"
 	"runtime/pprof"
 
@@ -21,8 +22,8 @@ func main() {
 
 func realMain() error {
 	var (
-		//flagAnalyze = flag.Bool("analyze", false, "")
-		flagProf = flag.String("cpu-prof", "", "")
+		flagReport = flag.Bool("report", false, "")
+		flagProf   = flag.String("cpu-prof", "", "")
 	)
 
 	flag.Parse()
@@ -44,10 +45,16 @@ func realMain() error {
 	fset := gotoken.NewFileSet()
 	errs := errlogger.New()
 
+	var reportOut io.Writer
+	if *flagReport {
+		reportOut = os.Stdout
+	}
+
 	ok := codegen2.Generate(&codegen2.Config{
-		Fset: fset,
-		Errs: errs,
-		Dir:  dir,
+		Fset:   fset,
+		Errs:   errs,
+		Dir:    dir,
+		Report: reportOut,
 	})
 	if !ok {
 		return fmt.Errorf("errors ocurred")
