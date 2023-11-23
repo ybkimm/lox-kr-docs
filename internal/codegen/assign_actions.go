@@ -5,12 +5,12 @@ import (
 	"strings"
 
 	"github.com/dcaiafa/lox/internal/base/assert"
-	"github.com/dcaiafa/lox/internal/parsergen/lr2"
 	"github.com/dcaiafa/lox/internal/base/set"
+	"github.com/dcaiafa/lox/internal/parsergen/lr1"
 )
 
 func (c *context) AssignActions() bool {
-	c.RuleGoTypes = make(map[*lr2.Rule]gotypes.Type)
+	c.RuleGoTypes = make(map[*lr1.Rule]gotypes.Type)
 
 	methods := c.getActionMethods()
 	if methods == nil {
@@ -18,7 +18,7 @@ func (c *context) AssignActions() bool {
 	}
 
 	// Map of name => Rule.
-	rules := make(map[string]*lr2.Rule, len(c.ParserGrammar.Rules))
+	rules := make(map[string]*lr1.Rule, len(c.ParserGrammar.Rules))
 	for _, rule := range c.ParserGrammar.Rules {
 		rules[rule.Name] = rule
 	}
@@ -107,7 +107,7 @@ func (c *context) AssignActions() bool {
 		unassignedMethods.AddSlice(ruleMethods)
 	}
 
-	c.ActionMethods = make(map[*lr2.Prod]*actionMethod)
+	c.ActionMethods = make(map[*lr1.Prod]*actionMethod)
 
 	// Assign each method to a production.
 	for _, prod := range c.ParserGrammar.Prods {
@@ -195,8 +195,8 @@ func (c *context) getActionMethods() map[string][]*actionMethod {
 }
 
 func (c *context) getReduceTypeForGeneratedRule(
-	rule *lr2.Rule,
-	prod *lr2.Prod,
+	rule *lr1.Rule,
+	prod *lr1.Prod,
 ) gotypes.Type {
 	switch RuleGenerated(rule) {
 	case notGenerated, generatedSPrime:
@@ -213,9 +213,9 @@ func (c *context) getReduceTypeForGeneratedRule(
 		}
 		termC := prod.Terms[0]
 		switch termC := termC.(type) {
-		case *lr2.Rule:
+		case *lr1.Rule:
 			return c.RuleGoTypes[termC]
-		case *lr2.Terminal:
+		case *lr1.Terminal:
 			return c.TokenType
 		default:
 			panic("not-reached")
@@ -229,7 +229,7 @@ func (c *context) getReduceTypeForGeneratedRule(
 		if prod != rule.Prods[0] {
 			return nil
 		}
-		termCplus := prod.Terms[0].(*lr2.Rule)
+		termCplus := prod.Terms[0].(*lr1.Rule)
 		typeCplus := c.getReduceTypeForGeneratedRule(termCplus, termCplus.Prods[1])
 		assert.True(typeCplus != nil)
 		return typeCplus
@@ -246,9 +246,9 @@ func (c *context) getReduceTypeForGeneratedRule(
 		termC := prod.Terms[0]
 		var typeC gotypes.Type
 		switch termC := termC.(type) {
-		case *lr2.Rule:
+		case *lr1.Rule:
 			typeC = c.RuleGoTypes[termC]
-		case *lr2.Terminal:
+		case *lr1.Terminal:
 			typeC = c.TokenType
 		default:
 			panic("not-reached")
@@ -260,7 +260,7 @@ func (c *context) getReduceTypeForGeneratedRule(
 	}
 }
 
-func (c *context) matchMethod(prod *lr2.Prod, methods []*actionMethod) []*actionMethod {
+func (c *context) matchMethod(prod *lr1.Prod, methods []*actionMethod) []*actionMethod {
 	isMatch := func(method *actionMethod) bool {
 		if len(method.Params) != len(prod.Terms) {
 			return false
@@ -285,11 +285,11 @@ func (c *context) matchMethod(prod *lr2.Prod, methods []*actionMethod) []*action
 	return matches
 }
 
-func (c *context) getTermGoType(term lr2.Term) gotypes.Type {
+func (c *context) getTermGoType(term lr1.Term) gotypes.Type {
 	switch term := term.(type) {
-	case *lr2.Rule:
+	case *lr1.Rule:
 		return c.RuleGoTypes[term]
-	case *lr2.Terminal:
+	case *lr1.Terminal:
 		if term == c.ParserGrammar.ErrorTerminal {
 			return c.ErrorType
 		} else {

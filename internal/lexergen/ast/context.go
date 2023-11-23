@@ -5,9 +5,9 @@ import (
 	"io"
 
 	"github.com/dcaiafa/lox/internal/base/errlogger"
-	"github.com/dcaiafa/lox/internal/lexergen/mode"
-	"github.com/dcaiafa/lox/internal/parsergen/lr2"
 	"github.com/dcaiafa/lox/internal/base/stack"
+	"github.com/dcaiafa/lox/internal/lexergen/mode"
+	"github.com/dcaiafa/lox/internal/parsergen/lr1"
 )
 
 const DefaultModeName = "$default"
@@ -23,7 +23,7 @@ type Context struct {
 	CurrentParserProd stack.Stack[*ParserProd]
 	CurrentPrinter    stack.Stack[*Printer]
 	CurrentLexerMode  stack.Stack[*mode.ModeBuilder]
-	Grammar           *lr2.Grammar
+	Grammar           *lr1.Grammar
 	LexerModes        map[string]*mode.ModeBuilder
 	LexerDFAs         map[string]*mode.Mode
 
@@ -35,7 +35,7 @@ func NewContext(fset *gotoken.FileSet, errs *errlogger.ErrLogger) *Context {
 	c := &Context{
 		FSet:       fset,
 		Errs:       errs,
-		Grammar:    lr2.NewGrammar(),
+		Grammar:    lr1.NewGrammar(),
 		LexerModes: make(map[string]*mode.ModeBuilder),
 		names:      make(map[string]AST),
 		aliases:    make(map[string]*TokenRule),

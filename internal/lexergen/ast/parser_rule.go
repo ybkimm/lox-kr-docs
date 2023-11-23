@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"github.com/dcaiafa/lox/internal/parsergen/lr2"
+	"github.com/dcaiafa/lox/internal/parsergen/lr1"
 )
 
 type ParserRule struct {
@@ -11,7 +11,7 @@ type ParserRule struct {
 	Name    string
 	Prods   []*ParserProd
 
-	Rule *lr2.Rule
+	Rule *lr1.Rule
 }
 
 func (r *ParserRule) RunPass(ctx *Context, pass Pass) {

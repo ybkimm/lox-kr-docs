@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/dcaiafa/lox/internal/base/errlogger"
-	"github.com/dcaiafa/lox/internal/parsergen/lr2"
+	"github.com/dcaiafa/lox/internal/parsergen/lr1"
 )
 
 const (
@@ -39,9 +39,9 @@ const (
 	generatedList       generated = "list"
 )
 
-func RuleGenerated(r *lr2.Rule) generated {
+func RuleGenerated(r *lr1.Rule) generated {
 	switch {
-	case r.Name == lr2.SPrime:
+	case r.Name == lr1.SPrime:
 		return generatedSPrime
 	case strings.HasSuffix(r.Name, "*"):
 		return generatedZeroOrMore

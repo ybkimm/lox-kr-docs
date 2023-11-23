@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/CloudyKit/jet/v6"
-	"github.com/dcaiafa/lox/internal/parsergen/lr2"
+	"github.com/dcaiafa/lox/internal/parsergen/lr1"
 )
 
 const parserPlaceholderTemplate = `
@@ -325,11 +325,11 @@ func (c *context) EmitParser() bool {
 				action := actions.Get(terminal).Get(0)
 				row = append(row, int32(terminal.Index))
 				switch action.Type {
-				case lr2.ActionShift:
+				case lr1.ActionShift:
 					row = append(row, int32(action.ShiftState.Index))
-				case lr2.ActionReduce:
+				case lr1.ActionReduce:
 					row = append(row, int32(action.Prods[0].Index)*-1)
-				case lr2.ActionAccept:
+				case lr1.ActionAccept:
 					row = append(row, accept)
 				default:
 					panic("unreachable")
@@ -346,7 +346,7 @@ func (c *context) EmitParser() bool {
 			var row []int32
 			transitions := c.ParserTable.Transitions(from)
 			for _, input := range transitions.Inputs() {
-				rule, ok := input.(*lr2.Rule)
+				rule, ok := input.(*lr1.Rule)
 				if !ok {
 					continue
 				}

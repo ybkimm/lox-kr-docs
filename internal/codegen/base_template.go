@@ -2,7 +2,7 @@ package codegen
 
 import (
 	"github.com/CloudyKit/jet/v6"
-	"github.com/dcaiafa/lox/internal/parsergen/lr2"
+	"github.com/dcaiafa/lox/internal/parsergen/lr1"
 )
 
 const baseTemplate = `
@@ -41,7 +41,7 @@ func (s _Stack[T]) Peek(n int) T {
 type baseTemplateInputs struct {
 	Package     string
 	PackagePath string
-	Terminals   []*lr2.Terminal
+	Terminals   []*lr1.Terminal
 }
 
 func renderBaseTemplate(in *baseTemplateInputs) string {

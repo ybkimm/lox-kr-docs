@@ -10,7 +10,7 @@ import (
 	"github.com/dcaiafa/lox/internal/lexergen/ast"
 	"github.com/dcaiafa/lox/internal/lexergen/mode"
 	"github.com/dcaiafa/lox/internal/parser"
-	"github.com/dcaiafa/lox/internal/parsergen/lr2"
+	"github.com/dcaiafa/lox/internal/parsergen/lr1"
 )
 
 const LoxFileExtension = ".lox"
@@ -52,7 +52,7 @@ func (c *context) ParseLox() bool {
 
 	c.LexerModes = astctx.LexerDFAs
 	c.ParserGrammar = astctx.Grammar
-	c.ParserTable = lr2.ConstructLALR(c.ParserGrammar)
+	c.ParserTable = lr1.ConstructLALR(c.ParserGrammar)
 
 	if c.Report != nil {
 		fmt.Fprintln(c.Report, "Parser Table")

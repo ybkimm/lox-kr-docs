@@ -2,165 +2,89 @@ package lr1
 
 import (
 	"encoding/binary"
-	"sort"
 	"strings"
 
-	"github.com/dcaiafa/lox/internal/parsergen/grammar"
 	"github.com/dcaiafa/lox/internal/base/set"
 )
 
 type ItemSet struct {
-	itemMap map[Item]struct{}
-	items   []Item
-
 	Index int
+
+	set         set.Set[Item]
+	cachedItems []Item
 }
 
-func NewItemSet() *ItemSet {
-	return &ItemSet{
-		itemMap: make(map[Item]struct{}),
-	}
-}
-
-func (b *ItemSet) Add(item Item) bool {
-	if _, ok := b.itemMap[item]; ok {
+func (s *ItemSet) Add(item Item) bool {
+	if s.set.Has(item) {
 		return false
 	}
-	b.items = nil
-	b.itemMap[item] = struct{}{}
+	s.set.Add(item)
+	s.cachedItems = nil
 	return true
 }
 
-// Closure computes the closure of the ItemSet.
-// The algorithm is summarized thusly:
-//
-//	For each item [A -> α.Bβ, a]:
-//	 If there is a B -> γ:
-//	   For each x in FIRST(βa):
-//	     Add [B -> .γ, x]
-func (b *ItemSet) Closure(g *grammar.AugmentedGrammar) {
-	changed := true
-	for changed {
-		changed = false
-		for item := range b.itemMap {
-			prod := g.Prods[item.Prod]
-			if item.Dot == uint32(len(prod.Terms)) {
-				continue
-			}
-			B, ok := g.TermSymbol(prod.Terms[item.Dot]).(*grammar.Rule)
-			if !ok {
-				continue
-			}
-			beta := g.TermSymbols(prod.Terms[item.Dot+1:])
-			a := g.Terminals[item.Lookahead]
-			firstSet := g.First(append(beta, a))
-			for _, prodB := range B.Prods {
-				firstSet.ForEach(func(terminal *grammar.Terminal) {
-					changed = b.Add(NewItem(g, prodB, 0, terminal)) || changed
-				})
-			}
+func (s *ItemSet) AddSet(o *ItemSet) bool {
+	changed := false
+	o.set.ForEach(func(i Item) {
+		if s.set.Has(i) {
+			return
 		}
-	}
-}
-
-func (s *ItemSet) Follow(g *grammar.AugmentedGrammar) []grammar.Symbol {
-	symSet := new(set.Set[grammar.Symbol])
-	for item := range s.itemMap {
-		prod := g.Prods[item.Prod]
-		if item.Dot >= uint32(len(prod.Terms)) {
-			continue
-		}
-		symSet.Add(g.TermSymbol(prod.Terms[item.Dot]))
-	}
-	syms := symSet.Elements()
-
-	// Symbol order determines state creation order.
-	// Make the analysis deterministic by sorting.
-	sort.Slice(syms, func(i, j int) bool {
-		return syms[i].SymName() < syms[j].SymName()
+		changed = true
+		s.set.Add(i)
 	})
-
-	return syms
+	return changed
 }
 
-func (from *ItemSet) Goto(g *grammar.AugmentedGrammar, sym grammar.Symbol) *ItemSet {
-	toState := NewItemSet()
-	for _, item := range from.GetItems() {
-		prod := g.Prods[item.Prod]
-		if item.Dot == uint32(len(prod.Terms)) {
-			continue
-		}
-		term := g.TermSymbol(prod.Terms[item.Dot])
-		if term != sym {
-			continue
-		}
-		toItem := item
-		toItem.Dot++
-		toState.Add(toItem)
+func (s *ItemSet) ForEach(f func(i Item)) {
+	s.set.ForEach(f)
+}
+
+func (s *ItemSet) Empty() bool {
+	return s.set.Empty()
+}
+
+func (s *ItemSet) Clear() {
+	s.set.Clear()
+	s.cachedItems = nil
+}
+
+func (s *ItemSet) Items() []Item {
+	if s.cachedItems == nil {
+		s.cachedItems = s.set.Elements()
+		SortItems(s.cachedItems)
 	}
-	toState.Closure(g)
-	return toState
+	return s.cachedItems
 }
 
-func (b *ItemSet) GetItems() []Item {
-	if b.items != nil {
-		return b.items
-	}
-	b.items = make([]Item, 0, len(b.itemMap))
-	for item := range b.itemMap {
-		b.items = append(b.items, item)
-	}
-	sortItems(b.items)
-	return b.items
-}
-
-func (b *ItemSet) Len() int {
-	return len(b.itemMap)
-}
-
-func (s *ItemSet) ToString(g *grammar.AugmentedGrammar) string {
+func (s *ItemSet) ToString(g *Grammar) string {
 	var str strings.Builder
-	for i, item := range s.GetItems() {
+	for i, item := range s.Items() {
 		if i != 0 {
-			str.WriteString("\n")
+			str.WriteRune('\n')
 		}
 		str.WriteString(item.ToString(g))
 	}
 	return str.String()
 }
 
-func (b *ItemSet) LR0Key() string {
+func (s *ItemSet) LR0Key() string {
 	type lr0Item struct {
 		Prod uint32
 		Dot  uint32
 	}
-
-	seen := make(map[lr0Item]bool, len(b.itemMap))
-	key := make([]byte, 0, binary.MaxVarintLen32*2*b.Len())
-	for _, item := range b.GetItems() {
-		if !item.IsKernel() {
+	var seen set.Set[lr0Item]
+	key := make([]byte, 0, s.set.Len())
+	for _, i := range s.Items() {
+		if !i.IsKernel() {
 			continue
 		}
-		lr0Key := lr0Item{Prod: item.Prod, Dot: item.Dot}
-		if seen[lr0Key] {
+		lr0Key := lr0Item{Prod: uint32(i.Prod), Dot: uint32(i.Dot)}
+		if seen.Has(lr0Key) {
 			continue
 		}
-		seen[lr0Key] = true
-		key = binary.AppendUvarint(key, uint64(item.Prod))
-		key = binary.AppendUvarint(key, uint64(item.Dot))
-	}
-	return string(key)
-}
-
-func (b *ItemSet) LR1Key() string {
-	key := make([]byte, 0, binary.MaxVarintLen32*3*b.Len())
-	for _, item := range b.GetItems() {
-		if !item.IsKernel() {
-			continue
-		}
-		key = binary.AppendUvarint(key, uint64(item.Prod))
-		key = binary.AppendUvarint(key, uint64(item.Dot))
-		key = binary.AppendUvarint(key, uint64(item.Lookahead))
+		seen.Add(lr0Key)
+		key = binary.BigEndian.AppendUint32(key, lr0Key.Prod)
+		key = binary.BigEndian.AppendUint32(key, lr0Key.Dot)
 	}
 	return string(key)
 }

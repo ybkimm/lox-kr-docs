@@ -1,4 +1,4 @@
-package lr2
+package lr1
 
 import "github.com/dcaiafa/lox/internal/base/set"
 

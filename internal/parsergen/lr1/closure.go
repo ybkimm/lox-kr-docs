@@ -1,4 +1,4 @@
-package lr2
+package lr1
 
 // Closure computes the closure of the ItemSet.
 // The algorithm is summarized thusly:

@@ -1,4 +1,4 @@
-package lr2
+package lr1
 
 func Goto(g *Grammar, from *ItemSet, sym Term) *ItemSet {
 	to := new(ItemSet)

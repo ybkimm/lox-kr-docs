@@ -2,7 +2,7 @@ package ast
 
 import (
 	"github.com/dcaiafa/lox/internal/lexergen/mode"
-	"github.com/dcaiafa/lox/internal/parsergen/lr2"
+	"github.com/dcaiafa/lox/internal/parsergen/lr1"
 )
 
 type TokenRule struct {
@@ -12,7 +12,7 @@ type TokenRule struct {
 	Expr    *LexerExpr
 	Actions []Action
 
-	Terminal *lr2.Terminal
+	Terminal *lr1.Terminal
 }
 
 func (r *TokenRule) RunPass(ctx *Context, pass Pass) {

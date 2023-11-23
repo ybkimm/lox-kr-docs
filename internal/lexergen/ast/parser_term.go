@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dcaiafa/lox/internal/base/assert"
-	"github.com/dcaiafa/lox/internal/parsergen/lr2"
+	"github.com/dcaiafa/lox/internal/parsergen/lr1"
 )
 
 type ParserTermType int
@@ -45,7 +45,7 @@ type ParserTerm struct {
 	Child *ParserTerm
 	Sep   *ParserTerm
 
-	Symbol lr2.Term
+	Symbol lr1.Term
 }
 
 func (t *ParserTerm) RunPass(ctx *Context, pass Pass) {

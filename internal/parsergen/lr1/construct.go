@@ -1,195 +1,163 @@
 package lr1
 
 import (
-	"sort"
+	"slices"
 
 	"github.com/dcaiafa/lox/internal/base/assert"
-	"github.com/dcaiafa/lox/internal/parsergen/grammar"
+	"github.com/dcaiafa/lox/internal/base/array"
 	"github.com/dcaiafa/lox/internal/base/set"
 )
 
-func ConstructLR(g *grammar.AugmentedGrammar) *ParserTable {
-	pt := NewParserTable(g)
+func ConstructLALR(g *Grammar) *ParserTable {
+	t := NewParserTable(g)
 
-	start := NewItemSet()
-	start.Add(NewItem(g, g.Sprime.Prods[0], 0, g.EOF))
-	start.Closure(g)
-	pt.States.Add(start.LR1Key(), start)
-
-	changed := true
-	for changed {
-		changed = false
-		pt.States.ForEach(func(from *ItemSet) {
-			for _, sym := range from.Follow(g) {
-				to := from.Goto(g, sym)
-				toKey := to.LR1Key()
-				existing := pt.States.Get(toKey)
-				if existing != nil {
-					to = existing
-				} else {
-					pt.States.Add(toKey, to)
-					changed = true
-				}
-				pt.Transitions.Add(from, to, sym)
-			}
-		})
-	}
-
-	createActions(pt)
-	resolveConflicts(pt)
-
-	return pt
-}
-
-func ConstructLALR(g *grammar.AugmentedGrammar) *ParserTable {
-	pt := NewParserTable(g)
-
-	var pending set.Set[string]
-
-	start := NewItemSet()
-	start.Add(NewItem(g, g.Sprime.Prods[0], 0, g.EOF))
-	start.Closure(g)
-
+	start := new(ItemSet)
+	start.Add(Item{Prod: sPrimeProdIndex, Dot: 0, Lookahead: eofIndex})
+	start = Closure(g, start)
 	startKey := start.LR0Key()
-	pt.States.Add(startKey, start)
-	pending.Add(startKey)
+	t.AddState(startKey, start)
 
-	for pending.Len() > 0 {
-		pendingSorted := pending.Elements()
-		sort.Strings(pendingSorted)
-		pending.Clear()
-		for _, fromKey := range pendingSorted {
-			from := pt.States.Get(fromKey)
-			for _, sym := range from.Follow(g) {
+	pendingSet := set.New[string](startKey)
+	for !pendingSet.Empty() {
+		pending := pendingSet.Elements()
+		slices.Sort(pending)
+		pendingSet.Clear()
+		for _, fromKey := range pending {
+			from := t.GetStateByKey(fromKey)
+			for _, sym := range Next(g, *from) {
 				changed := false
-				to := from.Goto(g, sym)
+				to := Goto(g, from, sym)
 				toKey := to.LR0Key()
-				existing := pt.States.Get(toKey)
-				if existing != nil {
-					for _, item := range to.GetItems() {
-						changed = existing.Add(item) || changed
+
+				// The destination state might already exist in which case we might
+				// need to complement its lookaheads.
+				existingTo := t.GetStateByKey(toKey)
+				if existingTo != nil {
+					for _, item := range to.Items() {
+						changed = existingTo.Add(item) || changed
 					}
-					to = existing
+					t.Transitions(from).Add(sym, existingTo)
 				} else {
-					pt.States.Add(toKey, to)
+					t.AddState(toKey, to)
+					t.Transitions(from).Add(sym, to)
 					changed = true
 				}
-				pt.Transitions.Add(from, to, sym)
 				if changed {
-					pending.Add(toKey)
+					pendingSet.Add(toKey)
 				}
 			}
 		}
 	}
 
-	createActions(pt)
-	resolveConflicts(pt)
+	createActions(t)
+	resolveConflicts(t)
 
-	return pt
+	return t
 }
 
-func createActions(pt *ParserTable) {
-	g := pt.Grammar
-	pt.States.ForEach(func(s *ItemSet) {
-		for _, item := range s.GetItems() {
+func createActions(t *ParserTable) {
+	g := t.Grammar
+	for _, state := range t.States {
+		for _, item := range state.Items() {
 			prod := g.Prods[item.Prod]
-			if item.Dot == uint32(len(prod.Terms)) {
-				rule := g.ProdRule(prod)
-				var act Action = ActionReduce{
-					Prod: prod,
+			if item.Dot == len(prod.Terms) {
+				// A -> γ., x
+				if item.Prod == sPrimeProdIndex {
+					t.Actions(state).
+						AddAccept(g.Terminals[item.Lookahead])
+				} else {
+					t.Actions(state).
+						AddReduce(g.Terminals[item.Lookahead], g.Prods[item.Prod])
 				}
-				if rule == g.Sprime {
-					act = ActionAccept{}
-				}
-				terminal := g.Terminals[item.Lookahead]
-				pt.Actions.Add(s, terminal, act, prod)
-				continue
+			} else if terminal, ok := prod.Terms[item.Dot].(*Terminal); ok {
+				// A -> α.xβ where x is a Terminal
+				shiftState := t.Transitions(state).Get(terminal)
+				t.Actions(state).
+					AddShift(terminal, shiftState, t.Grammar.Prods[item.Prod])
 			}
-			terminal, ok := g.TermSymbol(prod.Terms[item.Dot]).(*grammar.Terminal)
-			if !ok {
-				continue
-			}
-			shiftState := pt.Transitions.Get(s, terminal)
-			shiftAction := ActionShift{
-				State: shiftState,
-			}
-			pt.Actions.Add(s, terminal, shiftAction, prod)
 		}
-	})
+	}
 }
 
-func resolveConflicts(pt *ParserTable) {
-	resolveConflict := func(state *ItemSet, sym grammar.Symbol, actionSet ActionSet, actions []Action) bool {
+func resolveConflicts(t *ParserTable) {
+	resolveConflict := func(
+		state *ItemSet,
+		terminal *Terminal,
+		actions *array.Array[*Action],
+	) bool {
 		// We can only resolve shift/reduce conflicts.
-		if len(actions) != 2 {
+		if actions.Len() != 2 {
 			return false
 		}
-
-		shift, reduce, ok := ShiftReduce(actions[0], actions[1])
-		if !ok {
-			shift, reduce, ok = ShiftReduce(actions[1], actions[0])
-			if !ok {
+		shift, reduce := actions.Get(0), actions.Get(1)
+		if shift.Type != ActionShift || reduce.Type != ActionReduce {
+			shift, reduce = reduce, shift
+			if shift.Type != ActionShift || reduce.Type != ActionReduce {
 				return false
 			}
 		}
 
-		shiftProds := actionSet.ProdsForAction(shift)
-		var shiftRule *grammar.Rule
+		// A shift action can be associated with multiple productions. For example,
+		// we could be shifting '+' for the following two productions:
+		//  A = .'+' '-'
+		//    | .'+' '*'
+		// But we can only proceed with conflict resolution iff all the involved
+		// productions belong to the same Rule and they all have the same
+		// precendence value.
+		var shiftRule *Rule
 		var shiftPrec int
-		for i, shiftProd := range shiftProds {
-			rule := pt.Grammar.ProdRule(shiftProd)
+		for i, prod := range shift.Prods {
 			if i == 0 {
-				shiftRule = rule
-				shiftPrec = shiftProd.Precence
-			} else if shiftRule != rule || shiftPrec != shiftProd.Precence {
+				shiftRule = prod.Rule
+				shiftPrec = prod.Precedence
+			} else if shiftRule != prod.Rule || shiftPrec != prod.Precedence {
 				return false
 			}
 		}
 
-		reduceProds := actionSet.ProdsForAction(reduce)
-		assert.True(len(reduceProds) == 1)
-		reduceProd := reduceProds[0]
-		assert.True(reduceProd == reduce.Prod)
-		reducePrec := reduceProd.Precence
+		assert.True(len(reduce.Prods) == 1)
+		reduceProd := reduce.Prods[0]
+		reducePrec := reduceProd.Precedence
 
-		// Both Prods involved must belong to the same Rule, and must have
-		// explicit precedences.
-		haveCommonRule := shiftRule == pt.Grammar.ProdRule(reduceProd)
-		if !haveCommonRule ||
-			shiftPrec <= 0 ||
-			reduceProd.Precence <= 0 {
+		// The production(s) associated with each action must belong to the same
+		// Rule, and ust have explicit precendences.
+		haveCommonRule := shiftRule == reduceProd.Rule
+		if !haveCommonRule || shiftPrec <= 0 || reduceProd.Precedence <= 0 {
 			return false
+		}
+
+		remove := func(action *Action) {
+			actions.DeleteFunc(func(a *Action) bool {
+				return a == action
+			})
 		}
 
 		switch {
 		case shiftPrec < reducePrec:
-			pt.Actions.Remove(state, sym, shift)
+			remove(shift)
 		case shiftPrec > reducePrec:
-			pt.Actions.Remove(state, sym, reduce)
-		case len(shiftProds) == 1 &&
-			shiftProds[0] == reduce.Prod &&
-			shiftProds[0].Associativity == grammar.Right:
-			pt.Actions.Remove(state, sym, reduce)
+			remove(reduce)
+		case len(shift.Prods) == 1 &&
+			shift.Prods[0] == reduce.Prods[0] &&
+			shift.Prods[0].Associativity == Right:
+			remove(reduce)
 		default:
-			pt.Actions.Remove(state, sym, shift)
+			remove(shift)
 		}
 
 		return true
 	}
 
-	pt.States.ForEach(
-		func(state *ItemSet) {
-			pt.Actions.ForEachActionSet(
-				pt.Grammar, state,
-				func(sym grammar.Symbol, actionSet ActionSet) {
-					actions := actionSet.Actions()
-					if len(actions) == 1 {
-						return
-					}
-					if !resolveConflict(state, sym, actionSet, actions) {
-						pt.HasConflicts = true
-					}
-				},
-			)
-		})
+	for _, state := range t.States {
+		actionMap := t.Actions(state)
+		for _, terminal := range actionMap.Terminals() {
+			actions := actionMap.Get(terminal)
+			assert.True(!actions.Empty())
+			if actions.Len() != 1 {
+				if !resolveConflict(state, terminal, actions) {
+					t.HasConflicts = true
+				}
+			}
+		}
+	}
 }

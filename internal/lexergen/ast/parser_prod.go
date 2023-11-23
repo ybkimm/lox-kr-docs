@@ -1,13 +1,13 @@
 package ast
 
-import "github.com/dcaiafa/lox/internal/parsergen/lr2"
+import "github.com/dcaiafa/lox/internal/parsergen/lr1"
 
 type ParserProd struct {
 	baseAST
 	Terms     []*ParserTerm
 	Qualifier *ProdQualifier
 
-	Prod *lr2.Prod
+	Prod *lr1.Prod
 }
 
 func (p *ParserProd) RunPass(ctx *Context, pass Pass) {
@@ -23,7 +23,7 @@ func (p *ParserProd) RunPass(ctx *Context, pass Pass) {
 
 	case GenerateGrammar:
 		rule := ctx.CurrentParserRule.Peek().Rule
-		terms := make([]lr2.Term, len(p.Terms))
+		terms := make([]lr1.Term, len(p.Terms))
 		for i, termAst := range p.Terms {
 			terms[i] = termAst.Symbol
 		}
@@ -33,9 +33,9 @@ func (p *ParserProd) RunPass(ctx *Context, pass Pass) {
 			p.Prod.Precedence = p.Qualifier.Precedence
 			switch p.Qualifier.Associativity {
 			case Left:
-				p.Prod.Associativity = lr2.Left
+				p.Prod.Associativity = lr1.Left
 			case Right:
-				p.Prod.Associativity = lr2.Right
+				p.Prod.Associativity = lr1.Right
 			default:
 				panic("not-reached")
 			}

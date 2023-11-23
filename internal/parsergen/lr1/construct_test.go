@@ -2,190 +2,84 @@ package lr1
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
-	"github.com/dcaiafa/lox/internal/base/errlogger"
-	"github.com/dcaiafa/lox/internal/parsergen/grammar"
 	"github.com/dcaiafa/lox/internal/base/baseline"
 )
 
-func runAllConstructTest(t *testing.T, name string, g *grammar.Grammar) {
+func runConstructTest(t *testing.T, name string, g *Grammar) {
 	t.Run(name, func(t *testing.T) {
-		runConstructTest(t, "LR", ConstructLR, g)
-		runConstructTest(t, "LALR", ConstructLALR, g)
-	})
-}
-
-func runConstructTest(
-	t *testing.T,
-	name string,
-	constructFunc func(*grammar.AugmentedGrammar) *ParserTable,
-	g *grammar.Grammar,
-) {
-	t.Run(name, func(t *testing.T) {
-		errs := errlogger.New(os.Stderr)
-
-		ag := g.ToAugmentedGrammar(errs)
-		if errs.HasError() {
-			t.Fatalf("ToAugmentedGrammar failed")
-		}
-
-		pt := constructFunc(ag)
-
+		pt := ConstructLALR(g)
 		report := strings.Builder{}
 		pt.Print(&report)
 		fmt.Fprintln(&report, "")
-		pt.PrintStateGraph(&report)
-
+		pt.PrintGraph(&report)
 		baseline.Assert(t, report.String())
 	})
 }
 
 func TestConstruct(t *testing.T) {
-	runAllConstructTest(t, "1",
-		&grammar.Grammar{
-			Terminals: []*grammar.Terminal{
-				{Name: "c"},
-				{Name: "d"},
-			},
-			Rules: []*grammar.Rule{
-				{
-					Name: "S",
-					Prods: []*grammar.Prod{
-						{Terms: []*grammar.Term{{Name: "C"}, {Name: "C"}}},
-					},
-				},
-				{
-					Name: "C",
-					Prods: []*grammar.Prod{
-						{Terms: []*grammar.Term{{Name: "c"}, {Name: "C"}}},
-						{Terms: []*grammar.Term{{Name: "d"}}},
-					},
-				},
-			},
-		})
-	runAllConstructTest(t, "2",
-		&grammar.Grammar{
-			Terminals: []*grammar.Terminal{
-				{Name: "="},
-				{Name: "*"},
-				{Name: "id"},
-			},
-			Rules: []*grammar.Rule{
-				// S -> L = R | R
-				{
-					Name: "S",
-					Prods: []*grammar.Prod{
-						{
-							Terms: []*grammar.Term{
-								{Name: "L"}, {Name: "="}, {Name: "R"},
-							},
-						},
-						{
-							Terms: []*grammar.Term{
-								{Name: "R"},
-							},
-						},
-					},
-				},
+	{
+		// S = C C
+		// C = c C | d
+		var (
+			g = NewGrammar()
+			c = g.AddTerminal("c")
+			d = g.AddTerminal("d")
+			S = g.AddRule("S")
+			C = g.AddRule("C")
+		)
+		g.SetStart(S)
+		g.AddProd(S, C, C)
+		g.AddProd(C, c, C)
+		g.AddProd(C, d)
+		runConstructTest(t, "1", g)
+	}
 
-				// L -> * R | id
-				{
-					Name: "L",
-					Prods: []*grammar.Prod{
-						{
-							Terms: []*grammar.Term{
-								{Name: "*"}, {Name: "R"},
-							},
-						},
-						{
-							Terms: []*grammar.Term{
-								{Name: "id"},
-							},
-						},
-					},
-				},
+	{
+		// S = L '=' R | R
+		// L = '*' R | id
+		// R = L
+		var (
+			g   = NewGrammar()
+			eq  = g.AddTerminal("=")
+			mul = g.AddTerminal("*")
+			id  = g.AddTerminal("id")
+			S   = g.AddRule("S")
+			L   = g.AddRule("L")
+			R   = g.AddRule("R")
+		)
+		g.SetStart(S)
+		g.AddProd(S, L, eq, R)
+		g.AddProd(S, R)
+		g.AddProd(L, mul, R)
+		g.AddProd(L, id)
+		g.AddProd(R, L)
+		runConstructTest(t, "2", g)
+	}
 
-				// R -> L
-				{
-					Name: "R",
-					Prods: []*grammar.Prod{
-						{
-							Terms: []*grammar.Term{
-								{Name: "L"},
-							},
-						},
-					},
-				},
-			},
-		})
-
-	runAllConstructTest(t, "precedence",
+	{
 		// E -> E + E
 		//    | E - E
 		//    | E * E
 		//    | num
-		&grammar.Grammar{
-			Terminals: []*grammar.Terminal{
-				{Name: "+"},
-				{Name: "-"},
-				{Name: "*"},
-				{Name: "/"},
-				{Name: "^"},
-				{Name: "num"},
-			},
-			Rules: []*grammar.Rule{
-				{
-					Name: "E",
-					Prods: []*grammar.Prod{
-						{Terms: []*grammar.Term{term("E"), term("+"), term("E")}, Precence: 1},
-						{Terms: []*grammar.Term{term("E"), term("-"), term("E")}, Precence: 1},
-						{Terms: []*grammar.Term{term("E"), term("*"), term("E")}, Precence: 2},
-						{Terms: []*grammar.Term{term("num")}},
-					},
-				},
-			},
-		},
-	)
-
-	runAllConstructTest(t, "repro1",
-		// StmtsPP = StmtsP SEMICOLON? ;
-		// StmtsP = StmtsP SEMICOLON Stmt | Stmt ;
-		// Stmt = NUMBER ;
-		&grammar.Grammar{
-			Terminals: []*grammar.Terminal{
-				{Name: "NUMBER"},
-				{Name: "SEMICOLON"},
-			},
-			Rules: []*grammar.Rule{
-				{
-					Name: "StmtsPP",
-					Prods: []*grammar.Prod{
-						{Terms: []*grammar.Term{term("StmtsP"), term("SemicolonOpt")}},
-					},
-				},
-				{
-					Name: "SemicolonOpt",
-					Prods: []*grammar.Prod{
-						{Terms: []*grammar.Term{term("SEMICOLON")}},
-					},
-				},
-				{
-					Name: "StmtsP",
-					Prods: []*grammar.Prod{
-						{Terms: []*grammar.Term{term("StmtsP"), term("SEMICOLON"), term("Stmt")}},
-						{Terms: []*grammar.Term{term("Stmt")}},
-					},
-				},
-				{
-					Name: "Stmt",
-					Prods: []*grammar.Prod{
-						{Terms: []*grammar.Term{term("NUMBER")}},
-					},
-				},
-			},
-		},
-	)
+		var (
+			g   = NewGrammar()
+			mul = g.AddTerminal("*")
+			add = g.AddTerminal("+")
+			sub = g.AddTerminal("-")
+			num = g.AddTerminal("num")
+			E   = g.AddRule("E")
+		)
+		g.SetStart(E)
+		g.AddProd(E, E, add, E)
+		g.LastProd().Precedence = 1
+		g.AddProd(E, E, sub, E)
+		g.LastProd().Precedence = 1
+		g.AddProd(E, E, mul, E)
+		g.LastProd().Precedence = 2
+		g.AddProd(E, num)
+		runConstructTest(t, "precedence", g)
+	}
 }
