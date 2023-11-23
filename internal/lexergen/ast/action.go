@@ -7,13 +7,13 @@ type Action interface {
 	GetAction() mode.Action
 }
 
-type ActionSkip struct {
+type ActionDiscard struct {
 	baseAST
 }
 
-func (a *ActionSkip) RunPass(ctx *Context, pass Pass) {}
+func (a *ActionDiscard) RunPass(ctx *Context, pass Pass) {}
 
-func (a *ActionSkip) GetAction() mode.Action {
+func (a *ActionDiscard) GetAction() mode.Action {
 	return mode.Action{
 		Type: mode.ActionDiscard,
 	}

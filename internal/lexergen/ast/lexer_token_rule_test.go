@@ -9,7 +9,7 @@ import (
 )
 
 func TestLexerTokenRule(t *testing.T) {
-	t.Run("cant-skip", func(t *testing.T) {
+	t.Run("cant-discard", func(t *testing.T) {
 		spec, ctx := parse(t, `
 @lexer
 FOO = 'foo' @discard ;

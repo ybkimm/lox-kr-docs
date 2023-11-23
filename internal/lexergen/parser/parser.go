@@ -288,8 +288,8 @@ func (p *parser) on_action(action ast.Action) ast.Action {
 	return action
 }
 
-func (p *parser) on_action_discard(_ Token) *ast.ActionSkip {
-	return &ast.ActionSkip{}
+func (p *parser) on_action_discard(_ Token) *ast.ActionDiscard {
+	return &ast.ActionDiscard{}
 }
 
 func (p *parser) on_action_push_mode(_, _ Token, mode Token, _ Token) *ast.ActionPushMode {
