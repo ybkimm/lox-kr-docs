@@ -25,7 +25,7 @@ func (t *LexerTermCharClass) NFACons(ctx *Context) *mode.NFAComposite {
 	}
 	ranges = rang3.Flatten(ranges, nil)
 	if t.Neg {
-		ranges = rang3.Negate(ranges)
+		ranges = rang3.Subtract([]rang3.Range{{B: 0, E: 0xFFFF}}, ranges)
 	}
 
 	nfaFactory := ctx.Mode().StateFactory

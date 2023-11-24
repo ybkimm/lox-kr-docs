@@ -18,6 +18,7 @@ CCURLY      = '}'  ;
 TILDE       ='~'   ;
 OPAREN      = '('  ;
 CPAREN      = ')'  ;
+SUB         = '-'  ;
 
 ZERO_OR_ONE      = '?'  ;
 ZERO_OR_MORE     = '*'  ;
@@ -40,7 +41,7 @@ LIST           = '@list'      ;
 RIGHT          = '@right'     ;
 
 // KEYWORD is a catch-all for keyword errors. Normally, keywords are a subset
-// of identifiers, but in Lox they start with @. Without KEYWORD, a typo like
+// of identifiers but in Lox they start with @. Without KEYWORD, a typo like
 // @frog would result in an unhelpful lexer error like "invalid character 'o'".
 // N.B.: KEYWORD must be defined after all the actual keywords so they take
 // priority.
@@ -48,7 +49,7 @@ KEYWORD = '@' [a-z_]+ ;
 
 ID = [A-Za-z] [A-Za-z0-9_]* ;
 
-@macro HEX_CHAR = [0-9a-fA-F] ;
+@macro HEX = [0-9a-fA-F] ;
 
 NUM = [0-9]+ ;
 
@@ -56,9 +57,9 @@ NUM = [0-9]+ ;
 @mode Literal {
   LITERAL = '\'' @pop_mode ;
   @frag '\\' [\\'nrt] ;
-  @frag '\\x' HEX_CHAR HEX_CHAR ;
-  @frag '\\u' HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR ;
-  @frag '\\U' HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR ;
+  @frag '\\x' HEX HEX ;
+  @frag '\\u' HEX HEX HEX HEX ;
+  @frag '\\U' HEX HEX HEX HEX HEX HEX HEX HEX ;
   @frag ~[\n] ;
 }
 
@@ -67,9 +68,9 @@ OBRACKET = '[' @push_mode(ClassChar) ;
   CBRACKET = ']' @pop_mode ;
   CLASS_DASH = '-' ;
   CLASS_CHAR = '\\' [\\nrt\-] 
-             | '\\x' HEX_CHAR HEX_CHAR
-             | '\\u' HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR 
-             | '\\U' HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR
+             | '\\x' HEX HEX
+             | '\\u' HEX HEX HEX HEX 
+             | '\\U' HEX HEX HEX HEX HEX HEX HEX HEX
              | ~[\n-]
              ;
 }
@@ -125,14 +126,14 @@ lexer_factor    = lexer_term_card+ ;
 lexer_term_card = lexer_term lexer_card? ;
 lexer_card      = '?' | '*' | '+' ;
 
-lexer_term   = LITERAL
-       | ID
-       | char_class 
-       | '(' lexer_expr ')' ;
+lexer_term = LITERAL
+           | ID
+           | char_class 
+           | '(' lexer_expr ')' ;
 
 char_class = '~'? '[' char_class_item+ ']' ;
 
-char_class_item = CLASS_CHAR | '-' ;
+char_class_item = CLASS_CHAR | CLASS_DASH ;
 
 action           = action_discard
                  | action_push_mode

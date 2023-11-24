@@ -6,9 +6,9 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/dcaiafa/lox/internal/base/errlogger"
 	"github.com/dcaiafa/lox/internal/ast"
 	"github.com/dcaiafa/lox/internal/base/baselexer"
+	"github.com/dcaiafa/lox/internal/base/errlogger"
 )
 
 type Token = baselexer.Token
@@ -324,6 +324,9 @@ func fixLiteral(lit []byte) string {
 	return unescape(lit[1 : len(lit)-1])
 }
 
+// unescape returns a literal with all escape sequences evaluated and replaced.
+// Because the literal has already been validated by the lexer, unescape assume
+// that the escape sequences are well-formed.
 func unescape(lit []byte) string {
 	var str strings.Builder
 

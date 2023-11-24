@@ -11,6 +11,8 @@ import (
 	"github.com/dcaiafa/lox/internal/base/stack"
 )
 
+const MaxRune rune = 0x10FFFF
+
 type Range struct {
 	B rune
 	E rune
@@ -207,18 +209,70 @@ func Flatten(ranges []Range, onChange func(oa, ob, n Range)) []Range {
 	return ranges2.Elements()
 }
 
-func Negate(ranges []Range) []Range {
-	v := stack.Stack[Range]{}
-	v.SetCapacity(len(ranges))
-	var b rune = 0
-	for _, r := range ranges {
-		if r.B > 0 {
-			v.Push(Range{B: b, E: r.B - 1})
+func Subtract(a []Range, b []Range) []Range {
+	if len(a) == 0 || len(b) == 0 {
+		return a
+	}
+
+	a = Flatten(a, nil)
+	b = Flatten(b, nil)
+
+	r := stack.Stack[Range]{}
+	r.SetCapacity(len(a))
+
+	for len(b) > 0 {
+		// a --
+		// b   --
+		if r.Empty() || r.Peek().E < b[0].B {
+			if len(a) == 0 {
+				break
+			}
+			r.Push(a[0])
+			a = a[1:]
+			continue
 		}
-		b = r.E + 1
+
+		ea := r.Peek()
+		eb := b[0]
+
+		switch {
+		// a   --
+		// b --
+		case ea.B > eb.E:
+			b = b[1:]
+
+		// a   --
+		// b ------
+		// r
+		case ea.B >= eb.B && ea.E <= eb.E:
+			r.Pop()
+
+			// a ------
+			// b   --
+			// r --  --
+		case ea.B < eb.B && ea.E > eb.E:
+			r.Pop()
+			r.Push(Range{B: ea.B, E: eb.B - 1})
+			r.Push(Range{B: eb.B + 1, E: ea.E})
+
+			// a ----
+			// b   ----
+			// r --
+		case ea.B < eb.B && ea.E <= eb.E:
+			r.Pop()
+			r.Push(Range{B: ea.B, E: eb.B - 1})
+
+			// a   ----
+			// b ----
+			// r     --
+		case ea.B >= eb.B && ea.E > eb.E:
+			r.Pop()
+			r.Push(Range{B: eb.E + 1, E: ea.E})
+
+		default:
+			panic("unreachable")
+		}
 	}
-	if b < 0xFFFF {
-		v.Push(Range{B: b, E: 0xFFFF})
-	}
-	return v.Elements()
+
+	return append(r.Elements(), a...)
 }

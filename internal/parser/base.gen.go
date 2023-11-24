@@ -13,32 +13,33 @@ const (
 	TILDE int = 8
 	OPAREN int = 9
 	CPAREN int = 10
-	ZERO_OR_ONE int = 11
-	ZERO_OR_MORE int = 12
-	ONE_OR_MORE int = 13
-	ZERO_OR_MORE_NG int = 14
-	ONE_OR_MORE_NG int = 15
-	PARSER int = 16
-	LEXER int = 17
-	START int = 18
-	DISCARD int = 19
-	MACRO int = 20
-	FRAG int = 21
-	MODE int = 22
-	PUSH_MODE int = 23
-	POP_MODE int = 24
-	ERROR_KEYWORD int = 25
-	LEFT int = 26
-	LIST int = 27
-	RIGHT int = 28
-	KEYWORD int = 29
-	ID int = 30
-	NUM int = 31
-	LITERAL int = 32
-	OBRACKET int = 33
-	CBRACKET int = 34
-	CLASS_DASH int = 35
-	CLASS_CHAR int = 36
+	SUB int = 11
+	ZERO_OR_ONE int = 12
+	ZERO_OR_MORE int = 13
+	ONE_OR_MORE int = 14
+	ZERO_OR_MORE_NG int = 15
+	ONE_OR_MORE_NG int = 16
+	PARSER int = 17
+	LEXER int = 18
+	START int = 19
+	DISCARD int = 20
+	MACRO int = 21
+	FRAG int = 22
+	MODE int = 23
+	PUSH_MODE int = 24
+	POP_MODE int = 25
+	ERROR_KEYWORD int = 26
+	LEFT int = 27
+	LIST int = 28
+	RIGHT int = 29
+	KEYWORD int = 30
+	ID int = 31
+	NUM int = 32
+	LITERAL int = 33
+	OBRACKET int = 34
+	CBRACKET int = 35
+	CLASS_DASH int = 36
+	CLASS_CHAR int = 37
 )
 
 func _TokenToString(t int) string {
@@ -65,6 +66,8 @@ func _TokenToString(t int) string {
 		return "OPAREN"
 	case CPAREN: 
 		return "CPAREN"
+	case SUB: 
+		return "SUB"
 	case ZERO_OR_ONE: 
 		return "ZERO_OR_ONE"
 	case ZERO_OR_MORE: 

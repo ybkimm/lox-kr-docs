@@ -99,16 +99,24 @@ func Itor(input []int) []Range {
 	inputr := make([]Range, 0, len(input)/2)
 	for i := 0; i < len(input); i += 2 {
 		inputr = append(inputr, Range{
-			B: '0' + rune(input[i]),
-			E: '0' + rune(input[i+1]),
+			B: rune(input[i]),
+			E: rune(input[i+1]),
 		})
 	}
 	return inputr
 }
 
+func ItorS(input []int) []Range {
+	r := Itor(input)
+	rand.Shuffle(len(r), func(i, j int) {
+		r[i], r[j] = r[j], r[i]
+	})
+	return r
+}
+
 func DumpRanges(t *testing.T, rs []Range) {
 	for _, r := range rs {
-		t.Log(r)
+		t.Log(int(r.B), "-", int(r.E))
 	}
 }
 
@@ -161,12 +169,7 @@ func TestFlattenRanges(t *testing.T) {
 func TestNormalizeRanges(t *testing.T) {
 	test := func(name string, input, output []int) {
 		t.Run(name, func(t *testing.T) {
-			inputRanges := Itor(input)
-			rand.Shuffle(len(inputRanges), func(i, j int) {
-				inputRanges[i], inputRanges[j] =
-					inputRanges[j], inputRanges[i]
-			})
-
+			inputRanges := ItorS(input)
 			res := set.Set[Range]{}
 			res.AddSlice(Itor(input))
 			Normalize(inputRanges, func(o, a, b, c Range) {
@@ -255,4 +258,44 @@ func TestNormalizeRanges(t *testing.T) {
 			8, 8,
 			9, 9,
 		})
+}
+
+func TestSubtract(t *testing.T) {
+	test := func(name string, inputA, inputB, output []int) {
+		t.Run(name, func(t *testing.T) {
+			res := Subtract(ItorS(inputA), ItorS(inputB))
+			expected := Itor(output)
+			if !reflect.DeepEqual(res, expected) {
+				t.Log("Expected:")
+				DumpRanges(t, expected)
+				t.Log("Actual:")
+				DumpRanges(t, res)
+				t.Fatalf("Unexpected result")
+			}
+		})
+	}
+
+	//   0123456789
+	// a ----- ----
+	// b --  -- --
+	// r   --  -  -
+	test("1", []int{0, 4, 6, 9}, []int{0, 1, 4, 5, 7, 8}, []int{2, 3, 6, 6, 9, 9})
+
+	//   0123456789
+	// a  ---- ----
+	// b ---
+	// r    -- ----
+	test("2", []int{1, 4, 6, 9}, []int{0, 2}, []int{3, 4, 6, 9})
+
+	//   0123456789
+	// a ----- ----
+	// b     ------
+	// r ----
+	test("3", []int{0, 4, 6, 9}, []int{4, 9}, []int{0, 3})
+
+	//   0123456789
+	// a ----- ----
+	// b        ---
+	// r ----- -
+	test("4", []int{0, 4, 6, 9}, []int{7, 9}, []int{0, 4, 6, 6})
 }
