@@ -80,7 +80,7 @@ digraph G {
   5 -> 1 [label="ε"];
   6 -> 7 [label="9-a"];
   7 -> 1 [label="ε"];
-  8 -> 9 [label="e-\\uffff"];
+  8 -> 9 [label="e-\\u10ffff"];
   9 -> 1 [label="ε"];
   0 [label="0", shape="circle"];
   1 [label="1", shape="circle"];
