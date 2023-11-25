@@ -243,15 +243,29 @@ func (p *parser) on_lexer_term__tok(tok Token) ast.LexerTerm {
 	}
 }
 
-func (p *parser) on_lexer_term__char_class(charClass *ast.LexerTermCharClass) ast.LexerTerm {
-	return charClass
+func (p *parser) on_lexer_term__char_class_expr(e ast.CharClassExpr) ast.LexerTerm {
+	return &ast.LexerTermCharClass{
+		Expr: e,
+	}
 }
 
 func (p *parser) on_lexer_term__expr(_ Token, expr *ast.LexerExpr, _ Token) ast.LexerTerm {
 	return expr
 }
 
-func (p *parser) on_char_class(neg Token, _ Token, chars []Token, _ Token) *ast.LexerTermCharClass {
+func (p *parser) on_char_class_expr__binary(l ast.CharClassExpr, _ Token, r ast.CharClassExpr) ast.CharClassExpr {
+	return &ast.LexerCharClassBinaryExpr{
+		Op:    ast.CharClassBinaryExprSub,
+		Left:  l,
+		Right: r,
+	}
+}
+
+func (p *parser) on_char_class_expr__char_class(c *ast.LexerCharClass) ast.CharClassExpr {
+	return c
+}
+
+func (p *parser) on_char_class(neg Token, _ Token, chars []Token, _ Token) *ast.LexerCharClass {
 	items := make([]*ast.CharClassItem, 0, len(chars))
 
 	toRune := func(t Token) rune {
@@ -274,7 +288,7 @@ func (p *parser) on_char_class(neg Token, _ Token, chars []Token, _ Token) *ast.
 		}
 	}
 
-	return &ast.LexerTermCharClass{
+	return &ast.LexerCharClass{
 		Neg:            neg.Type != EOF,
 		CharClassItems: items,
 	}

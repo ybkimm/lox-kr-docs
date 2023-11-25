@@ -45,6 +45,8 @@ EXEC_PREFIX = 'e\''  @push_mode(EXEC) ;
 	@frag '\\' ([nrt"\\] | ('x' HEX_DIGIT HEX_DIGIT)) ;
 	EXEC_DQUOTE_LITERAL = '"' @pop_mode ;
 }
+
+STUFF = [\u0020-\U0010FFFF] - ["];
 `
 
 func TestParser(t *testing.T) {

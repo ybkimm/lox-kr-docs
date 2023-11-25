@@ -53,6 +53,10 @@ func (c *context) ParseLox() bool {
 	c.LexerModes = astctx.LexerDFAs
 	c.ParserGrammar = astctx.Grammar
 	c.ParserTable = lr1.ConstructLALR(c.ParserGrammar)
+	if c.ParserTable.HasConflicts {
+		c.Errs.GeneralError(fmt.Errorf("Grammar has conflicts"))
+		return false
+	}
 
 	if c.Report != nil {
 		fmt.Fprintln(c.Report, "Parser Table")

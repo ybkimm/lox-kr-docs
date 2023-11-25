@@ -128,8 +128,11 @@ lexer_card      = '?' | '*' | '+' ;
 
 lexer_term = LITERAL
            | ID
-           | char_class 
+           | char_class_expr 
            | '(' lexer_expr ')' ;
+
+char_class_expr = char_class SUB char_class
+                | char_class ;
 
 char_class = '~'? '[' char_class_item+ ']' ;
 

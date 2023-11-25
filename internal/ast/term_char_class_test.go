@@ -95,4 +95,36 @@ digraph G {
 }
 	`)
 	})
+
+	t.Run("expr", func(t *testing.T) {
+		spec, ctx := parseAndAnalyze(t, `
+@lexer
+FOOBAR = [\u0020-\U0010FFFF] - [b-f];
+`)
+		it := spec.Units[0].Statements[0].(*ast.TokenRule).Expr
+		nfaCons := it.NFACons(ctx)
+		if ctx.Errs.HasError() {
+			t.Fatalf("Failed to generate NFACons")
+		}
+
+		var nfaStr strings.Builder
+		nfaCons.B.Print(&nfaStr)
+		requireEqualStr(t, nfaStr.String(), `
+digraph G {
+  rankdir="LR";
+  0 -> 2 [label="ε"];
+  0 -> 4 [label="ε"];
+  2 -> 3 [label=" -a"];
+  3 -> 1 [label="ε"];
+  4 -> 5 [label="g-\\u10ffff"];
+  5 -> 1 [label="ε"];
+  0 [label="0", shape="circle"];
+  1 [label="1", shape="circle"];
+  2 [label="2", shape="circle"];
+  3 [label="3", shape="circle"];
+  4 [label="4", shape="circle"];
+  5 [label="5", shape="circle"];
+}
+	`)
+	})
 }
