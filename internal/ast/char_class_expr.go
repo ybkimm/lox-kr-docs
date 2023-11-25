@@ -14,7 +14,7 @@ const (
 	CharClassBinaryExprSub CharClassBinaryExprOp = 1
 )
 
-type LexerCharClassBinaryExpr struct {
+type CharClassBinaryExpr struct {
 	baseAST
 
 	Op    CharClassBinaryExprOp
@@ -22,12 +22,12 @@ type LexerCharClassBinaryExpr struct {
 	Right CharClassExpr
 }
 
-func (e *LexerCharClassBinaryExpr) RunPass(ctx *Context, pass Pass) {
+func (e *CharClassBinaryExpr) RunPass(ctx *Context, pass Pass) {
 	e.Left.RunPass(ctx, pass)
 	e.Right.RunPass(ctx, pass)
 }
 
-func (e *LexerCharClassBinaryExpr) GetRanges() []rang3.Range {
+func (e *CharClassBinaryExpr) GetRanges() []rang3.Range {
 	rangesLeft := e.Left.GetRanges()
 	rangesRight := e.Right.GetRanges()
 
