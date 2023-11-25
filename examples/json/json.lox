@@ -1,0 +1,50 @@
+// https://www.json.org/json-en.html
+
+@lexer
+
+OCURLY = '{' ;
+CCURLY = '}' ;
+OBRACKET = '[' ;
+CBRACKET = ']' ;
+COMMA  = ',' ;
+COLON = ':' ;
+
+TRUE  = 'true'  ;
+FALSE = 'false' ;
+NULL  = 'null'  ;
+
+@macro HEX = [0-9a-fA-F] ;
+
+@frag '"' @push_mode(String) ;
+@mode String {
+  STRING = '"'  @pop_mode ;
+  @frag [\u0020-\U0010FFFF]-[\\] ;
+  @frag '\\' ["\\/bfnrt] ;
+  @frag '\\u' HEX HEX HEX HEX ;
+}
+
+@macro INTEGER = '-'? [1-9] [0-9]* ;
+@macro FRACTION = '.' [0-9]+ ;
+@macro EXPONENT = [eE] [+-]? [1-9] [0-9]* ;
+NUMBER = INTEGER FRACTION? EXPONENT? ;
+
+@frag [ \r\n\t]+  @discard;
+
+@parser
+
+@start json = value ;
+
+value = object
+      | array
+      | STRING
+      | NUMBER
+      | 'true'
+      | 'false'
+      | 'null'
+      ;
+
+object = '{' @list(member, ',') '}' ;
+
+member = STRING ':' value ;
+
+array = '[' @list(value, ',') ']' ;
