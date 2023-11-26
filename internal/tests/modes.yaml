@@ -65,10 +65,10 @@ sources:
 
         fset := gotoken.NewFileSet()
         file := fset.AddFile("expr", -1, len(input))
-        errs := errlogger.New(os.Stderr)
+        errs := errlogger.New(fset, os.Stderr)
 
         onError := func(l *baselexer.Lexer) {
-          errs.Errorf(file.Position(l.Pos()), "unexpected character: %c", l.Peek())
+          errs.Errorf(l.Pos(), "unexpected character: %c", l.Peek())
         }
 
         var parser parser
@@ -101,7 +101,7 @@ sources:
       func (p *parser) onError() {
         if p.errorToken().Type != ERROR {
           p.errs.Errorf(
-            p.fset.Position(p.errorToken().Pos),
+            p.errorToken().Pos,
             "unexpected %v", _TokenToString(p.errorToken().Type))
         }
       }

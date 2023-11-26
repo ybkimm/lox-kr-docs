@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dcaiafa/lox/internal/base/errlogger"
 	"github.com/dcaiafa/lox/internal/ast"
+	"github.com/dcaiafa/lox/internal/base/errlogger"
 	"github.com/dcaiafa/lox/internal/parser"
 )
 
@@ -21,7 +21,7 @@ func requireEqualStr(t *testing.T, actual, expected string) {
 
 func parse(t *testing.T, input string) (*ast.Spec, *ast.Context) {
 	fset := gotoken.NewFileSet()
-	errs := errlogger.New(&strings.Builder{})
+	errs := errlogger.New(fset, &strings.Builder{})
 	file := fset.AddFile("input.lox", -1, len(input))
 	unit := parser.Parse(file, []byte(input), errs)
 	if errs.HasError() {

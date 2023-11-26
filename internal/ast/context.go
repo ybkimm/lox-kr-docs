@@ -108,8 +108,8 @@ func (c *Context) LookupAlias(name string) *TokenRule {
 	return c.aliases[name]
 }
 
-func (c *Context) Position(ast AST) gotoken.Position {
-	return c.FSet.Position(ast.Bounds().Begin)
+func (c *Context) Position(ast AST) gotoken.Pos {
+	return ast.Bounds().Begin
 }
 
 func (c *Context) Mode() *mode.ModeBuilder {

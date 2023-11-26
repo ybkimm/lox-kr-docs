@@ -58,10 +58,10 @@ sources:
 
         fset := gotoken.NewFileSet()
         file := fset.AddFile("expr", -1, len(input))
-        errs := errlogger.New(os.Stderr)
+        errs := errlogger.New(fset, os.Stderr)
 
         onError := func(l *baselexer.Lexer) {
-          errs.Errorf(file.Position(l.Pos()), "unexpected character: %c", l.Peek())
+          errs.Errorf(l.Pos(), "unexpected character: %c", l.Peek())
         }
 
         var parser calcParser
@@ -119,7 +119,7 @@ sources:
       func (p *calcParser) on_num(num Token) float64 {
         v, err := strconv.ParseFloat(string(num.Str), 64)
         if err != nil {
-          p.errs.Errorf(p.fset.Position(num.Pos), "invalid float: %v", err)
+          p.errs.Errorf(num.Pos, "invalid float: %v", err)
           return 0
         }
         return v
@@ -128,7 +128,7 @@ sources:
       func (p *calcParser) on_num__minus(_ Token, num Token) float64 {
         v, err := strconv.ParseFloat(string(num.Str), 64)
         if err != nil {
-          p.errs.Errorf(p.fset.Position(num.Pos), "invalid float: %v", err)
+          p.errs.Errorf(num.Pos, "invalid float: %v", err)
           return 0
         }
         return -v
@@ -137,7 +137,7 @@ sources:
       func (p *calcParser) onError() {
         if p.errorToken().Type != ERROR {
           p.errs.Errorf(
-            p.fset.Position(p.errorToken().Pos),
+            p.errorToken().Pos,
             "unexpected %v", _TokenToString(p.errorToken().Type))
         }
       }

@@ -11,8 +11,8 @@ import (
 	"testing"
 
 	"github.com/dcaiafa/lox/internal/base/baseline"
-	"github.com/dcaiafa/lox/internal/codegen"
 	"github.com/dcaiafa/lox/internal/base/errlogger"
+	"github.com/dcaiafa/lox/internal/codegen"
 	"gopkg.in/yaml.v3"
 )
 
@@ -66,7 +66,7 @@ func TestLox(t *testing.T) {
 			resBuf := new(strings.Builder)
 
 			fset := gotoken.NewFileSet()
-			errs := errlogger.New(resBuf)
+			errs := errlogger.New(fset, resBuf)
 			ok := codegen.Generate(&codegen.Config{
 				Fset:   fset,
 				Errs:   errs,

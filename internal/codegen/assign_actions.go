@@ -35,12 +35,12 @@ func (c *context) AssignActions() bool {
 			}
 			if !gotypes.Identical(method.Return, firstMethod.Return) {
 				c.Errs.Errorf(
-					c.Fset.Position(method.Method.Pos()),
+					method.Method.Pos(),
 					"action return type conflict: %v returns %v but %v returns %v",
 					method.Name(), method.Return,
 					firstMethod.Name(), firstMethod.Return)
 				c.Errs.Infof(
-					c.Fset.Position(firstMethod.Method.Pos()),
+					firstMethod.Method.Pos(),
 					"%v is defined here",
 					firstMethod.Name())
 			}
@@ -49,7 +49,7 @@ func (c *context) AssignActions() bool {
 		rule := rules[ruleName]
 		if rule == nil {
 			c.Errs.Errorf(
-				c.Fset.Position(firstMethod.Method.Pos()),
+				firstMethod.Method.Pos(),
 				"action method %v: no rule named %v",
 				firstMethod.Name(), ruleName)
 			continue
@@ -124,7 +124,7 @@ func (c *context) AssignActions() bool {
 		if len(matches) > 1 {
 			c.Errs.Errorf(prod.Position, "multiple action methods matching production")
 			for _, match := range matches {
-				c.Errs.Infof(c.Fset.Position(match.Method.Pos()),
+				c.Errs.Infof(match.Method.Pos(),
 					"possible match: %v", match.Method.Name())
 			}
 			continue
@@ -146,7 +146,7 @@ func (c *context) AssignActions() bool {
 	if !unassignedMethods.Empty() {
 		unassignedMethods.ForEach(func(m *actionMethod) {
 			c.Errs.Errorf(
-				c.Fset.Position(m.Method.Pos()),
+				m.Method.Pos(),
 				"could not match action method %v to a production",
 				m.Name())
 		})
@@ -172,7 +172,7 @@ func (c *context) getActionMethods() map[string][]*actionMethod {
 		sig := goMethod.Type().(*gotypes.Signature)
 		if sig.Results().Len() != 1 {
 			c.Errs.Errorf(
-				c.Fset.Position(goMethod.Pos()),
+				goMethod.Pos(),
 				"%v: action method must return a single value",
 				goMethod.Name())
 			continue

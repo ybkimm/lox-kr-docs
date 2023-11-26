@@ -8,8 +8,8 @@ import (
 	"os"
 	"runtime/pprof"
 
-	"github.com/dcaiafa/lox/internal/codegen"
 	"github.com/dcaiafa/lox/internal/base/errlogger"
+	"github.com/dcaiafa/lox/internal/codegen"
 )
 
 func main() {
@@ -43,7 +43,7 @@ func realMain() error {
 	}
 
 	fset := gotoken.NewFileSet()
-	errs := errlogger.New(os.Stderr)
+	errs := errlogger.New(fset, os.Stderr)
 
 	var reportOut io.Writer
 	if *flagReport {

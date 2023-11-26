@@ -2,7 +2,6 @@ package codegen
 
 import (
 	"fmt"
-	gotoken "go/token"
 	gotypes "go/types"
 	"path/filepath"
 
@@ -136,7 +135,7 @@ func (c *context) lookupParserType(scope *gotypes.Scope) {
 		// Can't have type parameters (non-generic).
 		if obj.Type().(*gotypes.Named).TypeParams().Len() != 0 {
 			c.Errs.Errorf(
-				c.Fset.Position(obj.Pos()),
+				obj.Pos(),
 				"parser %v cannot have type parameters",
 				namedType.Obj().Name())
 			return
@@ -145,10 +144,10 @@ func (c *context) lookupParserType(scope *gotypes.Scope) {
 		// There can be only one.
 		if parserObj != nil {
 			c.Errs.Errorf(
-				c.Fset.Position(obj.Pos()),
+				obj.Pos(),
 				"there can only be one parser implementation")
 			c.Errs.Infof(
-				c.Fset.Position(parserObj.Obj().Pos()),
+				parserObj.Obj().Pos(),
 				"here is the other one")
 			return
 		}
@@ -159,8 +158,7 @@ func (c *context) lookupParserType(scope *gotypes.Scope) {
 	if parserObj == nil {
 		c.Errs.GeneralErrorf(
 			"parser implementation undefined")
-		c.Errs.Infof(
-			gotoken.Position{},
+		c.Errs.Infof(0,
 			"You must define a struct for the parser that embeds \"lox\".\n"+
 				"Example:\n"+
 				"type myParser struct {\n"+

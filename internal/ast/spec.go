@@ -1,7 +1,7 @@
 package ast
 
 import (
-	gotoken "go/token"
+	"fmt"
 	"slices"
 
 	"github.com/dcaiafa/lox/internal/lexergen/mode"
@@ -34,7 +34,7 @@ func (s *Spec) RunPass(ctx *Context, pass Pass) {
 	case GenerateGrammar:
 		if ctx.HasParserRules {
 			if ctx.StartParserRule == nil {
-				ctx.Errs.Errorf(gotoken.Position{}, "@start rule undefined")
+				ctx.Errs.GeneralError(fmt.Errorf("@start rule undefined"))
 				return
 			}
 			ctx.Grammar.SetStart(ctx.StartParserRule.Rule)

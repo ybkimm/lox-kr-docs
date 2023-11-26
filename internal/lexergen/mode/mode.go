@@ -3,15 +3,15 @@ package mode
 import (
 	gotoken "go/token"
 
+	"github.com/dcaiafa/lox/internal/base/array"
 	"github.com/dcaiafa/lox/internal/base/assert"
 	"github.com/dcaiafa/lox/internal/base/errlogger"
-	"github.com/dcaiafa/lox/internal/lexergen/dfa"
-	"github.com/dcaiafa/lox/internal/lexergen/nfa"
-	"github.com/dcaiafa/lox/internal/lexergen/rang3"
-	"github.com/dcaiafa/lox/internal/base/array"
 	"github.com/dcaiafa/lox/internal/base/set"
 	"github.com/dcaiafa/lox/internal/base/stablemap"
 	"github.com/dcaiafa/lox/internal/base/stack"
+	"github.com/dcaiafa/lox/internal/lexergen/dfa"
+	"github.com/dcaiafa/lox/internal/lexergen/nfa"
+	"github.com/dcaiafa/lox/internal/lexergen/rang3"
 )
 
 type Mode struct {
@@ -89,8 +89,8 @@ func (m *ModeBuilder) pickAction(
 	}
 
 	conflict := func(a1, a2 *Actions) {
-		errs.Errorf(fset.Position(a1.Pos), "Conflicting lexer actions: %v", a1)
-		errs.Infof(fset.Position(a2.Pos), "Conflicts with other action: %v", a2)
+		errs.Errorf(a1.Pos, "Conflicting lexer actions: %v", a1)
+		errs.Infof(a2.Pos, "Conflicts with other action: %v", a2)
 	}
 
 	winner := actionSet[0]

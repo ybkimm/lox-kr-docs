@@ -65,7 +65,7 @@ type Rule struct {
 	Index    int
 	Name     string
 	Prods    []*Prod
-	Position gotoken.Position
+	Position gotoken.Pos
 	UserData any
 }
 
@@ -85,7 +85,7 @@ type Prod struct {
 	Terms         []Term
 	Precedence    int
 	Associativity Associativity
-	Position      gotoken.Position
+	Position      gotoken.Pos
 	UserData      any
 }
 

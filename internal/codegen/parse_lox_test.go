@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/dcaiafa/lox/internal/base/baseline"
 	"github.com/dcaiafa/lox/internal/base/errlogger"
 	"github.com/dcaiafa/lox/internal/testutil"
-	"github.com/dcaiafa/lox/internal/base/baseline"
 )
 
 func TestParseLox(t *testing.T) {
@@ -63,7 +63,7 @@ C_PAREN = ')' ;
 `)
 
 	fset := gotoken.NewFileSet()
-	errs := errlogger.New(os.Stderr)
+	errs := errlogger.New(fset, os.Stderr)
 
 	ctx := &context{
 		Fset: fset,

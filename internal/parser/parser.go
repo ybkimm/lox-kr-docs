@@ -22,7 +22,7 @@ type parser struct {
 
 func Parse(file *gotoken.File, data []byte, errs *errlogger.ErrLogger) *ast.Unit {
 	onError := func(l *baselexer.Lexer) {
-		errs.Errorf(file.Position(l.Pos()), "unexpected character: %c", l.Peek())
+		errs.Errorf(l.Pos(), "unexpected character: %c", l.Peek())
 	}
 
 	lex := baselexer.New(new(_LexerStateMachine), onError, file, data)
@@ -330,8 +330,7 @@ func (p *parser) onReduce(r any, begin, end Token) {
 func (p *parser) onError() {
 	tok := p.errorToken()
 	p.errs.Errorf(
-		p.file.Position(tok.Pos),
-		"unexpected %v %q", _TokenToString(tok.Type), string(tok.Str))
+		tok.Pos, "unexpected %v %q", _TokenToString(tok.Type), string(tok.Str))
 }
 
 func fixLiteral(lit []byte) string {

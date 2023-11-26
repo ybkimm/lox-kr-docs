@@ -15,9 +15,9 @@ func Parse(s string) (any, error) {
 	file := fset.AddFile("expr", -1, len(s))
 
 	var errStr strings.Builder
-	errs := errlogger.New(&errStr)
+	errs := errlogger.New(fset, &errStr)
 	onError := func(l *baselexer.Lexer) {
-		errs.Errorf(fset.Position(l.Pos()), "unexpected character: %c", l.Peek())
+		errs.Errorf(l.Pos(), "unexpected character: %c", l.Peek())
 	}
 
 	var parser jsonParser
@@ -60,7 +60,7 @@ func (p *jsonParser) on_value__tok(t Token) any {
 	case NUMBER:
 		v, err := strconv.ParseFloat(string(t.Str), 64)
 		if err != nil {
-			p.errs.Errorf(p.file.Position(t.Pos), "invalid number")
+			p.errs.Errorf(t.Pos, "invalid number")
 		}
 		return v
 	case TRUE:
@@ -100,8 +100,7 @@ func (p *jsonParser) on_array(_ Token, entries []any, _ Token) []any {
 func (p *jsonParser) onError() {
 	tok := p.errorToken()
 	p.errs.Errorf(
-		p.file.Position(tok.Pos),
-		"unexpected %v %q", _TokenToString(tok.Type), string(tok.Str))
+		tok.Pos, "unexpected %v %q", _TokenToString(tok.Type), string(tok.Str))
 }
 
 func unescape(lit []byte) string {
