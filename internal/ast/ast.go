@@ -6,26 +6,6 @@ import (
 	"github.com/dcaiafa/lox/internal/lexergen/mode"
 )
 
-type Pass int
-
-const (
-	CreateNames Pass = iota
-	Check
-	Normalize
-	GenerateGrammar
-)
-
-const AllPasses Pass = GenerateGrammar
-
-const Print = 1000
-
-var passes = []Pass{
-	CreateNames,
-	Check,
-	Normalize,
-	GenerateGrammar,
-}
-
 type Bounds struct {
 	Begin gotoken.Pos
 	End   gotoken.Pos

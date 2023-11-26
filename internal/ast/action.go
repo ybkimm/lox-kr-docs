@@ -2,11 +2,21 @@ package ast
 
 import "github.com/dcaiafa/lox/internal/lexergen/mode"
 
+// Action is the interface implemented by ASTs that define actions for tokens
+// and fragments.
 type Action interface {
 	AST
+
+	// GetAction returns the mode.Action corresponding to the AST.
 	GetAction() mode.Action
 }
 
+// ActionDiscard is the AST for the action @discard.
+//
+// E.g.
+//
+//	// Discard whitespaces.
+//	@frag [ \n\r\t]+  @discard;
 type ActionDiscard struct {
 	baseAST
 }
@@ -19,6 +29,11 @@ func (a *ActionDiscard) GetAction() mode.Action {
 	}
 }
 
+// ActionPushMode is the AST for the action @push_mode.
+//
+// Example:
+//
+//	@frag '"'  @push_mode(StringLiteral) ;
 type ActionPushMode struct {
 	baseAST
 	Mode    string
@@ -49,6 +64,14 @@ func (a *ActionPushMode) GetAction() mode.Action {
 	}
 }
 
+// ActionPopMode is the AST for the action @pop_mode.
+//
+// Example:
+//
+//	@mode StringLiteral {
+//	  STRING = '"' @pop_mode ;
+//	  @frag [\u0020-\U0010FFFF]* ;
+//	}
 type ActionPopMode struct {
 	baseAST
 }

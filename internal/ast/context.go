@@ -10,6 +10,26 @@ import (
 	"github.com/dcaiafa/lox/internal/parsergen/lr1"
 )
 
+type Pass int
+
+const (
+	CreateNames Pass = iota
+	Check
+	Normalize
+	GenerateGrammar
+)
+
+const AllPasses Pass = GenerateGrammar
+
+const Print = 1000
+
+var passes = []Pass{
+	CreateNames,
+	Check,
+	Normalize,
+	GenerateGrammar,
+}
+
 const DefaultModeName = "$default"
 
 type Context struct {
