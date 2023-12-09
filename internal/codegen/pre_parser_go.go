@@ -31,7 +31,7 @@ func (c *context) PreParseGo() bool {
 	oneSource, err := goparser.ParseFile(
 		gotoken.NewFileSet(), oneSourceName, nil, 0)
 	if err != nil {
-		c.Errs.GeneralErrorf("%v: %w", oneSourceName, err)
+		c.Errs.GeneralError(err)
 		return false
 	}
 
