@@ -1,0 +1,171 @@
+Parser Table
+============
+I0:
+  S' = .S, EOF
+  S = .list*, EOF
+  list = .@list(pair,COMMA) SEMICOLON, EOF
+  list = .@list(pair,COMMA) SEMICOLON, OPAREN
+  pair = .OPAREN num COMMA num CPAREN, COMMA
+  pair = .OPAREN num COMMA num CPAREN, SEMICOLON
+  list* = .list+, EOF
+  list* = ., EOF
+  list+ = .list+ list, EOF
+  list+ = .list+ list, OPAREN
+  list+ = .list, EOF
+  list+ = .list, OPAREN
+  @list(pair,COMMA) = .@list(pair,COMMA) COMMA pair, COMMA
+  @list(pair,COMMA) = .@list(pair,COMMA) COMMA pair, SEMICOLON
+  @list(pair,COMMA) = .pair, COMMA
+  @list(pair,COMMA) = .pair, SEMICOLON
+    on EOF reduce list*
+    on OPAREN shift I2
+    on @list(pair,COMMA) goto I1
+    on S goto I3
+    on list goto I4
+    on list* goto I5
+    on list+ goto I6
+    on pair goto I7
+I1:
+  list = @list(pair,COMMA) .SEMICOLON, EOF
+  list = @list(pair,COMMA) .SEMICOLON, OPAREN
+  @list(pair,COMMA) = @list(pair,COMMA) .COMMA pair, COMMA
+  @list(pair,COMMA) = @list(pair,COMMA) .COMMA pair, SEMICOLON
+    on COMMA shift I8
+    on SEMICOLON shift I9
+I2:
+  pair = OPAREN .num COMMA num CPAREN, COMMA
+  pair = OPAREN .num COMMA num CPAREN, SEMICOLON
+  num = .NUM, COMMA
+    on NUM shift I10
+    on num goto I11
+I3:
+  S' = S., EOF
+    on EOF accept
+I4:
+  list+ = list., EOF
+  list+ = list., OPAREN
+    on EOF reduce list+
+    on OPAREN reduce list+
+I5:
+  S = list*., EOF
+    on EOF reduce S
+I6:
+  list = .@list(pair,COMMA) SEMICOLON, EOF
+  list = .@list(pair,COMMA) SEMICOLON, OPAREN
+  pair = .OPAREN num COMMA num CPAREN, COMMA
+  pair = .OPAREN num COMMA num CPAREN, SEMICOLON
+  list* = list+., EOF
+  list+ = list+ .list, EOF
+  list+ = list+ .list, OPAREN
+  @list(pair,COMMA) = .@list(pair,COMMA) COMMA pair, COMMA
+  @list(pair,COMMA) = .@list(pair,COMMA) COMMA pair, SEMICOLON
+  @list(pair,COMMA) = .pair, COMMA
+  @list(pair,COMMA) = .pair, SEMICOLON
+    on EOF reduce list*
+    on OPAREN shift I2
+    on @list(pair,COMMA) goto I1
+    on list goto I12
+    on pair goto I7
+I7:
+  @list(pair,COMMA) = pair., COMMA
+  @list(pair,COMMA) = pair., SEMICOLON
+    on COMMA reduce @list(pair,COMMA)
+    on SEMICOLON reduce @list(pair,COMMA)
+I8:
+  pair = .OPAREN num COMMA num CPAREN, COMMA
+  pair = .OPAREN num COMMA num CPAREN, SEMICOLON
+  @list(pair,COMMA) = @list(pair,COMMA) COMMA .pair, COMMA
+  @list(pair,COMMA) = @list(pair,COMMA) COMMA .pair, SEMICOLON
+    on OPAREN shift I2
+    on pair goto I14
+I9:
+  list = @list(pair,COMMA) SEMICOLON., EOF
+  list = @list(pair,COMMA) SEMICOLON., OPAREN
+    on EOF reduce list
+    on OPAREN reduce list
+I10:
+  num = NUM., COMMA
+  num = NUM., CPAREN
+    on COMMA reduce num
+    on CPAREN reduce num
+I11:
+  pair = OPAREN num .COMMA num CPAREN, COMMA
+  pair = OPAREN num .COMMA num CPAREN, SEMICOLON
+    on COMMA shift I13
+I12:
+  list+ = list+ list., EOF
+  list+ = list+ list., OPAREN
+    on EOF reduce list+
+    on OPAREN reduce list+
+I13:
+  pair = OPAREN num COMMA .num CPAREN, COMMA
+  pair = OPAREN num COMMA .num CPAREN, SEMICOLON
+  num = .NUM, CPAREN
+    on NUM shift I10
+    on num goto I15
+I14:
+  @list(pair,COMMA) = @list(pair,COMMA) COMMA pair., COMMA
+  @list(pair,COMMA) = @list(pair,COMMA) COMMA pair., SEMICOLON
+    on COMMA reduce @list(pair,COMMA)
+    on SEMICOLON reduce @list(pair,COMMA)
+I15:
+  pair = OPAREN num COMMA num .CPAREN, COMMA
+  pair = OPAREN num COMMA num .CPAREN, SEMICOLON
+    on CPAREN shift I16
+I16:
+  pair = OPAREN num COMMA num CPAREN., COMMA
+  pair = OPAREN num COMMA num CPAREN., SEMICOLON
+    on COMMA reduce pair
+    on SEMICOLON reduce pair
+
+Lexer Modes
+============
+$default:
+digraph G {
+  rankdir="LR";
+  0 -> 1 [label="\\t-\\n"];
+  0 -> 1 [label="\\r"];
+  0 -> 1 [label=" "];
+  0 -> 2 [label=")"];
+  0 -> 3 [label="("];
+  0 -> 4 [label=";"];
+  0 -> 5 [label=","];
+  0 -> 6 [label="0-9"];
+  1 -> 1 [label="\\t-\\n"];
+  1 -> 1 [label="\\r"];
+  1 -> 1 [label=" "];
+  6 -> 6 [label="0-9"];
+  0 [label="0", shape="circle"];
+  1 [label="1", shape="doublecircle"];
+  2 [label="2", shape="doublecircle"];
+  3 [label="3", shape="doublecircle"];
+  4 [label="4", shape="doublecircle"];
+  5 [label="5", shape="doublecircle"];
+  6 [label="6", shape="doublecircle"];
+}
+
+Tests
+=====
+Input:
+(1, 2),
+(3, 4),
+   (5, 6); (1, 2);
+(1,2), (3  , 4),  (5, 6)
+       ;
+ (9, 9);
+
+
+Output:
+pair: (expr:1:1, expr:1:6)
+pair: (expr:2:1, expr:2:6)
+pair: (expr:3:4, expr:3:9)
+list: (expr:1:1, expr:3:10)
+pair: (expr:3:12, expr:3:17)
+list: (expr:3:12, expr:3:18)
+pair: (expr:4:1, expr:4:5)
+pair: (expr:4:8, expr:4:15)
+pair: (expr:4:19, expr:4:24)
+list: (expr:4:1, expr:5:8)
+pair: (expr:6:2, expr:6:7)
+list: (expr:6:2, expr:6:8)
+
