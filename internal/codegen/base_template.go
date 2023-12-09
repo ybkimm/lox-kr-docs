@@ -36,6 +36,10 @@ func (s *_Stack[T]) Pop(n int) {
 func (s _Stack[T]) Peek(n int) T {
 	return s[len(s)-n-1]
 }
+
+func (s _Stack[T]) PeekSlice(n int) []T {
+	return s[len(s)-n:]
+}
 `
 
 type baseTemplateInputs struct {

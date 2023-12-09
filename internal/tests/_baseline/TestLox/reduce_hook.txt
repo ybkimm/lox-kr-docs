@@ -5,45 +5,54 @@ I0:
   S = .list*, EOF
   list = .@list(pair,COMMA) SEMICOLON, EOF
   list = .@list(pair,COMMA) SEMICOLON, OPAREN
-  pair = .OPAREN num COMMA num CPAREN, COMMA
-  pair = .OPAREN num COMMA num CPAREN, SEMICOLON
+  list = .@list(pair,COMMA) SEMICOLON, AT
+  pair = .prefix? OPAREN num COMMA num CPAREN HASH?, COMMA
+  pair = .prefix? OPAREN num COMMA num CPAREN HASH?, SEMICOLON
+  prefix = .AT, OPAREN
   list* = .list+, EOF
   list* = ., EOF
   list+ = .list+ list, EOF
   list+ = .list+ list, OPAREN
+  list+ = .list+ list, AT
   list+ = .list, EOF
   list+ = .list, OPAREN
+  list+ = .list, AT
   @list(pair,COMMA) = .@list(pair,COMMA) COMMA pair, COMMA
   @list(pair,COMMA) = .@list(pair,COMMA) COMMA pair, SEMICOLON
   @list(pair,COMMA) = .pair, COMMA
   @list(pair,COMMA) = .pair, SEMICOLON
+  prefix? = .prefix, OPAREN
+  prefix? = ., OPAREN
+    on AT shift I2
     on EOF reduce list*
-    on OPAREN shift I2
+    on OPAREN reduce prefix?
     on @list(pair,COMMA) goto I1
     on S goto I3
     on list goto I4
     on list* goto I5
     on list+ goto I6
     on pair goto I7
+    on prefix goto I8
+    on prefix? goto I9
 I1:
   list = @list(pair,COMMA) .SEMICOLON, EOF
   list = @list(pair,COMMA) .SEMICOLON, OPAREN
+  list = @list(pair,COMMA) .SEMICOLON, AT
   @list(pair,COMMA) = @list(pair,COMMA) .COMMA pair, COMMA
   @list(pair,COMMA) = @list(pair,COMMA) .COMMA pair, SEMICOLON
-    on COMMA shift I8
-    on SEMICOLON shift I9
+    on COMMA shift I10
+    on SEMICOLON shift I11
 I2:
-  pair = OPAREN .num COMMA num CPAREN, COMMA
-  pair = OPAREN .num COMMA num CPAREN, SEMICOLON
-  num = .NUM, COMMA
-    on NUM shift I10
-    on num goto I11
+  prefix = AT., OPAREN
+    on OPAREN reduce prefix
 I3:
   S' = S., EOF
     on EOF accept
 I4:
   list+ = list., EOF
   list+ = list., OPAREN
+  list+ = list., AT
+    on AT reduce list+
     on EOF reduce list+
     on OPAREN reduce list+
 I5:
@@ -52,69 +61,116 @@ I5:
 I6:
   list = .@list(pair,COMMA) SEMICOLON, EOF
   list = .@list(pair,COMMA) SEMICOLON, OPAREN
-  pair = .OPAREN num COMMA num CPAREN, COMMA
-  pair = .OPAREN num COMMA num CPAREN, SEMICOLON
+  list = .@list(pair,COMMA) SEMICOLON, AT
+  pair = .prefix? OPAREN num COMMA num CPAREN HASH?, COMMA
+  pair = .prefix? OPAREN num COMMA num CPAREN HASH?, SEMICOLON
+  prefix = .AT, OPAREN
   list* = list+., EOF
   list+ = list+ .list, EOF
   list+ = list+ .list, OPAREN
+  list+ = list+ .list, AT
   @list(pair,COMMA) = .@list(pair,COMMA) COMMA pair, COMMA
   @list(pair,COMMA) = .@list(pair,COMMA) COMMA pair, SEMICOLON
   @list(pair,COMMA) = .pair, COMMA
   @list(pair,COMMA) = .pair, SEMICOLON
+  prefix? = .prefix, OPAREN
+  prefix? = ., OPAREN
+    on AT shift I2
     on EOF reduce list*
-    on OPAREN shift I2
+    on OPAREN reduce prefix?
     on @list(pair,COMMA) goto I1
-    on list goto I12
+    on list goto I13
     on pair goto I7
+    on prefix goto I8
+    on prefix? goto I9
 I7:
   @list(pair,COMMA) = pair., COMMA
   @list(pair,COMMA) = pair., SEMICOLON
     on COMMA reduce @list(pair,COMMA)
     on SEMICOLON reduce @list(pair,COMMA)
 I8:
-  pair = .OPAREN num COMMA num CPAREN, COMMA
-  pair = .OPAREN num COMMA num CPAREN, SEMICOLON
+  prefix? = prefix., OPAREN
+    on OPAREN reduce prefix?
+I9:
+  pair = prefix? .OPAREN num COMMA num CPAREN HASH?, COMMA
+  pair = prefix? .OPAREN num COMMA num CPAREN HASH?, SEMICOLON
+    on OPAREN shift I12
+I10:
+  pair = .prefix? OPAREN num COMMA num CPAREN HASH?, COMMA
+  pair = .prefix? OPAREN num COMMA num CPAREN HASH?, SEMICOLON
+  prefix = .AT, OPAREN
   @list(pair,COMMA) = @list(pair,COMMA) COMMA .pair, COMMA
   @list(pair,COMMA) = @list(pair,COMMA) COMMA .pair, SEMICOLON
-    on OPAREN shift I2
-    on pair goto I14
-I9:
+  prefix? = .prefix, OPAREN
+  prefix? = ., OPAREN
+    on AT shift I2
+    on OPAREN reduce prefix?
+    on pair goto I16
+    on prefix goto I8
+    on prefix? goto I9
+I11:
   list = @list(pair,COMMA) SEMICOLON., EOF
   list = @list(pair,COMMA) SEMICOLON., OPAREN
+  list = @list(pair,COMMA) SEMICOLON., AT
+    on AT reduce list
     on EOF reduce list
     on OPAREN reduce list
-I10:
+I12:
+  pair = prefix? OPAREN .num COMMA num CPAREN HASH?, COMMA
+  pair = prefix? OPAREN .num COMMA num CPAREN HASH?, SEMICOLON
+  num = .NUM, COMMA
+    on NUM shift I14
+    on num goto I15
+I13:
+  list+ = list+ list., EOF
+  list+ = list+ list., OPAREN
+  list+ = list+ list., AT
+    on AT reduce list+
+    on EOF reduce list+
+    on OPAREN reduce list+
+I14:
   num = NUM., COMMA
   num = NUM., CPAREN
     on COMMA reduce num
     on CPAREN reduce num
-I11:
-  pair = OPAREN num .COMMA num CPAREN, COMMA
-  pair = OPAREN num .COMMA num CPAREN, SEMICOLON
-    on COMMA shift I13
-I12:
-  list+ = list+ list., EOF
-  list+ = list+ list., OPAREN
-    on EOF reduce list+
-    on OPAREN reduce list+
-I13:
-  pair = OPAREN num COMMA .num CPAREN, COMMA
-  pair = OPAREN num COMMA .num CPAREN, SEMICOLON
-  num = .NUM, CPAREN
-    on NUM shift I10
-    on num goto I15
-I14:
+I15:
+  pair = prefix? OPAREN num .COMMA num CPAREN HASH?, COMMA
+  pair = prefix? OPAREN num .COMMA num CPAREN HASH?, SEMICOLON
+    on COMMA shift I17
+I16:
   @list(pair,COMMA) = @list(pair,COMMA) COMMA pair., COMMA
   @list(pair,COMMA) = @list(pair,COMMA) COMMA pair., SEMICOLON
     on COMMA reduce @list(pair,COMMA)
     on SEMICOLON reduce @list(pair,COMMA)
-I15:
-  pair = OPAREN num COMMA num .CPAREN, COMMA
-  pair = OPAREN num COMMA num .CPAREN, SEMICOLON
-    on CPAREN shift I16
-I16:
-  pair = OPAREN num COMMA num CPAREN., COMMA
-  pair = OPAREN num COMMA num CPAREN., SEMICOLON
+I17:
+  pair = prefix? OPAREN num COMMA .num CPAREN HASH?, COMMA
+  pair = prefix? OPAREN num COMMA .num CPAREN HASH?, SEMICOLON
+  num = .NUM, CPAREN
+    on NUM shift I14
+    on num goto I18
+I18:
+  pair = prefix? OPAREN num COMMA num .CPAREN HASH?, COMMA
+  pair = prefix? OPAREN num COMMA num .CPAREN HASH?, SEMICOLON
+    on CPAREN shift I19
+I19:
+  pair = prefix? OPAREN num COMMA num CPAREN .HASH?, COMMA
+  pair = prefix? OPAREN num COMMA num CPAREN .HASH?, SEMICOLON
+  HASH? = .HASH, COMMA
+  HASH? = .HASH, SEMICOLON
+  HASH? = ., COMMA
+  HASH? = ., SEMICOLON
+    on COMMA reduce HASH?
+    on HASH shift I20
+    on SEMICOLON reduce HASH?
+    on HASH? goto I21
+I20:
+  HASH? = HASH., COMMA
+  HASH? = HASH., SEMICOLON
+    on COMMA reduce HASH?
+    on SEMICOLON reduce HASH?
+I21:
+  pair = prefix? OPAREN num COMMA num CPAREN HASH?., COMMA
+  pair = prefix? OPAREN num COMMA num CPAREN HASH?., SEMICOLON
     on COMMA reduce pair
     on SEMICOLON reduce pair
 
@@ -126,15 +182,17 @@ digraph G {
   0 -> 1 [label="\\t-\\n"];
   0 -> 1 [label="\\r"];
   0 -> 1 [label=" "];
-  0 -> 2 [label=")"];
-  0 -> 3 [label="("];
-  0 -> 4 [label=";"];
-  0 -> 5 [label=","];
-  0 -> 6 [label="0-9"];
+  0 -> 2 [label="@"];
+  0 -> 3 [label="#"];
+  0 -> 4 [label=")"];
+  0 -> 5 [label="("];
+  0 -> 6 [label=";"];
+  0 -> 7 [label=","];
+  0 -> 8 [label="0-9"];
   1 -> 1 [label="\\t-\\n"];
   1 -> 1 [label="\\r"];
   1 -> 1 [label=" "];
-  6 -> 6 [label="0-9"];
+  8 -> 8 [label="0-9"];
   0 [label="0", shape="circle"];
   1 [label="1", shape="doublecircle"];
   2 [label="2", shape="doublecircle"];
@@ -142,6 +200,8 @@ digraph G {
   4 [label="4", shape="doublecircle"];
   5 [label="5", shape="doublecircle"];
   6 [label="6", shape="doublecircle"];
+  7 [label="7", shape="doublecircle"];
+  8 [label="8", shape="doublecircle"];
 }
 
 Tests

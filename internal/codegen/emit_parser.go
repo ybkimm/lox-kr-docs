@@ -46,6 +46,7 @@ var _Goto = []int32 {
 type _Bounds struct {
 	Begin Token
 	End   Token
+	Empty bool
 }
 
 func _cast[T any](v any) T {
@@ -126,19 +127,27 @@ func (p *{{parser}}) parse(lex _Lexer) bool {
 			rule := _LHS[int(prod)]
 			res := p._Act(prod)
 			{{- if has_on_reduce }}
-			if termCount > 0 {
-				bounds := _Bounds{
-					Begin: p._bounds.Peek(int(termCount-1)).Begin,
-					End: p._bounds.Peek(0).End,
-				}
-				p.onReduce(res, bounds.Begin, bounds.End)
-				p._bounds.Pop(int(termCount))
-				p._bounds.Push(bounds)
-			} else {
-				bounds := p._bounds.Peek(0)
-				bounds.Begin = bounds.End
-				p._bounds.Push(bounds)
+			// Compute token bounds of reduction.
+			// Trim leading and trailing empty bounds.
+			boundSlice := p._bounds.PeekSlice(int(termCount))
+			for len(boundSlice) > 0 && boundSlice[0].Empty {
+				boundSlice = boundSlice[1:]
 			}
+			for len(boundSlice) > 0 && boundSlice[len(boundSlice)-1].Empty {
+				boundSlice = boundSlice[:len(boundSlice)-1]
+			}
+			var bounds _Bounds
+			if len(boundSlice) > 0 {
+				bounds.Begin = boundSlice[0].Begin
+				bounds.End = boundSlice[len(boundSlice)-1].End
+			} else {
+				bounds.Empty = true
+			}
+			if !bounds.Empty {
+				p.onReduce(res, bounds.Begin, bounds.End)
+			}
+			p._bounds.Pop(int(termCount))
+			p._bounds.Push(bounds)
 			{{- end }}
 			p._state.Pop(int(termCount))
 			p._sym.Pop(int(termCount))

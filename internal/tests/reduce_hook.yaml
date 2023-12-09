@@ -8,6 +8,8 @@ sources:
       SEMICOLON = ';';
       OPAREN = '(';
       CPAREN = ')';
+      HASH = '#';
+      AT = '@';
 
       @frag [ \r\n\t]+  @discard;
 
@@ -17,8 +19,9 @@ sources:
       S = list*;
 
       list = @list(pair, ',') ';';
-      pair = '(' num ',' num ')';
+      pair = prefix? '(' num ',' num ')' '#'?;
       num = NUM;
+      prefix = '@';
 
   - name: parser.go
     data: |
@@ -87,7 +90,7 @@ sources:
         }
       }
 
-      func (p *testParser) on_pair(_ Token, a int, _ Token, b int, _ Token) pair {
+      func (p *testParser) on_pair(prefix any, _ Token, a int, _ Token, b int, _, _ Token) pair {
         return pair{A: a, B: b}
       }
 
@@ -98,6 +101,10 @@ sources:
           return 0
         }
         return n
+      }
+
+      func (p *testParser) on_prefix(_ Token) any {
+        return nil
       }
 
       func (p *testParser) onError() {
