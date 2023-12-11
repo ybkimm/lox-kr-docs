@@ -3,6 +3,7 @@ package codegen
 import (
 	"bytes"
 	"fmt"
+	goformat "go/format"
 	gotypes "go/types"
 
 	"github.com/CloudyKit/jet/v6"
@@ -53,5 +54,10 @@ func renderTemplate(
 	imports.WriteTo(full)
 	body.WriteTo(full)
 
-	return full.String()
+	fullFormatted, err := goformat.Source(full.Bytes())
+	if err != nil {
+		panic(fmt.Errorf("failed to format %v: %w", lexerGenGo, err))
+	}
+
+	return string(fullFormatted)
 }

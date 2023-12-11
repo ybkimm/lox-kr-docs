@@ -1,26 +1,19 @@
 package main
 
-
-
-var _lexerMode0 = []uint32 {
-	11, 43, 50, 54, 58, 62, 66, 70, 74, 78, 82, 31, 10, 32, 
-32, 1, 37, 37, 5, 40, 40, 3, 41, 41, 2, 42, 42, 7, 
-43, 43, 9, 45, 45, 8, 47, 47, 6, 48, 57, 10, 94, 94, 
-4, 6, 1, 32, 32, 1, 4, 0, 3, 0, 3, 10, 3, 0, 
-3, 9, 3, 0, 3, 8, 3, 0, 3, 7, 3, 0, 3, 6, 
-3, 0, 3, 5, 3, 0, 3, 4, 3, 0, 3, 3, 6, 1, 
-48, 57, 10, 3, 2, 
+var _lexerMode0 = []uint32{
+	11, 43, 50, 54, 58, 62, 66, 70, 74, 78, 82, 31, 10, 32,
+	32, 1, 37, 37, 5, 40, 40, 3, 41, 41, 2, 42, 42, 7,
+	43, 43, 9, 45, 45, 8, 47, 47, 6, 48, 57, 10, 94, 94,
+	4, 6, 1, 32, 32, 1, 4, 0, 3, 0, 3, 10, 3, 0,
+	3, 9, 3, 0, 3, 8, 3, 0, 3, 7, 3, 0, 3, 6,
+	3, 0, 3, 5, 3, 0, 3, 4, 3, 0, 3, 3, 6, 1,
+	48, 57, 10, 3, 2,
 }
 
-
-
-
-var _lexerModes = [][]uint32 {
+var _lexerModes = [][]uint32{
 
 	_lexerMode0,
-
 }
-
 
 const (
 	_lexerConsume  = 0
@@ -32,9 +25,9 @@ const (
 )
 
 type _LexerStateMachine struct {
-	token int
-	state int
-	mode  []uint32
+	token     int
+	state     int
+	mode      []uint32
 	modeStack _Stack[[]uint32]
 }
 
@@ -117,7 +110,8 @@ func (l *_LexerStateMachine) PushRune(r rune) int {
 		return _lexerEOF
 	}
 
-	return _lexerError}
+	return _lexerError
+}
 
 func (l *_LexerStateMachine) Reset() {
 	l.mode = nil

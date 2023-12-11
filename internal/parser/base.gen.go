@@ -1,124 +1,123 @@
 package parser
 
-
 const (
-	EOF int = 0
-	ERROR int = 1
-	SEMICOLON int = 2
-	COMMA int = 3
-	EQ int = 4
-	OR int = 5
-	OCURLY int = 6
-	CCURLY int = 7
-	TILDE int = 8
-	OPAREN int = 9
-	CPAREN int = 10
-	SUB int = 11
-	ZERO_OR_ONE int = 12
-	ZERO_OR_MORE int = 13
-	ONE_OR_MORE int = 14
+	EOF             int = 0
+	ERROR           int = 1
+	SEMICOLON       int = 2
+	COMMA           int = 3
+	EQ              int = 4
+	OR              int = 5
+	OCURLY          int = 6
+	CCURLY          int = 7
+	TILDE           int = 8
+	OPAREN          int = 9
+	CPAREN          int = 10
+	SUB             int = 11
+	ZERO_OR_ONE     int = 12
+	ZERO_OR_MORE    int = 13
+	ONE_OR_MORE     int = 14
 	ZERO_OR_MORE_NG int = 15
-	ONE_OR_MORE_NG int = 16
-	PARSER int = 17
-	LEXER int = 18
-	START int = 19
-	DISCARD int = 20
-	MACRO int = 21
-	FRAG int = 22
-	MODE int = 23
-	PUSH_MODE int = 24
-	POP_MODE int = 25
-	ERROR_KEYWORD int = 26
-	LEFT int = 27
-	LIST int = 28
-	RIGHT int = 29
-	KEYWORD int = 30
-	ID int = 31
-	NUM int = 32
-	LITERAL int = 33
-	OBRACKET int = 34
-	CBRACKET int = 35
-	CLASS_DASH int = 36
-	CLASS_CHAR int = 37
+	ONE_OR_MORE_NG  int = 16
+	PARSER          int = 17
+	LEXER           int = 18
+	START           int = 19
+	DISCARD         int = 20
+	MACRO           int = 21
+	FRAG            int = 22
+	MODE            int = 23
+	PUSH_MODE       int = 24
+	POP_MODE        int = 25
+	ERROR_KEYWORD   int = 26
+	LEFT            int = 27
+	LIST            int = 28
+	RIGHT           int = 29
+	KEYWORD         int = 30
+	ID              int = 31
+	NUM             int = 32
+	LITERAL         int = 33
+	OBRACKET        int = 34
+	CBRACKET        int = 35
+	CLASS_DASH      int = 36
+	CLASS_CHAR      int = 37
 )
 
 func _TokenToString(t int) string {
 	switch t {
-	case EOF: 
+	case EOF:
 		return "EOF"
-	case ERROR: 
+	case ERROR:
 		return "ERROR"
-	case SEMICOLON: 
+	case SEMICOLON:
 		return "SEMICOLON"
-	case COMMA: 
+	case COMMA:
 		return "COMMA"
-	case EQ: 
+	case EQ:
 		return "EQ"
-	case OR: 
+	case OR:
 		return "OR"
-	case OCURLY: 
+	case OCURLY:
 		return "OCURLY"
-	case CCURLY: 
+	case CCURLY:
 		return "CCURLY"
-	case TILDE: 
+	case TILDE:
 		return "TILDE"
-	case OPAREN: 
+	case OPAREN:
 		return "OPAREN"
-	case CPAREN: 
+	case CPAREN:
 		return "CPAREN"
-	case SUB: 
+	case SUB:
 		return "SUB"
-	case ZERO_OR_ONE: 
+	case ZERO_OR_ONE:
 		return "ZERO_OR_ONE"
-	case ZERO_OR_MORE: 
+	case ZERO_OR_MORE:
 		return "ZERO_OR_MORE"
-	case ONE_OR_MORE: 
+	case ONE_OR_MORE:
 		return "ONE_OR_MORE"
-	case ZERO_OR_MORE_NG: 
+	case ZERO_OR_MORE_NG:
 		return "ZERO_OR_MORE_NG"
-	case ONE_OR_MORE_NG: 
+	case ONE_OR_MORE_NG:
 		return "ONE_OR_MORE_NG"
-	case PARSER: 
+	case PARSER:
 		return "PARSER"
-	case LEXER: 
+	case LEXER:
 		return "LEXER"
-	case START: 
+	case START:
 		return "START"
-	case DISCARD: 
+	case DISCARD:
 		return "DISCARD"
-	case MACRO: 
+	case MACRO:
 		return "MACRO"
-	case FRAG: 
+	case FRAG:
 		return "FRAG"
-	case MODE: 
+	case MODE:
 		return "MODE"
-	case PUSH_MODE: 
+	case PUSH_MODE:
 		return "PUSH_MODE"
-	case POP_MODE: 
+	case POP_MODE:
 		return "POP_MODE"
-	case ERROR_KEYWORD: 
+	case ERROR_KEYWORD:
 		return "ERROR_KEYWORD"
-	case LEFT: 
+	case LEFT:
 		return "LEFT"
-	case LIST: 
+	case LIST:
 		return "LIST"
-	case RIGHT: 
+	case RIGHT:
 		return "RIGHT"
-	case KEYWORD: 
+	case KEYWORD:
 		return "KEYWORD"
-	case ID: 
+	case ID:
 		return "ID"
-	case NUM: 
+	case NUM:
 		return "NUM"
-	case LITERAL: 
+	case LITERAL:
 		return "LITERAL"
-	case OBRACKET: 
+	case OBRACKET:
 		return "OBRACKET"
-	case CBRACKET: 
+	case CBRACKET:
 		return "CBRACKET"
-	case CLASS_DASH: 
+	case CLASS_DASH:
 		return "CLASS_DASH"
-	case CLASS_CHAR: 
+	case CLASS_CHAR:
 		return "CLASS_CHAR"
 	default:
 		return "???"
