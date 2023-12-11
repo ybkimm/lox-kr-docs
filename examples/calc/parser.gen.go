@@ -44,6 +44,7 @@ var _Goto = []int32 {
 type _Bounds struct {
 	Begin Token
 	End   Token
+	Empty bool
 }
 
 func _cast[T any](v any) T {
@@ -163,7 +164,7 @@ func (p *calcParser) _Recover() (int32, bool) {
 		}
 
 		if p._lookaheadType == EOF {
-			p.onError()
+			p._onError()
 			return 0, false
 		}
 

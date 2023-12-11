@@ -14,28 +14,6 @@ import (
 	"github.com/dcaiafa/lox/internal/lexergen/rang3"
 )
 
-const lexerTemplatePlaceholder = `
-type _LexerStateMachine struct {
-	token int
-	state int
-	mode  []uint32
-}
-func (l *_LexerStateMachine) PushRune(r rune) int {
-	panic("not implemented")
-}
-func (l *_LexerStateMachine) Reset() {
-	panic("not implemented")
-}
-func (l *_LexerStateMachine) Token() int {
-	panic("not implemented")
-}
-`
-
-func renderLexerTemplatePlaceholder(pkgName string) string {
-	return renderTemplate(
-		pkgName, "", lexerTemplatePlaceholder, make(jet.VarMap))
-}
-
 const lexerTemplate = `
 {{ range _, mode := modes() }}
 

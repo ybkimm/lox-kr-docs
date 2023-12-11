@@ -84,7 +84,7 @@ func (p *calcParser) on_num__minus(_ Token, num Token) float64 {
 	return -v
 }
 
-func (p *calcParser) onError() {
+func (p *calcParser) _onError() {
 	if p.errorToken().Type != ERROR {
 		p.errLogger.Errorf(p.errorToken().Pos, "unexpected token %v", p.errorToken())
 	}

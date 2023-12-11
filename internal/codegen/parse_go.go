@@ -20,14 +20,12 @@ func (c *context) ParseGo() bool {
 		Placeholder: true,
 		Package:     c.GoPackageName,
 	})
-	lexerGenPlaceholder := renderLexerTemplatePlaceholder(c.GoPackageName)
 
 	absDir, err := filepath.Abs(c.Dir)
 	if err != nil {
 		panic(err)
 	}
 
-	lexerGenPath := filepath.Join(absDir, lexerGenGo)
 	parserGenPath := filepath.Join(absDir, parserGenGo)
 
 	// Parse and analyze Go sources in the project directory.
@@ -38,7 +36,6 @@ func (c *context) ParseGo() bool {
 		Overlay: map[string][]byte{
 			// Inject the placeholder implementations.
 			parserGenPath: []byte(parserGenPlaceholder),
-			lexerGenPath:  []byte(lexerGenPlaceholder),
 		},
 	}
 	pkgs, err := packages.Load(cfg, ".")

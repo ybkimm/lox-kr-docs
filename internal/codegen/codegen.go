@@ -74,8 +74,8 @@ func Generate(cfg *Config) bool {
 	return ctx.ParseLox() &&
 		ctx.PreParseGo() &&
 		ctx.EmitBase() &&
+		ctx.EmitLexer() &&
 		ctx.ParseGo() &&
 		ctx.AssignActions() &&
-		ctx.EmitParser() &&
-		ctx.EmitLexer()
+		ctx.EmitParser()
 }
