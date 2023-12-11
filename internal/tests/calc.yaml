@@ -134,7 +134,7 @@ sources:
         return -v
       }
 
-      func (p *calcParser) onError() {
+      func (p *calcParser) _onError() {
         if p.errorToken().Type != ERROR {
           p.errs.Errorf(
             p.errorToken().Pos,

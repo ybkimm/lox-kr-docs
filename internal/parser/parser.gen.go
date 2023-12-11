@@ -324,7 +324,7 @@ func (p *parser) _Recover() (int32, bool) {
 		}
 
 		if p._lookaheadType == EOF {
-			p.onError()
+			p._onError()
 			return 0, false
 		}
 

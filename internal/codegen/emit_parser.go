@@ -208,7 +208,7 @@ func (p *{{parser}}) _Recover() (int32, bool) {
 		}
 
 		if p._lookaheadType == EOF {
-			p.onError()
+			p.{{ on_error_method }}()
 			return 0, false
 		}
 
@@ -321,6 +321,7 @@ func (c *context) EmitParser() bool {
 	vars.Set("rule_go_types", c.RuleGoTypes)
 	vars.Set("emit_bounds", c.EmitBounds)
 	vars.Set("on_bounds_method", OnBoundsMethodName)
+	vars.Set("on_error_method", OnErrorMethodName)
 
 	vars.Set("array", func(arr []int32) string {
 		var str strings.Builder

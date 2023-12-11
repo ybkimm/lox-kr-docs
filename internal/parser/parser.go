@@ -328,7 +328,7 @@ func (p *parser) _onBounds(r any, begin, end Token) {
 	})
 }
 
-func (p *parser) onError() {
+func (p *parser) _onError() {
 	tok := p.errorToken()
 	p.errs.Errorf(
 		tok.Pos, "unexpected %v %q", _TokenToString(tok.Type), string(tok.Str))

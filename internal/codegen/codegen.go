@@ -16,6 +16,7 @@ const (
 	lexerGenGo         = "lexer.gen.go"
 	parserStateName    = "lox"
 	OnBoundsMethodName = "_onBounds"
+	OnErrorMethodName  = "_onError"
 )
 
 type actionMethod struct {

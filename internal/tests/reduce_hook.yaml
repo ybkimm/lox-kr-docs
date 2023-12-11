@@ -107,7 +107,7 @@ sources:
         return nil
       }
 
-      func (p *testParser) onError() {
+      func (p *testParser) _onError() {
         if p.errorToken().Type != ERROR {
           p.errs.Errorf(
             p.errorToken().Pos,
