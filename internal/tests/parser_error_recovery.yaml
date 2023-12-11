@@ -1,0 +1,124 @@
+sources:
+  - name: parser.lox
+    data: |
+      @lexer
+
+      ID = [A-Za-z] [A-Za-z0-9_]*;
+      COMMA = ',';
+      SEMICOLON = ';';
+      OPAREN = '(';
+      CPAREN = ')';
+      OCURLY = '{';
+      CCURLY = '}';
+
+      @frag [ \r\n\t]+  @discard;
+
+      @parser
+
+      @start
+      S = block*;
+
+      block = '{' statement* '}';
+
+      statement = func_call ';'
+                | @error ';'
+                | block
+                ;
+
+      func_call = ID '(' params? ')';
+
+      params = @list(ID, ',');
+
+  - name: parser.go
+    data: |
+      package main
+
+      import (
+        gotoken "go/token"
+        "fmt"
+        "io"
+        "os"
+
+        "github.com/dcaiafa/lox/internal/base/errlogger"
+        "github.com/dcaiafa/lox/internal/base/baselexer"
+      )
+
+      type Token = baselexer.Token
+
+      func main() {
+        input, err := io.ReadAll(os.Stdin)
+        if err != nil {
+          panic(err)
+        }
+
+        fset := gotoken.NewFileSet()
+        file := fset.AddFile("expr", -1, len(input))
+        errs := errlogger.New(fset, os.Stderr)
+
+        onError := func(l *baselexer.Lexer) {
+          errs.Errorf(l.Pos(), "unexpected character: %c", l.Peek())
+        }
+
+        var parser testParser
+        parser.errs = errs
+        parser.fset = fset
+        lex := baselexer.New(new(_LexerStateMachine), onError, file, input)
+        _ = parser.parse(lex)
+
+        if errs.HasError() {
+          fmt.Println("Errors occurred.")
+          return
+        }
+      }
+
+      type testParser struct {
+        lox
+        fset   *gotoken.FileSet
+        errs   *errlogger.ErrLogger
+      }
+
+      func (p *testParser) on_S(blocks []any) any  {
+        return nil
+      }
+
+      func (p *testParser) on_block(_ Token, ss []any, _ Token) any {
+        return nil
+      }
+
+      func (p *testParser) on_statement__func(f int, sc Token) any {
+        return nil
+      }
+
+      func (p *testParser) on_statement__block(b any) any {
+        return nil
+      }
+
+      func (p *testParser) on_statement__error(_ error, sc Token) any {
+        p.errs.Infof(sc.Pos, "recovered statement")
+        return nil
+      }
+
+      func (p *testParser) on_func_call(n Token, _ Token, params []any, _ Token) int {
+        p.errs.Infof(n.Pos, "parsed func %v", string(n.Str))
+        return 0
+      }
+
+      func (p *testParser) on_params(params []Token) []any {
+        return nil
+      }
+
+      func (p *testParser) _onError() {
+        if p.errorToken().Type != ERROR {
+          p.errs.Errorf(
+            p.errorToken().Pos,
+            "unexpected %v", _TokenToString(p.errorToken().Type))
+        }
+      }
+
+inputs:
+  - |
+    {
+      f1(a, b, c);
+      f2(a, ;
+      f3();
+    }

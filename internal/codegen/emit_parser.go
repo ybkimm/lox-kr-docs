@@ -173,6 +173,7 @@ func (p *{{parser}}) _ReadToken() {
 
 func (p *{{parser}}) _Recover() (int32, bool) {
 	p._errorToken = p._lookahead
+	p.{{ on_error_method }}()
 
 	for {
 		for p._lookaheadType == ERROR {
@@ -208,7 +209,6 @@ func (p *{{parser}}) _Recover() (int32, bool) {
 		}
 
 		if p._lookaheadType == EOF {
-			p.{{ on_error_method }}()
 			return 0, false
 		}
 

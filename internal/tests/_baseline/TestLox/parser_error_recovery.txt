@@ -1,0 +1,289 @@
+Parser Table
+============
+I0:
+  S' = .S, EOF
+  S = .block*, EOF
+  block = .OCURLY statement* CCURLY, EOF
+  block = .OCURLY statement* CCURLY, OCURLY
+  block* = .block+, EOF
+  block* = ., EOF
+  block+ = .block+ block, EOF
+  block+ = .block+ block, OCURLY
+  block+ = .block, EOF
+  block+ = .block, OCURLY
+    on EOF reduce block*
+    on OCURLY shift I1
+    on S goto I2
+    on block goto I3
+    on block* goto I4
+    on block+ goto I5
+I1:
+  block = .OCURLY statement* CCURLY, ERROR
+  block = .OCURLY statement* CCURLY, ID
+  block = .OCURLY statement* CCURLY, OCURLY
+  block = .OCURLY statement* CCURLY, CCURLY
+  block = OCURLY .statement* CCURLY, EOF
+  block = OCURLY .statement* CCURLY, ERROR
+  block = OCURLY .statement* CCURLY, ID
+  block = OCURLY .statement* CCURLY, OCURLY
+  block = OCURLY .statement* CCURLY, CCURLY
+  statement = .func_call SEMICOLON, ERROR
+  statement = .func_call SEMICOLON, ID
+  statement = .func_call SEMICOLON, OCURLY
+  statement = .func_call SEMICOLON, CCURLY
+  statement = .ERROR SEMICOLON, ERROR
+  statement = .ERROR SEMICOLON, ID
+  statement = .ERROR SEMICOLON, OCURLY
+  statement = .ERROR SEMICOLON, CCURLY
+  statement = .block, ERROR
+  statement = .block, ID
+  statement = .block, OCURLY
+  statement = .block, CCURLY
+  func_call = .ID OPAREN params? CPAREN, SEMICOLON
+  statement* = .statement+, CCURLY
+  statement* = ., CCURLY
+  statement+ = .statement+ statement, ERROR
+  statement+ = .statement+ statement, ID
+  statement+ = .statement+ statement, OCURLY
+  statement+ = .statement+ statement, CCURLY
+  statement+ = .statement, ERROR
+  statement+ = .statement, ID
+  statement+ = .statement, OCURLY
+  statement+ = .statement, CCURLY
+    on CCURLY reduce statement*
+    on ERROR shift I6
+    on ID shift I7
+    on OCURLY shift I1
+    on block goto I8
+    on func_call goto I9
+    on statement goto I10
+    on statement* goto I11
+    on statement+ goto I12
+I2:
+  S' = S., EOF
+    on EOF accept
+I3:
+  block+ = block., EOF
+  block+ = block., OCURLY
+    on EOF reduce block+
+    on OCURLY reduce block+
+I4:
+  S = block*., EOF
+    on EOF reduce S
+I5:
+  block = .OCURLY statement* CCURLY, EOF
+  block = .OCURLY statement* CCURLY, OCURLY
+  block* = block+., EOF
+  block+ = block+ .block, EOF
+  block+ = block+ .block, OCURLY
+    on EOF reduce block*
+    on OCURLY shift I1
+    on block goto I13
+I6:
+  statement = ERROR .SEMICOLON, ERROR
+  statement = ERROR .SEMICOLON, ID
+  statement = ERROR .SEMICOLON, OCURLY
+  statement = ERROR .SEMICOLON, CCURLY
+    on SEMICOLON shift I16
+I7:
+  func_call = ID .OPAREN params? CPAREN, SEMICOLON
+    on OPAREN shift I17
+I8:
+  statement = block., ERROR
+  statement = block., ID
+  statement = block., OCURLY
+  statement = block., CCURLY
+    on CCURLY reduce statement
+    on ERROR reduce statement
+    on ID reduce statement
+    on OCURLY reduce statement
+I9:
+  statement = func_call .SEMICOLON, ERROR
+  statement = func_call .SEMICOLON, ID
+  statement = func_call .SEMICOLON, OCURLY
+  statement = func_call .SEMICOLON, CCURLY
+    on SEMICOLON shift I15
+I10:
+  statement+ = statement., ERROR
+  statement+ = statement., ID
+  statement+ = statement., OCURLY
+  statement+ = statement., CCURLY
+    on CCURLY reduce statement+
+    on ERROR reduce statement+
+    on ID reduce statement+
+    on OCURLY reduce statement+
+I11:
+  block = OCURLY statement* .CCURLY, EOF
+  block = OCURLY statement* .CCURLY, ERROR
+  block = OCURLY statement* .CCURLY, ID
+  block = OCURLY statement* .CCURLY, OCURLY
+  block = OCURLY statement* .CCURLY, CCURLY
+    on CCURLY shift I14
+I12:
+  block = .OCURLY statement* CCURLY, ERROR
+  block = .OCURLY statement* CCURLY, ID
+  block = .OCURLY statement* CCURLY, OCURLY
+  block = .OCURLY statement* CCURLY, CCURLY
+  statement = .func_call SEMICOLON, ERROR
+  statement = .func_call SEMICOLON, ID
+  statement = .func_call SEMICOLON, OCURLY
+  statement = .func_call SEMICOLON, CCURLY
+  statement = .ERROR SEMICOLON, ERROR
+  statement = .ERROR SEMICOLON, ID
+  statement = .ERROR SEMICOLON, OCURLY
+  statement = .ERROR SEMICOLON, CCURLY
+  statement = .block, ERROR
+  statement = .block, ID
+  statement = .block, OCURLY
+  statement = .block, CCURLY
+  func_call = .ID OPAREN params? CPAREN, SEMICOLON
+  statement* = statement+., CCURLY
+  statement+ = statement+ .statement, ERROR
+  statement+ = statement+ .statement, ID
+  statement+ = statement+ .statement, OCURLY
+  statement+ = statement+ .statement, CCURLY
+    on CCURLY reduce statement*
+    on ERROR shift I6
+    on ID shift I7
+    on OCURLY shift I1
+    on block goto I8
+    on func_call goto I9
+    on statement goto I18
+I13:
+  block+ = block+ block., EOF
+  block+ = block+ block., OCURLY
+    on EOF reduce block+
+    on OCURLY reduce block+
+I14:
+  block = OCURLY statement* CCURLY., EOF
+  block = OCURLY statement* CCURLY., ERROR
+  block = OCURLY statement* CCURLY., ID
+  block = OCURLY statement* CCURLY., OCURLY
+  block = OCURLY statement* CCURLY., CCURLY
+    on CCURLY reduce block
+    on EOF reduce block
+    on ERROR reduce block
+    on ID reduce block
+    on OCURLY reduce block
+I15:
+  statement = func_call SEMICOLON., ERROR
+  statement = func_call SEMICOLON., ID
+  statement = func_call SEMICOLON., OCURLY
+  statement = func_call SEMICOLON., CCURLY
+    on CCURLY reduce statement
+    on ERROR reduce statement
+    on ID reduce statement
+    on OCURLY reduce statement
+I16:
+  statement = ERROR SEMICOLON., ERROR
+  statement = ERROR SEMICOLON., ID
+  statement = ERROR SEMICOLON., OCURLY
+  statement = ERROR SEMICOLON., CCURLY
+    on CCURLY reduce statement
+    on ERROR reduce statement
+    on ID reduce statement
+    on OCURLY reduce statement
+I17:
+  func_call = ID OPAREN .params? CPAREN, SEMICOLON
+  params = .@list(ID,COMMA), CPAREN
+  params? = .params, CPAREN
+  params? = ., CPAREN
+  @list(ID,COMMA) = .@list(ID,COMMA) COMMA ID, COMMA
+  @list(ID,COMMA) = .@list(ID,COMMA) COMMA ID, CPAREN
+  @list(ID,COMMA) = .ID, COMMA
+  @list(ID,COMMA) = .ID, CPAREN
+    on CPAREN reduce params?
+    on ID shift I20
+    on @list(ID,COMMA) goto I19
+    on params goto I21
+    on params? goto I22
+I18:
+  statement+ = statement+ statement., ERROR
+  statement+ = statement+ statement., ID
+  statement+ = statement+ statement., OCURLY
+  statement+ = statement+ statement., CCURLY
+    on CCURLY reduce statement+
+    on ERROR reduce statement+
+    on ID reduce statement+
+    on OCURLY reduce statement+
+I19:
+  params = @list(ID,COMMA)., CPAREN
+  @list(ID,COMMA) = @list(ID,COMMA) .COMMA ID, COMMA
+  @list(ID,COMMA) = @list(ID,COMMA) .COMMA ID, CPAREN
+    on COMMA shift I24
+    on CPAREN reduce params
+I20:
+  @list(ID,COMMA) = ID., COMMA
+  @list(ID,COMMA) = ID., CPAREN
+    on COMMA reduce @list(ID,COMMA)
+    on CPAREN reduce @list(ID,COMMA)
+I21:
+  params? = params., CPAREN
+    on CPAREN reduce params?
+I22:
+  func_call = ID OPAREN params? .CPAREN, SEMICOLON
+    on CPAREN shift I23
+I23:
+  func_call = ID OPAREN params? CPAREN., SEMICOLON
+    on SEMICOLON reduce func_call
+I24:
+  @list(ID,COMMA) = @list(ID,COMMA) COMMA .ID, COMMA
+  @list(ID,COMMA) = @list(ID,COMMA) COMMA .ID, CPAREN
+    on ID shift I25
+I25:
+  @list(ID,COMMA) = @list(ID,COMMA) COMMA ID., COMMA
+  @list(ID,COMMA) = @list(ID,COMMA) COMMA ID., CPAREN
+    on COMMA reduce @list(ID,COMMA)
+    on CPAREN reduce @list(ID,COMMA)
+
+Lexer Modes
+============
+$default:
+digraph G {
+  rankdir="LR";
+  0 -> 1 [label="\\t-\\n"];
+  0 -> 1 [label="\\r"];
+  0 -> 1 [label=" "];
+  0 -> 2 [label="}"];
+  0 -> 3 [label="{"];
+  0 -> 4 [label=")"];
+  0 -> 5 [label="("];
+  0 -> 6 [label=";"];
+  0 -> 7 [label=","];
+  0 -> 8 [label="A-Z"];
+  0 -> 8 [label="a-z"];
+  1 -> 1 [label="\\t-\\n"];
+  1 -> 1 [label="\\r"];
+  1 -> 1 [label=" "];
+  8 -> 8 [label="0-9"];
+  8 -> 8 [label="A-Z"];
+  8 -> 8 [label="_"];
+  8 -> 8 [label="a-z"];
+  0 [label="0", shape="circle"];
+  1 [label="1", shape="doublecircle"];
+  2 [label="2", shape="doublecircle"];
+  3 [label="3", shape="doublecircle"];
+  4 [label="4", shape="doublecircle"];
+  5 [label="5", shape="doublecircle"];
+  6 [label="6", shape="doublecircle"];
+  7 [label="7", shape="doublecircle"];
+  8 [label="8", shape="doublecircle"];
+}
+
+Tests
+=====
+Input:
+{
+  f1(a, b, c);
+  f2(a, ;
+  f3();
+}
+
+
+Output:
+expr:2:3: parsed func f1
+expr:3:9: unexpected SEMICOLON
+expr:3:9: recovered statement
+expr:4:3: parsed func f3
+Errors occurred.
+
