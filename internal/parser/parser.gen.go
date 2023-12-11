@@ -251,7 +251,8 @@ func (p *parser) parse(lex _Lexer) bool {
 			termCount := _TermCounts[int(prod)]
 			rule := _LHS[int(prod)]
 			res := p._Act(prod)
-			// Compute token bounds of reduction.
+
+			// Compute reduction token bounds.
 			// Trim leading and trailing empty bounds.
 			boundSlice := p._bounds.PeekSlice(int(termCount))
 			for len(boundSlice) > 0 && boundSlice[0].Empty {
@@ -268,7 +269,7 @@ func (p *parser) parse(lex _Lexer) bool {
 				bounds.Empty = true
 			}
 			if !bounds.Empty {
-				p.onReduce(res, bounds.Begin, bounds.End)
+				p._onBounds(res, bounds.Begin, bounds.End)
 			}
 			p._bounds.Pop(int(termCount))
 			p._bounds.Push(bounds)

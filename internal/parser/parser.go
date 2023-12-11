@@ -316,7 +316,7 @@ func (p *parser) on_action_pop_mode(_ Token) *ast.ActionPopMode {
 	return &ast.ActionPopMode{}
 }
 
-func (p *parser) onReduce(r any, begin, end Token) {
+func (p *parser) _onBounds(r any, begin, end Token) {
 	rAST, ok := r.(ast.AST)
 	if !ok {
 		return

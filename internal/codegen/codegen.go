@@ -11,11 +11,11 @@ import (
 )
 
 const (
-	baseGenGo       = "base.gen.go"
-	parserGenGo     = "parser.gen.go"
-	lexerGenGo      = "lexer.gen.go"
-	parserStateName = "lox"
-	onReduce        = "onReduce"
+	baseGenGo          = "base.gen.go"
+	parserGenGo        = "parser.gen.go"
+	lexerGenGo         = "lexer.gen.go"
+	parserStateName    = "lox"
+	OnBoundsMethodName = "_onBounds"
 )
 
 type actionMethod struct {

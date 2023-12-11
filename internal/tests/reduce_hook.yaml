@@ -115,7 +115,7 @@ sources:
         }
       }
 
-      func (p *testParser) onReduce(v any, begin, end Token) {
+      func (p *testParser) _onBounds(v any, begin, end Token) {
         name := ""
         switch v.(type) {
         case *list:

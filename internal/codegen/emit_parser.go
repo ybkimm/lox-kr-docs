@@ -77,7 +77,7 @@ type lox struct {
 	_lex   _Lexer
 	_state _Stack[int32]
 	_sym   _Stack[any]
-	{{- if has_on_reduce }}
+	{{- if emit_bounds }}
 	_bounds _Stack[_Bounds]
 	{{- end }}
 
@@ -115,7 +115,7 @@ func (p *{{parser}}) parse(lex _Lexer) bool {
 		} else if action >= 0 { // shift
 			p._state.Push(action)
 			p._sym.Push(p._lookahead)
-			{{- if has_on_reduce }}
+			{{- if emit_bounds }}
 			p._bounds.Push(
 				_Bounds{Begin: p._lookahead,
 				End: p._lookahead})
@@ -126,8 +126,9 @@ func (p *{{parser}}) parse(lex _Lexer) bool {
 			termCount := _TermCounts[int(prod)]
 			rule := _LHS[int(prod)]
 			res := p._Act(prod)
-			{{- if has_on_reduce }}
-			// Compute token bounds of reduction.
+			{{- if emit_bounds }}
+
+			// Compute reduction token bounds.
 			// Trim leading and trailing empty bounds.
 			boundSlice := p._bounds.PeekSlice(int(termCount))
 			for len(boundSlice) > 0 && boundSlice[0].Empty {
@@ -144,10 +145,11 @@ func (p *{{parser}}) parse(lex _Lexer) bool {
 				bounds.Empty = true
 			}
 			if !bounds.Empty {
-				p.onReduce(res, bounds.Begin, bounds.End)
+				p.{{ on_bounds_method }}(res, bounds.Begin, bounds.End)
 			}
 			p._bounds.Pop(int(termCount))
 			p._bounds.Push(bounds)
+
 			{{- end }}
 			p._state.Pop(int(termCount))
 			p._sym.Pop(int(termCount))
@@ -179,7 +181,7 @@ func (p *{{parser}}) _Recover() (int32, bool) {
 
 		saveState := p._state
 		saveSym := p._sym
-		{{- if has_on_reduce }}
+		{{- if emit_bounds }}
 			saveBounds := p._bounds
 		{{- end }}
 
@@ -192,7 +194,7 @@ func (p *{{parser}}) _Recover() (int32, bool) {
 				if ok {
 					p._state.Push(action)
 					p._sym.Push(_errorPlaceholder)
-					{{- if has_on_reduce }}
+					{{- if emit_bounds }}
 					  p._bounds.Push(_Bounds{})
 					{{- end }}
 					return action2, true
@@ -200,7 +202,7 @@ func (p *{{parser}}) _Recover() (int32, bool) {
 			}
 			p._state.Pop(1)
 			p._sym.Pop(1)
-			{{- if has_on_reduce }}
+			{{- if emit_bounds }}
 				p._bounds.Pop(1)
 			{{- end }}
 		}
@@ -213,7 +215,7 @@ func (p *{{parser}}) _Recover() (int32, bool) {
 		p._ReadToken()
 		p._state = saveState
 		p._sym = saveSym
-		{{- if has_on_reduce }}
+		{{- if emit_bounds }}
 		p._bounds = saveBounds
 		{{- end }}
 	}
@@ -317,7 +319,8 @@ func (c *context) EmitParser() bool {
 	vars.Set("rule_generated", RuleGenerated)
 	vars.Set("get_term_go_type", c.getTermGoType)
 	vars.Set("rule_go_types", c.RuleGoTypes)
-	vars.Set("has_on_reduce", c.HasOnReduce)
+	vars.Set("emit_bounds", c.EmitBounds)
+	vars.Set("on_bounds_method", OnBoundsMethodName)
 
 	vars.Set("array", func(arr []int32) string {
 		var str strings.Builder

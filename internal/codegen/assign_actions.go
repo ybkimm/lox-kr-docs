@@ -159,10 +159,10 @@ func (c *context) getActionMethods() map[string][]*actionMethod {
 	actionMethods := make(map[string][]*actionMethod)
 	for i := 0; i < c.ParserType.NumMethods(); i++ {
 		goMethod := c.ParserType.Method(i)
-		if goMethod.Name() == onReduce {
-			// The parser implements onReduce.
+		if goMethod.Name() == OnBoundsMethodName {
+			// The parser implements _bounds.
 			// The generated parser should call it.
-			c.HasOnReduce = true
+			c.EmitBounds = true
 			continue
 		}
 		rule := ruleFromMethod(goMethod.Name())
