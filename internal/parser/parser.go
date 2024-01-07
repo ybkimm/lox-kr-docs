@@ -84,6 +84,16 @@ func (p *parser) on_parser_term_card(term *ast.ParserTerm, typ ast.ParserTermTyp
 	if typ == ast.ParserTermSimple || typ == ast.ParserTermError {
 		return term
 	}
+	if term.Type == ast.ParserTermList {
+		if typ != ast.ParserTermZeroOrOne {
+			p.errs.Errorf(
+				term.Bounds().Begin,
+				"@list term can only use the zero-or-more '?' cardinality")
+			return term
+		}
+		term.Type = ast.ParserTermListOpt
+		return term
+	}
 	return &ast.ParserTerm{
 		Type:  typ,
 		Child: term,

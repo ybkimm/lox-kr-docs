@@ -15,6 +15,7 @@ const (
 	ParserTermOneOrMore                 // +
 	ParserTermZeroOrOne                 // ?
 	ParserTermList                      // @list
+	ParserTermListOpt                   // @list?
 	ParserTermError                     // @error
 )
 
@@ -30,6 +31,8 @@ func (t ParserTermType) String() string {
 		return "ZeroOrOne"
 	case ParserTermList: // @list
 		return "List"
+	case ParserTermListOpt: // @list?
+		return "ListOpt"
 	case ParserTermError: // @error
 		return "Error"
 	default:
@@ -51,7 +54,7 @@ type ParserTerm struct {
 func (t *ParserTerm) RunPass(ctx *Context, pass Pass) {
 	switch pass {
 	case Check:
-		if !t.check(ctx) {
+		if !t.preCheck(ctx) {
 			return
 		}
 	case Normalize:
@@ -76,9 +79,16 @@ func (t *ParserTerm) RunPass(ctx *Context, pass Pass) {
 	if t.Sep != nil {
 		t.Sep.RunPass(ctx, pass)
 	}
+
+	switch pass {
+	case Check:
+		if !t.postCheck(ctx) {
+			return
+		}
+	}
 }
 
-func (t *ParserTerm) check(ctx *Context) bool {
+func (t *ParserTerm) preCheck(ctx *Context) bool {
 	switch {
 	case t.Name != "":
 		ast := ctx.Lookup(t.Name)
@@ -110,6 +120,27 @@ func (t *ParserTerm) check(ctx *Context) bool {
 
 	case t.Type == ParserTermError:
 		t.Symbol = ctx.Grammar.ErrorTerminal
+	}
+
+	return true
+}
+
+func (t *ParserTerm) postCheck(ctx *Context) bool {
+	if t.Type == ParserTermList || t.Type == ParserTermListOpt {
+		if t.Child.Type != ParserTermSimple {
+			ctx.Errs.Errorf(
+				ctx.Position(t.Child),
+				"@list entry param must be a simple token or rule")
+			return false
+		}
+
+		_, isTerminal := t.Sep.Symbol.(*lr1.Terminal)
+		if !isTerminal || t.Sep.Type != ParserTermSimple {
+			ctx.Errs.Errorf(
+				ctx.Position(t.Child),
+				"@list separator param must be a simple token")
+			return false
+		}
 	}
 	return true
 }
@@ -196,6 +227,26 @@ func (t *ParserTerm) normalize(ctx *Context) {
 					},
 				},
 				{},
+			}
+		})
+
+	case ParserTermListOpt:
+		// a = b @list(x, sep)?
+		//   =>
+		// a = b a'
+		// a' = @list(x, sep) | ε
+		name := fmt.Sprintf(
+			"@list(%v,%v)?",
+			t.Child.Symbol.TermName(),
+			t.Sep.Symbol.TermName())
+		generate(name, func(r *ParserRule) {
+			r.Prods = []*ParserProd{
+				{
+					Terms: []*ParserTerm{
+						{Type: ParserTermList, Child: t.Child, Sep: t.Sep},
+					},
+				},
+				{ /* ε */ },
 			}
 		})
 
