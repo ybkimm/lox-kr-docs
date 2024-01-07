@@ -259,17 +259,18 @@ n = N N;
 		`, "@list entry param must be a simple token or rule")
 	})
 
-	t.Run("ListSepMustBeToken1", func(t *testing.T) {
-		parseButFailAnalyze(t, `
+	t.Run("ListSepMustBeSimple", func(t *testing.T) {
+		_, _ = parseAndAnalyze(t, `
 @lexer
 C = ',';
 N = '1';
 @parser
 @start S = @list(N, n);
 n = N N;
-		`, "@list separator param must be a simple token")
+		`)
 	})
-	t.Run("ListSepMustBeToken2", func(t *testing.T) {
+
+	t.Run("ListSepMustBeSimple", func(t *testing.T) {
 		parseButFailAnalyze(t, `
 @lexer
 C = ',';
@@ -277,6 +278,6 @@ N = '1';
 @parser
 @start S = @list(N, @list(N, C));
 n = N N;
-		`, "@list separator param must be a simple token")
+		`, "@list separator param must be a simple token or rule")
 	})
 }

@@ -134,11 +134,10 @@ func (t *ParserTerm) postCheck(ctx *Context) bool {
 			return false
 		}
 
-		_, isTerminal := t.Sep.Symbol.(*lr1.Terminal)
-		if !isTerminal || t.Sep.Type != ParserTermSimple {
+		if t.Sep.Type != ParserTermSimple {
 			ctx.Errs.Errorf(
 				ctx.Position(t.Child),
-				"@list separator param must be a simple token")
+				"@list separator param must be a simple token or rule")
 			return false
 		}
 	}
