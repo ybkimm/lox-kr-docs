@@ -7,395 +7,771 @@ I0:
   token = .NUM, NUM
   token = .NUM, ADD
   token = .NUM, SUB
+  token = .NUM, OCURLY
+  token = .NUM, CCURLY
   token = .NUM, OBRACKET
   token = .NUM, CBRACKET
   token = .NUM, CLASS_DASH
   token = .NUM, CLASS_CHAR
   token = .NUM, STRING
+  token = .NUM, BACKTICK
+  token = .NUM, STRING_PIECE
   token = .ADD, EOF
   token = .ADD, NUM
   token = .ADD, ADD
   token = .ADD, SUB
+  token = .ADD, OCURLY
+  token = .ADD, CCURLY
   token = .ADD, OBRACKET
   token = .ADD, CBRACKET
   token = .ADD, CLASS_DASH
   token = .ADD, CLASS_CHAR
   token = .ADD, STRING
+  token = .ADD, BACKTICK
+  token = .ADD, STRING_PIECE
   token = .SUB, EOF
   token = .SUB, NUM
   token = .SUB, ADD
   token = .SUB, SUB
+  token = .SUB, OCURLY
+  token = .SUB, CCURLY
   token = .SUB, OBRACKET
   token = .SUB, CBRACKET
   token = .SUB, CLASS_DASH
   token = .SUB, CLASS_CHAR
   token = .SUB, STRING
+  token = .SUB, BACKTICK
+  token = .SUB, STRING_PIECE
+  token = .OCURLY, EOF
+  token = .OCURLY, NUM
+  token = .OCURLY, ADD
+  token = .OCURLY, SUB
+  token = .OCURLY, OCURLY
+  token = .OCURLY, CCURLY
+  token = .OCURLY, OBRACKET
+  token = .OCURLY, CBRACKET
+  token = .OCURLY, CLASS_DASH
+  token = .OCURLY, CLASS_CHAR
+  token = .OCURLY, STRING
+  token = .OCURLY, BACKTICK
+  token = .OCURLY, STRING_PIECE
+  token = .CCURLY, EOF
+  token = .CCURLY, NUM
+  token = .CCURLY, ADD
+  token = .CCURLY, SUB
+  token = .CCURLY, OCURLY
+  token = .CCURLY, CCURLY
+  token = .CCURLY, OBRACKET
+  token = .CCURLY, CBRACKET
+  token = .CCURLY, CLASS_DASH
+  token = .CCURLY, CLASS_CHAR
+  token = .CCURLY, STRING
+  token = .CCURLY, BACKTICK
+  token = .CCURLY, STRING_PIECE
   token = .OBRACKET, EOF
   token = .OBRACKET, NUM
   token = .OBRACKET, ADD
   token = .OBRACKET, SUB
+  token = .OBRACKET, OCURLY
+  token = .OBRACKET, CCURLY
   token = .OBRACKET, OBRACKET
   token = .OBRACKET, CBRACKET
   token = .OBRACKET, CLASS_DASH
   token = .OBRACKET, CLASS_CHAR
   token = .OBRACKET, STRING
+  token = .OBRACKET, BACKTICK
+  token = .OBRACKET, STRING_PIECE
   token = .CBRACKET, EOF
   token = .CBRACKET, NUM
   token = .CBRACKET, ADD
   token = .CBRACKET, SUB
+  token = .CBRACKET, OCURLY
+  token = .CBRACKET, CCURLY
   token = .CBRACKET, OBRACKET
   token = .CBRACKET, CBRACKET
   token = .CBRACKET, CLASS_DASH
   token = .CBRACKET, CLASS_CHAR
   token = .CBRACKET, STRING
+  token = .CBRACKET, BACKTICK
+  token = .CBRACKET, STRING_PIECE
   token = .CLASS_DASH, EOF
   token = .CLASS_DASH, NUM
   token = .CLASS_DASH, ADD
   token = .CLASS_DASH, SUB
+  token = .CLASS_DASH, OCURLY
+  token = .CLASS_DASH, CCURLY
   token = .CLASS_DASH, OBRACKET
   token = .CLASS_DASH, CBRACKET
   token = .CLASS_DASH, CLASS_DASH
   token = .CLASS_DASH, CLASS_CHAR
   token = .CLASS_DASH, STRING
+  token = .CLASS_DASH, BACKTICK
+  token = .CLASS_DASH, STRING_PIECE
   token = .CLASS_CHAR, EOF
   token = .CLASS_CHAR, NUM
   token = .CLASS_CHAR, ADD
   token = .CLASS_CHAR, SUB
+  token = .CLASS_CHAR, OCURLY
+  token = .CLASS_CHAR, CCURLY
   token = .CLASS_CHAR, OBRACKET
   token = .CLASS_CHAR, CBRACKET
   token = .CLASS_CHAR, CLASS_DASH
   token = .CLASS_CHAR, CLASS_CHAR
   token = .CLASS_CHAR, STRING
+  token = .CLASS_CHAR, BACKTICK
+  token = .CLASS_CHAR, STRING_PIECE
   token = .STRING, EOF
   token = .STRING, NUM
   token = .STRING, ADD
   token = .STRING, SUB
+  token = .STRING, OCURLY
+  token = .STRING, CCURLY
   token = .STRING, OBRACKET
   token = .STRING, CBRACKET
   token = .STRING, CLASS_DASH
   token = .STRING, CLASS_CHAR
   token = .STRING, STRING
+  token = .STRING, BACKTICK
+  token = .STRING, STRING_PIECE
+  token = .BACKTICK, EOF
+  token = .BACKTICK, NUM
+  token = .BACKTICK, ADD
+  token = .BACKTICK, SUB
+  token = .BACKTICK, OCURLY
+  token = .BACKTICK, CCURLY
+  token = .BACKTICK, OBRACKET
+  token = .BACKTICK, CBRACKET
+  token = .BACKTICK, CLASS_DASH
+  token = .BACKTICK, CLASS_CHAR
+  token = .BACKTICK, STRING
+  token = .BACKTICK, BACKTICK
+  token = .BACKTICK, STRING_PIECE
+  token = .STRING_PIECE, EOF
+  token = .STRING_PIECE, NUM
+  token = .STRING_PIECE, ADD
+  token = .STRING_PIECE, SUB
+  token = .STRING_PIECE, OCURLY
+  token = .STRING_PIECE, CCURLY
+  token = .STRING_PIECE, OBRACKET
+  token = .STRING_PIECE, CBRACKET
+  token = .STRING_PIECE, CLASS_DASH
+  token = .STRING_PIECE, CLASS_CHAR
+  token = .STRING_PIECE, STRING
+  token = .STRING_PIECE, BACKTICK
+  token = .STRING_PIECE, STRING_PIECE
   token* = .token+, EOF
   token* = ., EOF
   token+ = .token+ token, EOF
   token+ = .token+ token, NUM
   token+ = .token+ token, ADD
   token+ = .token+ token, SUB
+  token+ = .token+ token, OCURLY
+  token+ = .token+ token, CCURLY
   token+ = .token+ token, OBRACKET
   token+ = .token+ token, CBRACKET
   token+ = .token+ token, CLASS_DASH
   token+ = .token+ token, CLASS_CHAR
   token+ = .token+ token, STRING
+  token+ = .token+ token, BACKTICK
+  token+ = .token+ token, STRING_PIECE
   token+ = .token, EOF
   token+ = .token, NUM
   token+ = .token, ADD
   token+ = .token, SUB
+  token+ = .token, OCURLY
+  token+ = .token, CCURLY
   token+ = .token, OBRACKET
   token+ = .token, CBRACKET
   token+ = .token, CLASS_DASH
   token+ = .token, CLASS_CHAR
   token+ = .token, STRING
+  token+ = .token, BACKTICK
+  token+ = .token, STRING_PIECE
     on ADD shift I1
-    on CBRACKET shift I2
-    on CLASS_CHAR shift I3
-    on CLASS_DASH shift I4
+    on BACKTICK shift I2
+    on CBRACKET shift I3
+    on CCURLY shift I4
+    on CLASS_CHAR shift I5
+    on CLASS_DASH shift I6
     on EOF reduce token*
-    on NUM shift I5
-    on OBRACKET shift I6
-    on STRING shift I8
-    on SUB shift I9
-    on S goto I7
-    on token goto I10
-    on token* goto I11
-    on token+ goto I12
+    on NUM shift I7
+    on OBRACKET shift I8
+    on OCURLY shift I9
+    on STRING shift I11
+    on STRING_PIECE shift I12
+    on SUB shift I13
+    on S goto I10
+    on token goto I14
+    on token* goto I15
+    on token+ goto I16
 I1:
   token = ADD., EOF
   token = ADD., NUM
   token = ADD., ADD
   token = ADD., SUB
+  token = ADD., OCURLY
+  token = ADD., CCURLY
   token = ADD., OBRACKET
   token = ADD., CBRACKET
   token = ADD., CLASS_DASH
   token = ADD., CLASS_CHAR
   token = ADD., STRING
+  token = ADD., BACKTICK
+  token = ADD., STRING_PIECE
     on ADD reduce token
+    on BACKTICK reduce token
     on CBRACKET reduce token
+    on CCURLY reduce token
     on CLASS_CHAR reduce token
     on CLASS_DASH reduce token
     on EOF reduce token
     on NUM reduce token
     on OBRACKET reduce token
+    on OCURLY reduce token
     on STRING reduce token
+    on STRING_PIECE reduce token
     on SUB reduce token
 I2:
+  token = BACKTICK., EOF
+  token = BACKTICK., NUM
+  token = BACKTICK., ADD
+  token = BACKTICK., SUB
+  token = BACKTICK., OCURLY
+  token = BACKTICK., CCURLY
+  token = BACKTICK., OBRACKET
+  token = BACKTICK., CBRACKET
+  token = BACKTICK., CLASS_DASH
+  token = BACKTICK., CLASS_CHAR
+  token = BACKTICK., STRING
+  token = BACKTICK., BACKTICK
+  token = BACKTICK., STRING_PIECE
+    on ADD reduce token
+    on BACKTICK reduce token
+    on CBRACKET reduce token
+    on CCURLY reduce token
+    on CLASS_CHAR reduce token
+    on CLASS_DASH reduce token
+    on EOF reduce token
+    on NUM reduce token
+    on OBRACKET reduce token
+    on OCURLY reduce token
+    on STRING reduce token
+    on STRING_PIECE reduce token
+    on SUB reduce token
+I3:
   token = CBRACKET., EOF
   token = CBRACKET., NUM
   token = CBRACKET., ADD
   token = CBRACKET., SUB
+  token = CBRACKET., OCURLY
+  token = CBRACKET., CCURLY
   token = CBRACKET., OBRACKET
   token = CBRACKET., CBRACKET
   token = CBRACKET., CLASS_DASH
   token = CBRACKET., CLASS_CHAR
   token = CBRACKET., STRING
+  token = CBRACKET., BACKTICK
+  token = CBRACKET., STRING_PIECE
     on ADD reduce token
+    on BACKTICK reduce token
     on CBRACKET reduce token
+    on CCURLY reduce token
     on CLASS_CHAR reduce token
     on CLASS_DASH reduce token
     on EOF reduce token
     on NUM reduce token
     on OBRACKET reduce token
+    on OCURLY reduce token
     on STRING reduce token
+    on STRING_PIECE reduce token
     on SUB reduce token
-I3:
+I4:
+  token = CCURLY., EOF
+  token = CCURLY., NUM
+  token = CCURLY., ADD
+  token = CCURLY., SUB
+  token = CCURLY., OCURLY
+  token = CCURLY., CCURLY
+  token = CCURLY., OBRACKET
+  token = CCURLY., CBRACKET
+  token = CCURLY., CLASS_DASH
+  token = CCURLY., CLASS_CHAR
+  token = CCURLY., STRING
+  token = CCURLY., BACKTICK
+  token = CCURLY., STRING_PIECE
+    on ADD reduce token
+    on BACKTICK reduce token
+    on CBRACKET reduce token
+    on CCURLY reduce token
+    on CLASS_CHAR reduce token
+    on CLASS_DASH reduce token
+    on EOF reduce token
+    on NUM reduce token
+    on OBRACKET reduce token
+    on OCURLY reduce token
+    on STRING reduce token
+    on STRING_PIECE reduce token
+    on SUB reduce token
+I5:
   token = CLASS_CHAR., EOF
   token = CLASS_CHAR., NUM
   token = CLASS_CHAR., ADD
   token = CLASS_CHAR., SUB
+  token = CLASS_CHAR., OCURLY
+  token = CLASS_CHAR., CCURLY
   token = CLASS_CHAR., OBRACKET
   token = CLASS_CHAR., CBRACKET
   token = CLASS_CHAR., CLASS_DASH
   token = CLASS_CHAR., CLASS_CHAR
   token = CLASS_CHAR., STRING
+  token = CLASS_CHAR., BACKTICK
+  token = CLASS_CHAR., STRING_PIECE
     on ADD reduce token
+    on BACKTICK reduce token
     on CBRACKET reduce token
+    on CCURLY reduce token
     on CLASS_CHAR reduce token
     on CLASS_DASH reduce token
     on EOF reduce token
     on NUM reduce token
     on OBRACKET reduce token
+    on OCURLY reduce token
     on STRING reduce token
+    on STRING_PIECE reduce token
     on SUB reduce token
-I4:
+I6:
   token = CLASS_DASH., EOF
   token = CLASS_DASH., NUM
   token = CLASS_DASH., ADD
   token = CLASS_DASH., SUB
+  token = CLASS_DASH., OCURLY
+  token = CLASS_DASH., CCURLY
   token = CLASS_DASH., OBRACKET
   token = CLASS_DASH., CBRACKET
   token = CLASS_DASH., CLASS_DASH
   token = CLASS_DASH., CLASS_CHAR
   token = CLASS_DASH., STRING
+  token = CLASS_DASH., BACKTICK
+  token = CLASS_DASH., STRING_PIECE
     on ADD reduce token
+    on BACKTICK reduce token
     on CBRACKET reduce token
+    on CCURLY reduce token
     on CLASS_CHAR reduce token
     on CLASS_DASH reduce token
     on EOF reduce token
     on NUM reduce token
     on OBRACKET reduce token
+    on OCURLY reduce token
     on STRING reduce token
+    on STRING_PIECE reduce token
     on SUB reduce token
-I5:
+I7:
   token = NUM., EOF
   token = NUM., NUM
   token = NUM., ADD
   token = NUM., SUB
+  token = NUM., OCURLY
+  token = NUM., CCURLY
   token = NUM., OBRACKET
   token = NUM., CBRACKET
   token = NUM., CLASS_DASH
   token = NUM., CLASS_CHAR
   token = NUM., STRING
+  token = NUM., BACKTICK
+  token = NUM., STRING_PIECE
     on ADD reduce token
+    on BACKTICK reduce token
     on CBRACKET reduce token
+    on CCURLY reduce token
     on CLASS_CHAR reduce token
     on CLASS_DASH reduce token
     on EOF reduce token
     on NUM reduce token
     on OBRACKET reduce token
+    on OCURLY reduce token
     on STRING reduce token
+    on STRING_PIECE reduce token
     on SUB reduce token
-I6:
+I8:
   token = OBRACKET., EOF
   token = OBRACKET., NUM
   token = OBRACKET., ADD
   token = OBRACKET., SUB
+  token = OBRACKET., OCURLY
+  token = OBRACKET., CCURLY
   token = OBRACKET., OBRACKET
   token = OBRACKET., CBRACKET
   token = OBRACKET., CLASS_DASH
   token = OBRACKET., CLASS_CHAR
   token = OBRACKET., STRING
+  token = OBRACKET., BACKTICK
+  token = OBRACKET., STRING_PIECE
     on ADD reduce token
+    on BACKTICK reduce token
     on CBRACKET reduce token
+    on CCURLY reduce token
     on CLASS_CHAR reduce token
     on CLASS_DASH reduce token
     on EOF reduce token
     on NUM reduce token
     on OBRACKET reduce token
+    on OCURLY reduce token
     on STRING reduce token
+    on STRING_PIECE reduce token
     on SUB reduce token
-I7:
+I9:
+  token = OCURLY., EOF
+  token = OCURLY., NUM
+  token = OCURLY., ADD
+  token = OCURLY., SUB
+  token = OCURLY., OCURLY
+  token = OCURLY., CCURLY
+  token = OCURLY., OBRACKET
+  token = OCURLY., CBRACKET
+  token = OCURLY., CLASS_DASH
+  token = OCURLY., CLASS_CHAR
+  token = OCURLY., STRING
+  token = OCURLY., BACKTICK
+  token = OCURLY., STRING_PIECE
+    on ADD reduce token
+    on BACKTICK reduce token
+    on CBRACKET reduce token
+    on CCURLY reduce token
+    on CLASS_CHAR reduce token
+    on CLASS_DASH reduce token
+    on EOF reduce token
+    on NUM reduce token
+    on OBRACKET reduce token
+    on OCURLY reduce token
+    on STRING reduce token
+    on STRING_PIECE reduce token
+    on SUB reduce token
+I10:
   S' = S., EOF
     on EOF accept
-I8:
+I11:
   token = STRING., EOF
   token = STRING., NUM
   token = STRING., ADD
   token = STRING., SUB
+  token = STRING., OCURLY
+  token = STRING., CCURLY
   token = STRING., OBRACKET
   token = STRING., CBRACKET
   token = STRING., CLASS_DASH
   token = STRING., CLASS_CHAR
   token = STRING., STRING
+  token = STRING., BACKTICK
+  token = STRING., STRING_PIECE
     on ADD reduce token
+    on BACKTICK reduce token
     on CBRACKET reduce token
+    on CCURLY reduce token
     on CLASS_CHAR reduce token
     on CLASS_DASH reduce token
     on EOF reduce token
     on NUM reduce token
     on OBRACKET reduce token
+    on OCURLY reduce token
     on STRING reduce token
+    on STRING_PIECE reduce token
     on SUB reduce token
-I9:
+I12:
+  token = STRING_PIECE., EOF
+  token = STRING_PIECE., NUM
+  token = STRING_PIECE., ADD
+  token = STRING_PIECE., SUB
+  token = STRING_PIECE., OCURLY
+  token = STRING_PIECE., CCURLY
+  token = STRING_PIECE., OBRACKET
+  token = STRING_PIECE., CBRACKET
+  token = STRING_PIECE., CLASS_DASH
+  token = STRING_PIECE., CLASS_CHAR
+  token = STRING_PIECE., STRING
+  token = STRING_PIECE., BACKTICK
+  token = STRING_PIECE., STRING_PIECE
+    on ADD reduce token
+    on BACKTICK reduce token
+    on CBRACKET reduce token
+    on CCURLY reduce token
+    on CLASS_CHAR reduce token
+    on CLASS_DASH reduce token
+    on EOF reduce token
+    on NUM reduce token
+    on OBRACKET reduce token
+    on OCURLY reduce token
+    on STRING reduce token
+    on STRING_PIECE reduce token
+    on SUB reduce token
+I13:
   token = SUB., EOF
   token = SUB., NUM
   token = SUB., ADD
   token = SUB., SUB
+  token = SUB., OCURLY
+  token = SUB., CCURLY
   token = SUB., OBRACKET
   token = SUB., CBRACKET
   token = SUB., CLASS_DASH
   token = SUB., CLASS_CHAR
   token = SUB., STRING
+  token = SUB., BACKTICK
+  token = SUB., STRING_PIECE
     on ADD reduce token
+    on BACKTICK reduce token
     on CBRACKET reduce token
+    on CCURLY reduce token
     on CLASS_CHAR reduce token
     on CLASS_DASH reduce token
     on EOF reduce token
     on NUM reduce token
     on OBRACKET reduce token
+    on OCURLY reduce token
     on STRING reduce token
+    on STRING_PIECE reduce token
     on SUB reduce token
-I10:
+I14:
   token+ = token., EOF
   token+ = token., NUM
   token+ = token., ADD
   token+ = token., SUB
+  token+ = token., OCURLY
+  token+ = token., CCURLY
   token+ = token., OBRACKET
   token+ = token., CBRACKET
   token+ = token., CLASS_DASH
   token+ = token., CLASS_CHAR
   token+ = token., STRING
+  token+ = token., BACKTICK
+  token+ = token., STRING_PIECE
     on ADD reduce token+
+    on BACKTICK reduce token+
     on CBRACKET reduce token+
+    on CCURLY reduce token+
     on CLASS_CHAR reduce token+
     on CLASS_DASH reduce token+
     on EOF reduce token+
     on NUM reduce token+
     on OBRACKET reduce token+
+    on OCURLY reduce token+
     on STRING reduce token+
+    on STRING_PIECE reduce token+
     on SUB reduce token+
-I11:
+I15:
   S = token*., EOF
     on EOF reduce S
-I12:
+I16:
   token = .NUM, EOF
   token = .NUM, NUM
   token = .NUM, ADD
   token = .NUM, SUB
+  token = .NUM, OCURLY
+  token = .NUM, CCURLY
   token = .NUM, OBRACKET
   token = .NUM, CBRACKET
   token = .NUM, CLASS_DASH
   token = .NUM, CLASS_CHAR
   token = .NUM, STRING
+  token = .NUM, BACKTICK
+  token = .NUM, STRING_PIECE
   token = .ADD, EOF
   token = .ADD, NUM
   token = .ADD, ADD
   token = .ADD, SUB
+  token = .ADD, OCURLY
+  token = .ADD, CCURLY
   token = .ADD, OBRACKET
   token = .ADD, CBRACKET
   token = .ADD, CLASS_DASH
   token = .ADD, CLASS_CHAR
   token = .ADD, STRING
+  token = .ADD, BACKTICK
+  token = .ADD, STRING_PIECE
   token = .SUB, EOF
   token = .SUB, NUM
   token = .SUB, ADD
   token = .SUB, SUB
+  token = .SUB, OCURLY
+  token = .SUB, CCURLY
   token = .SUB, OBRACKET
   token = .SUB, CBRACKET
   token = .SUB, CLASS_DASH
   token = .SUB, CLASS_CHAR
   token = .SUB, STRING
+  token = .SUB, BACKTICK
+  token = .SUB, STRING_PIECE
+  token = .OCURLY, EOF
+  token = .OCURLY, NUM
+  token = .OCURLY, ADD
+  token = .OCURLY, SUB
+  token = .OCURLY, OCURLY
+  token = .OCURLY, CCURLY
+  token = .OCURLY, OBRACKET
+  token = .OCURLY, CBRACKET
+  token = .OCURLY, CLASS_DASH
+  token = .OCURLY, CLASS_CHAR
+  token = .OCURLY, STRING
+  token = .OCURLY, BACKTICK
+  token = .OCURLY, STRING_PIECE
+  token = .CCURLY, EOF
+  token = .CCURLY, NUM
+  token = .CCURLY, ADD
+  token = .CCURLY, SUB
+  token = .CCURLY, OCURLY
+  token = .CCURLY, CCURLY
+  token = .CCURLY, OBRACKET
+  token = .CCURLY, CBRACKET
+  token = .CCURLY, CLASS_DASH
+  token = .CCURLY, CLASS_CHAR
+  token = .CCURLY, STRING
+  token = .CCURLY, BACKTICK
+  token = .CCURLY, STRING_PIECE
   token = .OBRACKET, EOF
   token = .OBRACKET, NUM
   token = .OBRACKET, ADD
   token = .OBRACKET, SUB
+  token = .OBRACKET, OCURLY
+  token = .OBRACKET, CCURLY
   token = .OBRACKET, OBRACKET
   token = .OBRACKET, CBRACKET
   token = .OBRACKET, CLASS_DASH
   token = .OBRACKET, CLASS_CHAR
   token = .OBRACKET, STRING
+  token = .OBRACKET, BACKTICK
+  token = .OBRACKET, STRING_PIECE
   token = .CBRACKET, EOF
   token = .CBRACKET, NUM
   token = .CBRACKET, ADD
   token = .CBRACKET, SUB
+  token = .CBRACKET, OCURLY
+  token = .CBRACKET, CCURLY
   token = .CBRACKET, OBRACKET
   token = .CBRACKET, CBRACKET
   token = .CBRACKET, CLASS_DASH
   token = .CBRACKET, CLASS_CHAR
   token = .CBRACKET, STRING
+  token = .CBRACKET, BACKTICK
+  token = .CBRACKET, STRING_PIECE
   token = .CLASS_DASH, EOF
   token = .CLASS_DASH, NUM
   token = .CLASS_DASH, ADD
   token = .CLASS_DASH, SUB
+  token = .CLASS_DASH, OCURLY
+  token = .CLASS_DASH, CCURLY
   token = .CLASS_DASH, OBRACKET
   token = .CLASS_DASH, CBRACKET
   token = .CLASS_DASH, CLASS_DASH
   token = .CLASS_DASH, CLASS_CHAR
   token = .CLASS_DASH, STRING
+  token = .CLASS_DASH, BACKTICK
+  token = .CLASS_DASH, STRING_PIECE
   token = .CLASS_CHAR, EOF
   token = .CLASS_CHAR, NUM
   token = .CLASS_CHAR, ADD
   token = .CLASS_CHAR, SUB
+  token = .CLASS_CHAR, OCURLY
+  token = .CLASS_CHAR, CCURLY
   token = .CLASS_CHAR, OBRACKET
   token = .CLASS_CHAR, CBRACKET
   token = .CLASS_CHAR, CLASS_DASH
   token = .CLASS_CHAR, CLASS_CHAR
   token = .CLASS_CHAR, STRING
+  token = .CLASS_CHAR, BACKTICK
+  token = .CLASS_CHAR, STRING_PIECE
   token = .STRING, EOF
   token = .STRING, NUM
   token = .STRING, ADD
   token = .STRING, SUB
+  token = .STRING, OCURLY
+  token = .STRING, CCURLY
   token = .STRING, OBRACKET
   token = .STRING, CBRACKET
   token = .STRING, CLASS_DASH
   token = .STRING, CLASS_CHAR
   token = .STRING, STRING
+  token = .STRING, BACKTICK
+  token = .STRING, STRING_PIECE
+  token = .BACKTICK, EOF
+  token = .BACKTICK, NUM
+  token = .BACKTICK, ADD
+  token = .BACKTICK, SUB
+  token = .BACKTICK, OCURLY
+  token = .BACKTICK, CCURLY
+  token = .BACKTICK, OBRACKET
+  token = .BACKTICK, CBRACKET
+  token = .BACKTICK, CLASS_DASH
+  token = .BACKTICK, CLASS_CHAR
+  token = .BACKTICK, STRING
+  token = .BACKTICK, BACKTICK
+  token = .BACKTICK, STRING_PIECE
+  token = .STRING_PIECE, EOF
+  token = .STRING_PIECE, NUM
+  token = .STRING_PIECE, ADD
+  token = .STRING_PIECE, SUB
+  token = .STRING_PIECE, OCURLY
+  token = .STRING_PIECE, CCURLY
+  token = .STRING_PIECE, OBRACKET
+  token = .STRING_PIECE, CBRACKET
+  token = .STRING_PIECE, CLASS_DASH
+  token = .STRING_PIECE, CLASS_CHAR
+  token = .STRING_PIECE, STRING
+  token = .STRING_PIECE, BACKTICK
+  token = .STRING_PIECE, STRING_PIECE
   token* = token+., EOF
   token+ = token+ .token, EOF
   token+ = token+ .token, NUM
   token+ = token+ .token, ADD
   token+ = token+ .token, SUB
+  token+ = token+ .token, OCURLY
+  token+ = token+ .token, CCURLY
   token+ = token+ .token, OBRACKET
   token+ = token+ .token, CBRACKET
   token+ = token+ .token, CLASS_DASH
   token+ = token+ .token, CLASS_CHAR
   token+ = token+ .token, STRING
+  token+ = token+ .token, BACKTICK
+  token+ = token+ .token, STRING_PIECE
     on ADD shift I1
-    on CBRACKET shift I2
-    on CLASS_CHAR shift I3
-    on CLASS_DASH shift I4
+    on BACKTICK shift I2
+    on CBRACKET shift I3
+    on CCURLY shift I4
+    on CLASS_CHAR shift I5
+    on CLASS_DASH shift I6
     on EOF reduce token*
-    on NUM shift I5
-    on OBRACKET shift I6
-    on STRING shift I8
-    on SUB shift I9
-    on token goto I13
-I13:
+    on NUM shift I7
+    on OBRACKET shift I8
+    on OCURLY shift I9
+    on STRING shift I11
+    on STRING_PIECE shift I12
+    on SUB shift I13
+    on token goto I17
+I17:
   token+ = token+ token., EOF
   token+ = token+ token., NUM
   token+ = token+ token., ADD
   token+ = token+ token., SUB
+  token+ = token+ token., OCURLY
+  token+ = token+ token., CCURLY
   token+ = token+ token., OBRACKET
   token+ = token+ token., CBRACKET
   token+ = token+ token., CLASS_DASH
   token+ = token+ token., CLASS_CHAR
   token+ = token+ token., STRING
+  token+ = token+ token., BACKTICK
+  token+ = token+ token., STRING_PIECE
     on ADD reduce token+
+    on BACKTICK reduce token+
     on CBRACKET reduce token+
+    on CCURLY reduce token+
     on CLASS_CHAR reduce token+
     on CLASS_DASH reduce token+
     on EOF reduce token+
     on NUM reduce token+
     on OBRACKET reduce token+
+    on OCURLY reduce token+
     on STRING reduce token+
+    on STRING_PIECE reduce token+
     on SUB reduce token+
 
 Lexer Modes
@@ -403,18 +779,21 @@ Lexer Modes
 $default:
 digraph G {
   rankdir="LR";
-  0 -> 1 [label="\""];
-  0 -> 2 [label="["];
-  0 -> 3 [label="\\t-\\n"];
-  0 -> 3 [label="\\r"];
-  0 -> 3 [label=" "];
-  0 -> 4 [label="\\-"];
-  0 -> 5 [label="+"];
-  0 -> 6 [label="0-9"];
-  3 -> 3 [label="\\t-\\n"];
-  3 -> 3 [label="\\r"];
-  3 -> 3 [label=" "];
-  6 -> 6 [label="0-9"];
+  0 -> 1 [label="`"];
+  0 -> 2 [label="\""];
+  0 -> 3 [label="["];
+  0 -> 4 [label="\\t-\\n"];
+  0 -> 4 [label="\\r"];
+  0 -> 4 [label=" "];
+  0 -> 5 [label="}"];
+  0 -> 6 [label="{"];
+  0 -> 7 [label="\\-"];
+  0 -> 8 [label="+"];
+  0 -> 9 [label="0-9"];
+  4 -> 4 [label="\\t-\\n"];
+  4 -> 4 [label="\\r"];
+  4 -> 4 [label=" "];
+  9 -> 9 [label="0-9"];
   0 [label="0", shape="circle"];
   1 [label="1", shape="doublecircle"];
   2 [label="2", shape="doublecircle"];
@@ -422,6 +801,9 @@ digraph G {
   4 [label="4", shape="doublecircle"];
   5 [label="5", shape="doublecircle"];
   6 [label="6", shape="doublecircle"];
+  7 [label="7", shape="doublecircle"];
+  8 [label="8", shape="doublecircle"];
+  9 [label="9", shape="doublecircle"];
 }
 
 CharClass:
@@ -445,6 +827,29 @@ digraph G {
   2 [label="2", shape="circle"];
   3 [label="3", shape="doublecircle"];
   4 [label="4", shape="doublecircle"];
+}
+
+InterpString:
+digraph G {
+  rankdir="LR";
+  0 -> 1 [label="{"];
+  0 -> 2 [label="\\u0000-\\t"];
+  0 -> 2 [label="\\u000b-\\u000c"];
+  0 -> 2 [label="|"];
+  0 -> 2 [label="~-\\u10ffff"];
+  0 -> 2 [label="\\u000e-_"];
+  0 -> 2 [label="a-z"];
+  0 -> 3 [label="`"];
+  2 -> 2 [label="\\u0000-\\t"];
+  2 -> 2 [label="\\u000b-\\u000c"];
+  2 -> 2 [label="|"];
+  2 -> 2 [label="~-\\u10ffff"];
+  2 -> 2 [label="\\u000e-_"];
+  2 -> 2 [label="a-z"];
+  0 [label="0", shape="circle"];
+  1 [label="1", shape="doublecircle"];
+  2 [label="2", shape="doublecircle"];
+  3 [label="3", shape="doublecircle"];
 }
 
 StringLiteral:
@@ -580,4 +985,21 @@ CBRACKET ]
 NUM 10
 ADD +
 NUM 20
+
+Input:
+`there are {3+2} apples ` + "in the basket"
+
+
+Output:
+BACKTICK `
+STRING_PIECE there are 
+OCURLY {
+NUM 3
+ADD +
+NUM 2
+CCURLY }
+STRING_PIECE  apples 
+BACKTICK `
+ADD +
+STRING "in the basket"
 

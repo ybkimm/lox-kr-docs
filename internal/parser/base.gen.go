@@ -31,14 +31,15 @@ const (
 	LEFT            int = 27
 	LIST            int = 28
 	RIGHT           int = 29
-	KEYWORD         int = 30
-	ID              int = 31
-	NUM             int = 32
-	LITERAL         int = 33
-	OBRACKET        int = 34
-	CBRACKET        int = 35
-	CLASS_DASH      int = 36
-	CLASS_CHAR      int = 37
+	EMIT            int = 30
+	KEYWORD         int = 31
+	ID              int = 32
+	NUM             int = 33
+	LITERAL         int = 34
+	OBRACKET        int = 35
+	CBRACKET        int = 36
+	CLASS_DASH      int = 37
+	CLASS_CHAR      int = 38
 )
 
 func _TokenToString(t int) string {
@@ -103,6 +104,8 @@ func _TokenToString(t int) string {
 		return "LIST"
 	case RIGHT:
 		return "RIGHT"
+	case EMIT:
+		return "EMIT"
 	case KEYWORD:
 		return "KEYWORD"
 	case ID:

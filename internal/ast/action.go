@@ -39,24 +39,16 @@ func (a *ActionDiscard) GetAction() mode.Action {
 //	@frag '"'  @push_mode(StringLiteral) ;
 type ActionPushMode struct {
 	baseAST
-	Mode    string
-	modeAST *Mode
+	Mode string
 }
 
 func (a *ActionPushMode) RunPass(ctx *Context, pass Pass) {
 	switch pass {
 	case Check:
-		ast := ctx.Lookup(a.Mode)
-		if ast == nil {
-			ctx.Errs.Errorf(ctx.Position(a), "undefined: %v", a.Mode)
+		if ctx.LexerModes[a.Mode] == nil {
+			ctx.Errs.Errorf(ctx.Position(a), "undefined mode: %v", a.Mode)
 			return
 		}
-		modeAST, ok := ast.(*Mode)
-		if !ok {
-			ctx.Errs.Errorf(ctx.Position(a), "not a mode: %v", a.Mode)
-			return
-		}
-		a.modeAST = modeAST
 	}
 }
 
@@ -102,10 +94,12 @@ func (a *ActionEmit) RunPass(ctx *Context, pass Pass) {
 			ctx.Errs.Errorf(ctx.Position(a), "undefined: %v", a.Name)
 			return
 		}
-		if _, ok := ast.(*TokenRule); !ok {
+		tr, ok := ast.(*TokenRule)
+		if !ok {
 			ctx.Errs.Errorf(ctx.Position(a), "not a token: %v", a.Name)
 			return
 		}
+		a.Terminal = tr.Terminal
 	}
 }
 

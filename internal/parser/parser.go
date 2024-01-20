@@ -331,7 +331,7 @@ func (p *parser) on_action_pop_mode(_ Token) *ast.ActionPopMode {
 	return &ast.ActionPopMode{}
 }
 
-func (p *parser) on_action_emit(tok Token) *ast.ActionEmit {
+func (p *parser) on_action_emit(_, _ Token, tok Token, _ Token) *ast.ActionEmit {
 	return &ast.ActionEmit{
 		Name: string(tok.Str),
 	}

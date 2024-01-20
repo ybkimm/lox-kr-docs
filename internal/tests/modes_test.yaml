@@ -9,6 +9,9 @@ sources:
       ADD = '+'    ;
       SUB = '-'    ;
 
+      OCURLY = '{' @push_mode();
+      CCURLY = '}' @pop_mode;
+
       @frag [ \r\n\t]+  @discard ;
 
       OBRACKET = '[' @push_mode(CharClass) ;
@@ -26,6 +29,17 @@ sources:
         @frag ~[\r\n] ;
       }
 
+      @macro STRING_FRAG = '\\' [nrt"] 
+                         | '\\u' HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR
+                         | ~[\r\n{}`] ;
+
+      BACKTICK = '`' @push_mode(InterpString);
+      @mode InterpString {
+        @frag '`' @pop_mode @emit(BACKTICK);
+        STRING_PIECE = STRING_FRAG+;
+        @frag '{' @push_mode() @emit(OCURLY);
+      }
+
       @parser
 
       @start
@@ -34,11 +48,15 @@ sources:
       token = NUM
             | ADD
             | SUB
+            | OCURLY
+            | CCURLY
             | OBRACKET 
             | CBRACKET
             | CLASS_DASH
             | CLASS_CHAR
             | STRING
+            | BACKTICK
+            | STRING_PIECE
             ;
 
   - name: parser.go
@@ -132,4 +150,8 @@ inputs:
     10 - 20
     [10-20]
     10 + 20
+
+  - |
+    `there are {3+2} apples ` + "in the basket"
+    
 

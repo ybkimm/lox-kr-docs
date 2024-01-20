@@ -141,7 +141,8 @@ char_class_item = CLASS_CHAR | CLASS_DASH ;
 
 action           = action_discard
                  | action_push_mode
-                 | action_pop_mode ;
+                 | action_pop_mode
+                 | action_emit;
 action_discard   = '@discard';
 action_push_mode = '@push_mode' '(' ID? ')';
 action_pop_mode  = '@pop_mode';
