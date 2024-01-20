@@ -19,19 +19,33 @@ func (r *FragRule) RunPass(ctx *Context, pass Pass) {
 		actions := &mode.Actions{
 			Pos: r.Bounds().Begin,
 		}
+
 		hasDiscard := false
+		hasEmit := false
 		for _, actAST := range r.Actions {
 			act := actAST.GetAction()
-			if act.Type == mode.ActionDiscard {
+			switch act.Type {
+			case mode.ActionDiscard:
 				hasDiscard = true
+			case mode.ActionAccept:
+				hasEmit = true
 			}
 			actions.Actions = append(actions.Actions, act)
 		}
+
 		if !hasDiscard {
 			actions.Actions = append(actions.Actions, mode.Action{
 				Type: mode.ActionAccum,
 			})
 		}
+
+		if hasDiscard && hasEmit {
+			ctx.Errs.Errorf(
+				ctx.Position(r),
+				"@frag cannot be discarded and emitted at the same time")
+			return
+		}
+
 		nfaCons.E.Data = actions
 		ctx.CurrentLexerMode.Peek().AddRule(*nfaCons)
 	}

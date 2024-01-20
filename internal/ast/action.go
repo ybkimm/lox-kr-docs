@@ -1,6 +1,9 @@
 package ast
 
-import "github.com/dcaiafa/lox/internal/lexergen/mode"
+import (
+	"github.com/dcaiafa/lox/internal/lexergen/mode"
+	"github.com/dcaiafa/lox/internal/parsergen/lr1"
+)
 
 // Action is the interface implemented by ASTs that define actions for tokens
 // and fragments.
@@ -81,5 +84,34 @@ func (a *ActionPopMode) RunPass(ctx *Context, pass Pass) {}
 func (a *ActionPopMode) GetAction() mode.Action {
 	return mode.Action{
 		Type: mode.ActionPopMode,
+	}
+}
+
+type ActionEmit struct {
+	baseAST
+	Name string
+
+	Terminal *lr1.Terminal
+}
+
+func (a *ActionEmit) RunPass(ctx *Context, pass Pass) {
+	switch pass {
+	case Check:
+		ast := ctx.Lookup(a.Name)
+		if ast == nil {
+			ctx.Errs.Errorf(ctx.Position(a), "undefined: %v", a.Name)
+			return
+		}
+		if _, ok := ast.(*TokenRule); !ok {
+			ctx.Errs.Errorf(ctx.Position(a), "not a token: %v", a.Name)
+			return
+		}
+	}
+}
+
+func (a *ActionEmit) GetAction() mode.Action {
+	return mode.Action{
+		Type:     mode.ActionAccept,
+		Terminal: a.Terminal.Index,
 	}
 }

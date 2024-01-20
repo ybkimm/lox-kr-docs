@@ -331,6 +331,12 @@ func (p *parser) on_action_pop_mode(_ Token) *ast.ActionPopMode {
 	return &ast.ActionPopMode{}
 }
 
+func (p *parser) on_action_emit(tok Token) *ast.ActionEmit {
+	return &ast.ActionEmit{
+		Name: string(tok.Str),
+	}
+}
+
 func (p *parser) _onBounds(r any, begin, end Token) {
 	rAST, ok := r.(ast.AST)
 	if !ok {
