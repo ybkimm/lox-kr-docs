@@ -317,9 +317,14 @@ func (p *parser) on_action_discard(_ Token) *ast.ActionDiscard {
 }
 
 func (p *parser) on_action_push_mode(_, _ Token, mode Token, _ Token) *ast.ActionPushMode {
-	return &ast.ActionPushMode{
-		Mode: string(mode.Str),
+	m := &ast.ActionPushMode{}
+	// The `mode` token is optional. If not specified, mode.Type will be 0 (EOF).
+	if mode.Type == ID {
+		m.Mode = string(mode.Str)
+	} else {
+		m.Mode = ast.DefaultModeName
 	}
+	return m
 }
 
 func (p *parser) on_action_pop_mode(_ Token) *ast.ActionPopMode {
