@@ -97,7 +97,7 @@ func (p *jsonParser) on_array(_ Token, entries []any, _ Token) []any {
 	return entries
 }
 
-func (p *jsonParser) onError() {
+func (p *jsonParser) _onError() {
 	tok := p.errorToken()
 	p.errs.Errorf(
 		tok.Pos, "unexpected %v %q", _TokenToString(tok.Type), string(tok.Str))
