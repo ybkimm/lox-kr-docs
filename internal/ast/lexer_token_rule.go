@@ -52,9 +52,16 @@ func (r *TokenRule) RunPass(ctx *Context, pass Pass) {
 		}
 		for _, actAST := range r.Actions {
 			act := actAST.GetAction()
-			if act.Type == mode.ActionDiscard {
+			switch act.Type {
+			case mode.ActionDiscard:
 				ctx.Errs.Errorf(
-					ctx.Position(r), "tokens cannot be discarded; use @frag instead")
+					ctx.Position(r),
+					"tokens cannot be discarded; use @frag instead")
+				return
+			case mode.ActionAccept:
+				ctx.Errs.Errorf(
+					ctx.Position(r),
+					"@emit is not allowed in token actions")
 				return
 			}
 			actions.Actions = append(actions.Actions, act)

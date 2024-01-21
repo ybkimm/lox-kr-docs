@@ -26,7 +26,7 @@ func (r *FragRule) RunPass(ctx *Context, pass Pass) {
 			act := actAST.GetAction()
 			switch act.Type {
 			case mode.ActionDiscard:
-				if hasEmit {
+				if hasDiscard {
 					ctx.Errs.Errorf(
 						ctx.Position(r),
 						"@frag can only have one @discard action")
@@ -45,7 +45,7 @@ func (r *FragRule) RunPass(ctx *Context, pass Pass) {
 			actions.Actions = append(actions.Actions, act)
 		}
 
-		if !hasDiscard {
+		if !hasDiscard && !hasEmit {
 			actions.Actions = append(actions.Actions, mode.Action{
 				Type: mode.ActionAccum,
 			})
