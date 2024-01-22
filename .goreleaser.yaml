@@ -20,6 +20,7 @@ builds:
       - linux
       - windows
       - darwin
+    main: ./cmd/lox
 
 archives:
   - format: tar.gz
