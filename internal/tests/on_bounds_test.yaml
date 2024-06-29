@@ -34,11 +34,12 @@ sources:
         "os"
         "strconv"
 
+        "github.com/dcaiafa/loxlex/simplelexer"
+
         "github.com/dcaiafa/lox/internal/base/errlogger"
-        "github.com/dcaiafa/lox/internal/base/baselexer"
       )
 
-      type Token = baselexer.Token
+      type Token = simplelexer.Token
 
       func main() {
         input, err := io.ReadAll(os.Stdin)
@@ -48,18 +49,22 @@ sources:
 
         fset := gotoken.NewFileSet()
         file := fset.AddFile("expr", -1, len(input))
-        errs := errlogger.New(fset, os.Stderr)
-
-        onError := func(l *baselexer.Lexer) {
-          errs.Errorf(l.Pos(), "unexpected character: %c", l.Peek())
-        }
+        errs := errlogger.New(fset, os.Stdout)
 
         var parser testParser
         parser.errs = errs
         parser.fset = fset
-        lex := baselexer.New(new(_LexerStateMachine), onError, file, input)
-        _ = parser.parse(lex)
+        lex := simplelexer.New(simplelexer.Config{
+          StateMachine: new(_LexerStateMachine),
+          File: file,
+          Input: input,
+        })
+        ok := parser.parse(lex)
 
+        if !ok {
+          fmt.Println("Failed to parse.")
+          return
+        }
         if errs.HasError() {
           fmt.Println("Errors occurred.")
           return
@@ -107,14 +112,6 @@ sources:
         return nil
       }
 
-      func (p *testParser) _onError() {
-        if p.errorToken().Type != ERROR {
-          p.errs.Errorf(
-            p.errorToken().Pos,
-            "unexpected %v", _TokenToString(p.errorToken().Type))
-        }
-      }
-
       func (p *testParser) _onBounds(v any, begin, end Token) {
         name := ""
         switch v.(type) {
@@ -125,7 +122,6 @@ sources:
         default:
           return
         }
-
         fmt.Printf(
           "%v: (%v, %v)\n", 
           name, p.fset.Position(begin.Pos), p.fset.Position(end.Pos))

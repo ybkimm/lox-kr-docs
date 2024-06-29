@@ -43,7 +43,9 @@ sources:
       @parser
 
       @start
-      S = token* ;
+      S = token*
+        | @error
+        ;
 
       token = NUM
             | ADD
@@ -69,11 +71,12 @@ sources:
         "os"
         "fmt"
 
+        "github.com/dcaiafa/loxlex/simplelexer"
+
         "github.com/dcaiafa/lox/internal/base/errlogger"
-        "github.com/dcaiafa/lox/internal/base/baselexer"
       )
 
-      type Token = baselexer.Token
+      type Token = simplelexer.Token
 
       func main() {
         input, err := io.ReadAll(os.Stdin)
@@ -83,18 +86,22 @@ sources:
 
         fset := gotoken.NewFileSet()
         file := fset.AddFile("expr", -1, len(input))
-        errs := errlogger.New(fset, os.Stderr)
-
-        onError := func(l *baselexer.Lexer) {
-          errs.Errorf(l.Pos(), "unexpected character: %c", l.Peek())
-        }
+        errs := errlogger.New(fset, os.Stdout)
 
         var parser parser
         parser.errs = errs
         parser.fset = fset
-        lex := baselexer.New(new(_LexerStateMachine), onError, file, input)
-        _ = parser.parse(lex)
+        lex := simplelexer.New(simplelexer.Config{
+          StateMachine: new(_LexerStateMachine),
+          File: file,
+          Input: input,
+        })
+        ok := parser.parse(lex)
 
+        if !ok {
+          fmt.Println("Failed to parse.")
+          return
+        }
         if errs.HasError() {
           fmt.Println("Errors occurred.")
           return
@@ -111,17 +118,22 @@ sources:
         return nil
       }
 
+      func (p *parser) on_S__error(e Error) any {
+        if e.Token.Type != ERROR {
+          p.errs.Errorf(
+            e.Token.Pos,
+            "unexpected %v", _TokenToString(e.Token.Type))
+        } else {
+          p.errs.Errorf(
+            e.Token.Pos,
+            "%v", e.Token.Err)
+        }
+        return nil
+      }
+
       func (p *parser) on_token(t Token) Token {
         fmt.Println(_TokenToString(t.Type), string(t.Str))
         return t
-      }
-
-      func (p *parser) _onError() {
-        if p.errorToken().Type != ERROR {
-          p.errs.Errorf(
-            p.errorToken().Pos,
-            "unexpected %v", _TokenToString(p.errorToken().Type))
-        }
       }
 
 inputs:

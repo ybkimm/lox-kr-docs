@@ -2,22 +2,20 @@ Parser Table
 ============
 I0:
   S' = .S, EOF
-  S = .block*, EOF
+  S = .block, EOF
+  S = .ERROR, EOF
   block = .OCURLY statement* CCURLY, EOF
-  block = .OCURLY statement* CCURLY, OCURLY
-  block* = .block+, EOF
-  block* = ., EOF
-  block+ = .block+ block, EOF
-  block+ = .block+ block, OCURLY
-  block+ = .block, EOF
-  block+ = .block, OCURLY
-    on EOF reduce block*
-    on OCURLY shift I1
-    on S goto I2
-    on block goto I3
-    on block* goto I4
-    on block+ goto I5
+  block = .ERROR CCURLY, EOF
+    on ERROR shift I1
+    on OCURLY shift I2
+    on S goto I3
+    on block goto I4
 I1:
+  S = ERROR., EOF
+  block = ERROR .CCURLY, EOF
+    on CCURLY shift I5
+    on EOF reduce S
+I2:
   block = .OCURLY statement* CCURLY, ERROR
   block = .OCURLY statement* CCURLY, ID
   block = .OCURLY statement* CCURLY, OCURLY
@@ -27,6 +25,10 @@ I1:
   block = OCURLY .statement* CCURLY, ID
   block = OCURLY .statement* CCURLY, OCURLY
   block = OCURLY .statement* CCURLY, CCURLY
+  block = .ERROR CCURLY, ERROR
+  block = .ERROR CCURLY, ID
+  block = .ERROR CCURLY, OCURLY
+  block = .ERROR CCURLY, CCURLY
   statement = .func_call SEMICOLON, ERROR
   statement = .func_call SEMICOLON, ID
   statement = .func_call SEMICOLON, OCURLY
@@ -35,6 +37,10 @@ I1:
   statement = .ERROR SEMICOLON, ID
   statement = .ERROR SEMICOLON, OCURLY
   statement = .ERROR SEMICOLON, CCURLY
+  statement = .ERROR OCURLY, ERROR
+  statement = .ERROR OCURLY, ID
+  statement = .ERROR OCURLY, OCURLY
+  statement = .ERROR OCURLY, CCURLY
   statement = .block, ERROR
   statement = .block, ID
   statement = .block, OCURLY
@@ -53,38 +59,45 @@ I1:
     on CCURLY reduce statement*
     on ERROR shift I6
     on ID shift I7
-    on OCURLY shift I1
+    on OCURLY shift I2
     on block goto I8
     on func_call goto I9
     on statement goto I10
     on statement* goto I11
     on statement+ goto I12
-I2:
+I3:
   S' = S., EOF
     on EOF accept
-I3:
-  block+ = block., EOF
-  block+ = block., OCURLY
-    on EOF reduce block+
-    on OCURLY reduce block+
 I4:
-  S = block*., EOF
+  S = block., EOF
     on EOF reduce S
 I5:
-  block = .OCURLY statement* CCURLY, EOF
-  block = .OCURLY statement* CCURLY, OCURLY
-  block* = block+., EOF
-  block+ = block+ .block, EOF
-  block+ = block+ .block, OCURLY
-    on EOF reduce block*
-    on OCURLY shift I1
-    on block goto I13
+  block = ERROR CCURLY., EOF
+  block = ERROR CCURLY., ERROR
+  block = ERROR CCURLY., ID
+  block = ERROR CCURLY., OCURLY
+  block = ERROR CCURLY., CCURLY
+    on CCURLY reduce block
+    on EOF reduce block
+    on ERROR reduce block
+    on ID reduce block
+    on OCURLY reduce block
 I6:
+  block = ERROR .CCURLY, ERROR
+  block = ERROR .CCURLY, ID
+  block = ERROR .CCURLY, OCURLY
+  block = ERROR .CCURLY, CCURLY
   statement = ERROR .SEMICOLON, ERROR
   statement = ERROR .SEMICOLON, ID
   statement = ERROR .SEMICOLON, OCURLY
   statement = ERROR .SEMICOLON, CCURLY
-    on SEMICOLON shift I16
+  statement = ERROR .OCURLY, ERROR
+  statement = ERROR .OCURLY, ID
+  statement = ERROR .OCURLY, OCURLY
+  statement = ERROR .OCURLY, CCURLY
+    on CCURLY shift I5
+    on OCURLY shift I14
+    on SEMICOLON shift I15
 I7:
   func_call = ID .OPAREN params? CPAREN, SEMICOLON
     on OPAREN shift I17
@@ -102,7 +115,7 @@ I9:
   statement = func_call .SEMICOLON, ID
   statement = func_call .SEMICOLON, OCURLY
   statement = func_call .SEMICOLON, CCURLY
-    on SEMICOLON shift I15
+    on SEMICOLON shift I16
 I10:
   statement+ = statement., ERROR
   statement+ = statement., ID
@@ -118,12 +131,16 @@ I11:
   block = OCURLY statement* .CCURLY, ID
   block = OCURLY statement* .CCURLY, OCURLY
   block = OCURLY statement* .CCURLY, CCURLY
-    on CCURLY shift I14
+    on CCURLY shift I13
 I12:
   block = .OCURLY statement* CCURLY, ERROR
   block = .OCURLY statement* CCURLY, ID
   block = .OCURLY statement* CCURLY, OCURLY
   block = .OCURLY statement* CCURLY, CCURLY
+  block = .ERROR CCURLY, ERROR
+  block = .ERROR CCURLY, ID
+  block = .ERROR CCURLY, OCURLY
+  block = .ERROR CCURLY, CCURLY
   statement = .func_call SEMICOLON, ERROR
   statement = .func_call SEMICOLON, ID
   statement = .func_call SEMICOLON, OCURLY
@@ -132,6 +149,10 @@ I12:
   statement = .ERROR SEMICOLON, ID
   statement = .ERROR SEMICOLON, OCURLY
   statement = .ERROR SEMICOLON, CCURLY
+  statement = .ERROR OCURLY, ERROR
+  statement = .ERROR OCURLY, ID
+  statement = .ERROR OCURLY, OCURLY
+  statement = .ERROR OCURLY, CCURLY
   statement = .block, ERROR
   statement = .block, ID
   statement = .block, OCURLY
@@ -145,16 +166,11 @@ I12:
     on CCURLY reduce statement*
     on ERROR shift I6
     on ID shift I7
-    on OCURLY shift I1
+    on OCURLY shift I2
     on block goto I8
     on func_call goto I9
     on statement goto I18
 I13:
-  block+ = block+ block., EOF
-  block+ = block+ block., OCURLY
-    on EOF reduce block+
-    on OCURLY reduce block+
-I14:
   block = OCURLY statement* CCURLY., EOF
   block = OCURLY statement* CCURLY., ERROR
   block = OCURLY statement* CCURLY., ID
@@ -165,20 +181,29 @@ I14:
     on ERROR reduce block
     on ID reduce block
     on OCURLY reduce block
+I14:
+  statement = ERROR OCURLY., ERROR
+  statement = ERROR OCURLY., ID
+  statement = ERROR OCURLY., OCURLY
+  statement = ERROR OCURLY., CCURLY
+    on CCURLY reduce statement
+    on ERROR reduce statement
+    on ID reduce statement
+    on OCURLY reduce statement
 I15:
-  statement = func_call SEMICOLON., ERROR
-  statement = func_call SEMICOLON., ID
-  statement = func_call SEMICOLON., OCURLY
-  statement = func_call SEMICOLON., CCURLY
+  statement = ERROR SEMICOLON., ERROR
+  statement = ERROR SEMICOLON., ID
+  statement = ERROR SEMICOLON., OCURLY
+  statement = ERROR SEMICOLON., CCURLY
     on CCURLY reduce statement
     on ERROR reduce statement
     on ID reduce statement
     on OCURLY reduce statement
 I16:
-  statement = ERROR SEMICOLON., ERROR
-  statement = ERROR SEMICOLON., ID
-  statement = ERROR SEMICOLON., OCURLY
-  statement = ERROR SEMICOLON., CCURLY
+  statement = func_call SEMICOLON., ERROR
+  statement = func_call SEMICOLON., ID
+  statement = func_call SEMICOLON., OCURLY
+  statement = func_call SEMICOLON., CCURLY
     on CCURLY reduce statement
     on ERROR reduce statement
     on ID reduce statement
@@ -275,15 +300,25 @@ Tests
 Input:
 {
   f1(a, b, c);
-  f2(a, ;
-  f3();
+  f2 a, f);
+  f3(a, ;
+  f4();
+  f5(x, y
+  {
+    f6();
+  }
 }
 
 
 Output:
 expr:2:3: parsed func f1
-expr:3:9: unexpected SEMICOLON
-expr:3:9: recovered statement
-expr:4:3: parsed func f3
+expr:3:6: unexpected ID
+expr:3:6: recovered statement
+expr:4:9: unexpected SEMICOLON
+expr:4:9: recovered statement
+expr:5:3: parsed func f4
+expr:7:3: unexpected OCURLY
+expr:7:3: recovered statement
+expr:8:5: parsed func f6
 Errors occurred.
 

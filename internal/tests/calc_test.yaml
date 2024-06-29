@@ -18,7 +18,9 @@ sources:
       @parser
 
       @start
-      S = expr ;
+      S = expr 
+        | @error
+        ;
 
       expr = expr '+' expr    @left(1)
            | expr '-' expr    @left(1)
@@ -44,11 +46,12 @@ sources:
         "os"
         "fmt"
 
+        "github.com/dcaiafa/loxlex/simplelexer"
+
         "github.com/dcaiafa/lox/internal/base/errlogger"
-        "github.com/dcaiafa/lox/internal/base/baselexer"
       )
 
-      type Token = baselexer.Token
+      type Token = simplelexer.Token
 
       func main() {
         input, err := io.ReadAll(os.Stdin)
@@ -58,22 +61,27 @@ sources:
 
         fset := gotoken.NewFileSet()
         file := fset.AddFile("expr", -1, len(input))
-        errs := errlogger.New(fset, os.Stderr)
-
-        onError := func(l *baselexer.Lexer) {
-          errs.Errorf(l.Pos(), "unexpected character: %c", l.Peek())
-        }
+        errs := errlogger.New(fset, os.Stdout)
 
         var parser calcParser
         parser.errs = errs
         parser.fset = fset
-        lex := baselexer.New(new(_LexerStateMachine), onError, file, input)
-        _ = parser.parse(lex)
+        lex := simplelexer.New(simplelexer.Config{
+          StateMachine: new(_LexerStateMachine),
+          File: file,
+          Input: input,
+        })
+        ok := parser.parse(lex)
 
+        if !ok {
+          fmt.Println("Failed to parse.")
+          return
+        }
         if errs.HasError() {
           fmt.Println("Errors occurred.")
           return
         }
+
         fmt.Println(parser.result)
       }
 
@@ -84,8 +92,14 @@ sources:
         result float64
       }
 
-      func (p *calcParser) on_S__foo(e float64) any {
+      func (p *calcParser) on_S(e float64) any {
         p.result = e
+        return nil
+      }
+
+      func (p *calcParser) on_S__error(e Error) any {
+        p.errs.Errorf(
+          e.Token.Pos, "Unexpected %v", _TokenToString(e.Token.Type))
         return nil
       }
 
@@ -132,14 +146,6 @@ sources:
           return 0
         }
         return -v
-      }
-
-      func (p *calcParser) _onError() {
-        if p.errorToken().Type != ERROR {
-          p.errs.Errorf(
-            p.errorToken().Pos,
-            "unexpected %v", _TokenToString(p.errorToken().Type))
-        }
       }
 
 inputs:

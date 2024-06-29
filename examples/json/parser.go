@@ -6,7 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/dcaiafa/lox/internal/base/baselexer"
+	"github.com/dcaiafa/loxlex/simplelexer"
+
 	"github.com/dcaiafa/lox/internal/base/errlogger"
 )
 
@@ -16,14 +17,17 @@ func Parse(s string) (any, error) {
 
 	var errStr strings.Builder
 	errs := errlogger.New(fset, &errStr)
-	onError := func(l *baselexer.Lexer) {
-		errs.Errorf(l.Pos(), "unexpected character: %c", l.Peek())
-	}
 
 	var parser jsonParser
 	parser.file = file
 	parser.errs = errs
-	lex := baselexer.New(new(_LexerStateMachine), onError, file, []byte(s))
+
+	lex := simplelexer.New(simplelexer.Config{
+		StateMachine: new(_LexerStateMachine),
+		File:         file,
+		Input:        []byte(s),
+	})
+
 	_ = parser.parse(lex)
 	if errs.HasError() {
 		return nil, errors.New(strings.Trim(errStr.String(), "\n"))
@@ -31,7 +35,7 @@ func Parse(s string) (any, error) {
 	return parser.res, nil
 }
 
-type Token = baselexer.Token
+type Token = simplelexer.Token
 
 type jsonParser struct {
 	lox
@@ -95,12 +99,6 @@ func (p *jsonParser) on_member(k Token, _ Token, v any) member {
 
 func (p *jsonParser) on_array(_ Token, entries []any, _ Token) []any {
 	return entries
-}
-
-func (p *jsonParser) _onError() {
-	tok := p.errorToken()
-	p.errs.Errorf(
-		tok.Pos, "unexpected %v %q", _TokenToString(tok.Type), string(tok.Str))
 }
 
 func unescape(lit []byte) string {

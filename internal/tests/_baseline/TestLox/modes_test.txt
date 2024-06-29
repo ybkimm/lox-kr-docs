@@ -3,6 +3,7 @@ Parser Table
 I0:
   S' = .S, EOF
   S = .token*, EOF
+  S = .ERROR, EOF
   token = .NUM, EOF
   token = .NUM, NUM
   token = .NUM, ADD
@@ -194,16 +195,17 @@ I0:
     on CLASS_CHAR shift I5
     on CLASS_DASH shift I6
     on EOF reduce token*
-    on NUM shift I7
-    on OBRACKET shift I8
-    on OCURLY shift I9
-    on STRING shift I11
-    on STRING_PIECE shift I12
-    on SUB shift I13
-    on S goto I10
-    on token goto I14
-    on token* goto I15
-    on token+ goto I16
+    on ERROR shift I7
+    on NUM shift I8
+    on OBRACKET shift I9
+    on OCURLY shift I10
+    on STRING shift I12
+    on STRING_PIECE shift I13
+    on SUB shift I14
+    on S goto I11
+    on token goto I15
+    on token* goto I16
+    on token+ goto I17
 I1:
   token = ADD., EOF
   token = ADD., NUM
@@ -367,6 +369,9 @@ I6:
     on STRING_PIECE reduce token
     on SUB reduce token
 I7:
+  S = ERROR., EOF
+    on EOF reduce S
+I8:
   token = NUM., EOF
   token = NUM., NUM
   token = NUM., ADD
@@ -393,7 +398,7 @@ I7:
     on STRING reduce token
     on STRING_PIECE reduce token
     on SUB reduce token
-I8:
+I9:
   token = OBRACKET., EOF
   token = OBRACKET., NUM
   token = OBRACKET., ADD
@@ -420,7 +425,7 @@ I8:
     on STRING reduce token
     on STRING_PIECE reduce token
     on SUB reduce token
-I9:
+I10:
   token = OCURLY., EOF
   token = OCURLY., NUM
   token = OCURLY., ADD
@@ -447,10 +452,10 @@ I9:
     on STRING reduce token
     on STRING_PIECE reduce token
     on SUB reduce token
-I10:
+I11:
   S' = S., EOF
     on EOF accept
-I11:
+I12:
   token = STRING., EOF
   token = STRING., NUM
   token = STRING., ADD
@@ -477,7 +482,7 @@ I11:
     on STRING reduce token
     on STRING_PIECE reduce token
     on SUB reduce token
-I12:
+I13:
   token = STRING_PIECE., EOF
   token = STRING_PIECE., NUM
   token = STRING_PIECE., ADD
@@ -504,7 +509,7 @@ I12:
     on STRING reduce token
     on STRING_PIECE reduce token
     on SUB reduce token
-I13:
+I14:
   token = SUB., EOF
   token = SUB., NUM
   token = SUB., ADD
@@ -531,7 +536,7 @@ I13:
     on STRING reduce token
     on STRING_PIECE reduce token
     on SUB reduce token
-I14:
+I15:
   token+ = token., EOF
   token+ = token., NUM
   token+ = token., ADD
@@ -558,10 +563,10 @@ I14:
     on STRING reduce token+
     on STRING_PIECE reduce token+
     on SUB reduce token+
-I15:
+I16:
   S = token*., EOF
     on EOF reduce S
-I16:
+I17:
   token = .NUM, EOF
   token = .NUM, NUM
   token = .NUM, ADD
@@ -739,14 +744,14 @@ I16:
     on CLASS_CHAR shift I5
     on CLASS_DASH shift I6
     on EOF reduce token*
-    on NUM shift I7
-    on OBRACKET shift I8
-    on OCURLY shift I9
-    on STRING shift I11
-    on STRING_PIECE shift I12
-    on SUB shift I13
-    on token goto I17
-I17:
+    on NUM shift I8
+    on OBRACKET shift I9
+    on OCURLY shift I10
+    on STRING shift I12
+    on STRING_PIECE shift I13
+    on SUB shift I14
+    on token goto I18
+I18:
   token+ = token+ token., EOF
   token+ = token+ token., NUM
   token+ = token+ token., ADD
@@ -924,9 +929,7 @@ Output:
 OBRACKET [
 CLASS_CHAR a
 CLASS_DASH -
-expr:1:5: unexpected character: 
-
-expr:2:1: unexpected character: ]
+expr:1:5: unexpected character '\n'
 Errors occurred.
 
 Input:
@@ -943,7 +946,7 @@ Input:
 
 
 Output:
-expr:1:1: unexpected character: "
+expr:1:1: unexpected character '"'
 Errors occurred.
 
 Input:

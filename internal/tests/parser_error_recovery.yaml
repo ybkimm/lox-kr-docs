@@ -16,16 +16,21 @@ sources:
       @parser
 
       @start
-      S = block*;
+      S = block
+        | @error
+        ;
 
-      block = '{' statement* '}';
+      block = '{' statement* '}'
+            | @error '}'
+            ;
 
       statement = func_call ';'
                 | @error ';'
+                | @error '{'
                 | block
                 ;
 
-      func_call = ID '(' params? ')';
+      func_call = ID '(' params? ')'; 
 
       params = @list(ID, ',');
 
@@ -39,11 +44,12 @@ sources:
         "io"
         "os"
 
+        "github.com/dcaiafa/loxlex/simplelexer"
+
         "github.com/dcaiafa/lox/internal/base/errlogger"
-        "github.com/dcaiafa/lox/internal/base/baselexer"
       )
 
-      type Token = baselexer.Token
+      type Token = simplelexer.Token
 
       func main() {
         input, err := io.ReadAll(os.Stdin)
@@ -53,18 +59,22 @@ sources:
 
         fset := gotoken.NewFileSet()
         file := fset.AddFile("expr", -1, len(input))
-        errs := errlogger.New(fset, os.Stderr)
-
-        onError := func(l *baselexer.Lexer) {
-          errs.Errorf(l.Pos(), "unexpected character: %c", l.Peek())
-        }
+        errs := errlogger.New(fset, os.Stdout)
 
         var parser testParser
         parser.errs = errs
         parser.fset = fset
-        lex := baselexer.New(new(_LexerStateMachine), onError, file, input)
-        _ = parser.parse(lex)
+        lex := simplelexer.New(simplelexer.Config{
+          StateMachine: new(_LexerStateMachine),
+          File: file,
+          Input: input,
+        })
+        ok := parser.parse(lex)
 
+        if !ok {
+          fmt.Println("Failed to parse.")
+          return
+        }
         if errs.HasError() {
           fmt.Println("Errors occurred.")
           return
@@ -77,12 +87,23 @@ sources:
         errs   *errlogger.ErrLogger
       }
 
-      func (p *testParser) on_S(blocks []any) any  {
+      func (p *testParser) on_S(block struct{}) any  {
         return nil
       }
 
-      func (p *testParser) on_block(_ Token, ss []any, _ Token) any {
+      func (p *testParser) on_S__error(e Error) any  {
+        p.errs.Errorf(e.Token.Pos, "fatal: unexpected %v", _TokenToString(e.Token.Type))
         return nil
+      }
+
+      func (p *testParser) on_block(_ Token, ss []any, _ Token) struct{} {
+        return struct{}{}
+      }
+
+      func (p *testParser) on_block__error(e Error, _ Token) struct{} {
+        p.errs.Errorf(e.Token.Pos, "unexpected %v", _TokenToString(e.Token.Type))
+        p.errs.Infof(e.Token.Pos, "recovered block")
+        return struct{}{}
       }
 
       func (p *testParser) on_statement__func(f int, sc Token) any {
@@ -93,8 +114,13 @@ sources:
         return nil
       }
 
-      func (p *testParser) on_statement__error(_ error, sc Token) any {
-        p.errs.Infof(sc.Pos, "recovered statement")
+      func (p *testParser) on_statement__error(e Error, tok Token) any {
+        if tok.Type == OCURLY {
+          p.recoverLookahead(tok.Type, tok)
+        }
+
+        p.errs.Errorf(e.Token.Pos, "unexpected %v", _TokenToString(e.Token.Type))
+        p.errs.Infof(e.Token.Pos, "recovered statement")
         return nil
       }
 
@@ -107,18 +133,15 @@ sources:
         return nil
       }
 
-      func (p *testParser) _onError() {
-        if p.errorToken().Type != ERROR {
-          p.errs.Errorf(
-            p.errorToken().Pos,
-            "unexpected %v", _TokenToString(p.errorToken().Type))
-        }
-      }
-
 inputs:
   - |
     {
       f1(a, b, c);
-      f2(a, ;
-      f3();
+      f2 a, f);
+      f3(a, ;
+      f4();
+      f5(x, y
+      {
+        f6();
+      }
     }

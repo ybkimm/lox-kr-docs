@@ -84,7 +84,8 @@ OBRACKET = '[' @push_mode(ClassChar) ;
 
 @parser 
 
-@start spec = section* ;
+@start spec = section*
+            | @error ;
 
 section = parser_section
         | lexer_section ;

@@ -3,6 +3,7 @@ Parser Table
 I0:
   S' = .S, EOF
   S = .expr, EOF
+  S = .ERROR, EOF
   expr = .expr ADD expr, EOF
   expr = .expr ADD expr, ADD
   expr = .expr ADD expr, SUB
@@ -73,13 +74,17 @@ I0:
   num = .SUB NUM, DIV
   num = .SUB NUM, REM
   num = .SUB NUM, POW
-    on NUM shift I1
-    on O_PAREN shift I2
-    on SUB shift I4
-    on S goto I3
-    on expr goto I5
-    on num goto I6
+    on ERROR shift I1
+    on NUM shift I2
+    on O_PAREN shift I3
+    on SUB shift I5
+    on S goto I4
+    on expr goto I6
+    on num goto I7
 I1:
+  S = ERROR., EOF
+    on EOF reduce S
+I2:
   num = NUM., EOF
   num = NUM., ADD
   num = NUM., SUB
@@ -96,7 +101,7 @@ I1:
     on POW reduce num
     on REM reduce num
     on SUB reduce num
-I2:
+I3:
   expr = .expr ADD expr, ADD
   expr = .expr ADD expr, SUB
   expr = .expr ADD expr, MUL
@@ -175,15 +180,15 @@ I2:
   num = .SUB NUM, REM
   num = .SUB NUM, POW
   num = .SUB NUM, C_PAREN
-    on NUM shift I1
-    on O_PAREN shift I2
-    on SUB shift I4
-    on expr goto I13
-    on num goto I6
-I3:
+    on NUM shift I2
+    on O_PAREN shift I3
+    on SUB shift I5
+    on expr goto I14
+    on num goto I7
+I4:
   S' = S., EOF
     on EOF accept
-I4:
+I5:
   num = SUB .NUM, EOF
   num = SUB .NUM, ADD
   num = SUB .NUM, SUB
@@ -192,8 +197,8 @@ I4:
   num = SUB .NUM, REM
   num = SUB .NUM, POW
   num = SUB .NUM, C_PAREN
-    on NUM shift I14
-I5:
+    on NUM shift I15
+I6:
   S = expr., EOF
   expr = expr .ADD expr, EOF
   expr = expr .ADD expr, ADD
@@ -237,14 +242,14 @@ I5:
   expr = expr .POW expr, DIV
   expr = expr .POW expr, REM
   expr = expr .POW expr, POW
-    on ADD shift I7
-    on DIV shift I8
+    on ADD shift I8
+    on DIV shift I9
     on EOF reduce S
-    on MUL shift I9
-    on POW shift I10
-    on REM shift I11
-    on SUB shift I12
-I6:
+    on MUL shift I10
+    on POW shift I11
+    on REM shift I12
+    on SUB shift I13
+I7:
   expr = num., EOF
   expr = num., ADD
   expr = num., SUB
@@ -261,7 +266,7 @@ I6:
     on POW reduce expr
     on REM reduce expr
     on SUB reduce expr
-I7:
+I8:
   expr = .expr ADD expr, EOF
   expr = .expr ADD expr, ADD
   expr = .expr ADD expr, SUB
@@ -350,12 +355,12 @@ I7:
   num = .SUB NUM, REM
   num = .SUB NUM, POW
   num = .SUB NUM, C_PAREN
-    on NUM shift I1
-    on O_PAREN shift I2
-    on SUB shift I4
-    on expr goto I16
-    on num goto I6
-I8:
+    on NUM shift I2
+    on O_PAREN shift I3
+    on SUB shift I5
+    on expr goto I17
+    on num goto I7
+I9:
   expr = .expr ADD expr, EOF
   expr = .expr ADD expr, ADD
   expr = .expr ADD expr, SUB
@@ -444,12 +449,12 @@ I8:
   num = .SUB NUM, REM
   num = .SUB NUM, POW
   num = .SUB NUM, C_PAREN
-    on NUM shift I1
-    on O_PAREN shift I2
-    on SUB shift I4
-    on expr goto I19
-    on num goto I6
-I9:
+    on NUM shift I2
+    on O_PAREN shift I3
+    on SUB shift I5
+    on expr goto I20
+    on num goto I7
+I10:
   expr = .expr ADD expr, EOF
   expr = .expr ADD expr, ADD
   expr = .expr ADD expr, SUB
@@ -538,12 +543,12 @@ I9:
   num = .SUB NUM, REM
   num = .SUB NUM, POW
   num = .SUB NUM, C_PAREN
-    on NUM shift I1
-    on O_PAREN shift I2
-    on SUB shift I4
-    on expr goto I18
-    on num goto I6
-I10:
+    on NUM shift I2
+    on O_PAREN shift I3
+    on SUB shift I5
+    on expr goto I19
+    on num goto I7
+I11:
   expr = .expr ADD expr, EOF
   expr = .expr ADD expr, ADD
   expr = .expr ADD expr, SUB
@@ -632,12 +637,12 @@ I10:
   num = .SUB NUM, REM
   num = .SUB NUM, POW
   num = .SUB NUM, C_PAREN
-    on NUM shift I1
-    on O_PAREN shift I2
-    on SUB shift I4
-    on expr goto I21
-    on num goto I6
-I11:
+    on NUM shift I2
+    on O_PAREN shift I3
+    on SUB shift I5
+    on expr goto I22
+    on num goto I7
+I12:
   expr = .expr ADD expr, EOF
   expr = .expr ADD expr, ADD
   expr = .expr ADD expr, SUB
@@ -726,12 +731,12 @@ I11:
   num = .SUB NUM, REM
   num = .SUB NUM, POW
   num = .SUB NUM, C_PAREN
-    on NUM shift I1
-    on O_PAREN shift I2
-    on SUB shift I4
-    on expr goto I20
-    on num goto I6
-I12:
+    on NUM shift I2
+    on O_PAREN shift I3
+    on SUB shift I5
+    on expr goto I21
+    on num goto I7
+I13:
   expr = .expr ADD expr, EOF
   expr = .expr ADD expr, ADD
   expr = .expr ADD expr, SUB
@@ -820,12 +825,12 @@ I12:
   num = .SUB NUM, REM
   num = .SUB NUM, POW
   num = .SUB NUM, C_PAREN
-    on NUM shift I1
-    on O_PAREN shift I2
-    on SUB shift I4
-    on expr goto I17
-    on num goto I6
-I13:
+    on NUM shift I2
+    on O_PAREN shift I3
+    on SUB shift I5
+    on expr goto I18
+    on num goto I7
+I14:
   expr = expr .ADD expr, ADD
   expr = expr .ADD expr, SUB
   expr = expr .ADD expr, MUL
@@ -876,14 +881,14 @@ I13:
   expr = O_PAREN expr .C_PAREN, REM
   expr = O_PAREN expr .C_PAREN, POW
   expr = O_PAREN expr .C_PAREN, C_PAREN
-    on ADD shift I7
-    on C_PAREN shift I15
-    on DIV shift I8
-    on MUL shift I9
-    on POW shift I10
-    on REM shift I11
-    on SUB shift I12
-I14:
+    on ADD shift I8
+    on C_PAREN shift I16
+    on DIV shift I9
+    on MUL shift I10
+    on POW shift I11
+    on REM shift I12
+    on SUB shift I13
+I15:
   num = SUB NUM., EOF
   num = SUB NUM., ADD
   num = SUB NUM., SUB
@@ -900,7 +905,7 @@ I14:
     on POW reduce num
     on REM reduce num
     on SUB reduce num
-I15:
+I16:
   expr = O_PAREN expr C_PAREN., EOF
   expr = O_PAREN expr C_PAREN., ADD
   expr = O_PAREN expr C_PAREN., SUB
@@ -917,7 +922,7 @@ I15:
     on POW reduce expr
     on REM reduce expr
     on SUB reduce expr
-I16:
+I17:
   expr = expr .ADD expr, EOF
   expr = expr .ADD expr, ADD
   expr = expr .ADD expr, SUB
@@ -976,13 +981,13 @@ I16:
   expr = expr .POW expr, C_PAREN
     on ADD reduce expr
     on C_PAREN reduce expr
-    on DIV shift I8
+    on DIV shift I9
     on EOF reduce expr
-    on MUL shift I9
-    on POW shift I10
-    on REM shift I11
+    on MUL shift I10
+    on POW shift I11
+    on REM shift I12
     on SUB reduce expr
-I17:
+I18:
   expr = expr .ADD expr, EOF
   expr = expr .ADD expr, ADD
   expr = expr .ADD expr, SUB
@@ -1041,13 +1046,13 @@ I17:
   expr = expr .POW expr, C_PAREN
     on ADD reduce expr
     on C_PAREN reduce expr
-    on DIV shift I8
+    on DIV shift I9
     on EOF reduce expr
-    on MUL shift I9
-    on POW shift I10
-    on REM shift I11
+    on MUL shift I10
+    on POW shift I11
+    on REM shift I12
     on SUB reduce expr
-I18:
+I19:
   expr = expr .ADD expr, EOF
   expr = expr .ADD expr, ADD
   expr = expr .ADD expr, SUB
@@ -1109,10 +1114,10 @@ I18:
     on DIV reduce expr
     on EOF reduce expr
     on MUL reduce expr
-    on POW shift I10
+    on POW shift I11
     on REM reduce expr
     on SUB reduce expr
-I19:
+I20:
   expr = expr .ADD expr, EOF
   expr = expr .ADD expr, ADD
   expr = expr .ADD expr, SUB
@@ -1174,10 +1179,10 @@ I19:
     on DIV reduce expr
     on EOF reduce expr
     on MUL reduce expr
-    on POW shift I10
+    on POW shift I11
     on REM reduce expr
     on SUB reduce expr
-I20:
+I21:
   expr = expr .ADD expr, EOF
   expr = expr .ADD expr, ADD
   expr = expr .ADD expr, SUB
@@ -1239,10 +1244,10 @@ I20:
     on DIV reduce expr
     on EOF reduce expr
     on MUL reduce expr
-    on POW shift I10
+    on POW shift I11
     on REM reduce expr
     on SUB reduce expr
-I21:
+I22:
   expr = expr .ADD expr, EOF
   expr = expr .ADD expr, ADD
   expr = expr .ADD expr, SUB
@@ -1368,20 +1373,20 @@ Input:
 
 
 Output:
-expr:1:1: unexpected EOF
+expr:1:1: Unexpected EOF
 Errors occurred.
 
 Input:
 1 + 2 + 
 
 Output:
-expr:1:9: unexpected EOF
+expr:1:9: Unexpected EOF
 Errors occurred.
 
 Input:
 1 +* 2
 
 Output:
-expr:1:4: unexpected MUL
+expr:1:4: Unexpected MUL
 Errors occurred.
 

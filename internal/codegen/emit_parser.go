@@ -11,6 +11,11 @@ import (
 )
 
 const parserPlaceholderTemplate = `
+type Error struct {
+	Token    Token
+	Expected []int
+}
+
 type lox struct {}
 
 type _Lexer interface {
@@ -21,25 +26,25 @@ func (p *lox) parse(l _Lexer) bool {
 	panic("not-implemented")
 }
 
-func (p *lox) errorToken() Token {
+func (p *lox) recoverLookahead(typ int, tok Token) {
 	panic("not-implemented")
 }
 `
 
 const parserTemplate = `
-var _LHS = []int32 {
+var _rules = []int32 {
 	{{ lhs() | array }}
 }
 
-var _TermCounts = []int32 {
+var _termCounts = []int32 {
 	{{ term_counts() | array }}	
 }
 
-var _Actions = []int32 {
+var _actions = []int32 {
 	{{ actions() | array }}
 }
 
-var _Goto = []int32 {
+var _goto = []int32 {
 	{{ goto() | array }}
 }
 
@@ -54,7 +59,10 @@ func _cast[T any](v any) T {
 	return cv
 }
 
-var _errorPlaceholder = {{imp("errors")}}.New("error placeholder")
+type Error struct {
+	Token    Token
+	Expected []int
+}
 
 func _Find(table []int32, y, x int32) (int32, bool) {
 	i := int(table[int(y)])
@@ -73,155 +81,208 @@ type _Lexer interface {
 	ReadToken() (Token, int)
 }
 
+type _item struct {
+	State int32
+	Sym   any
+	{{- if emit_bounds }}
+	Bounds _Bounds
+	{{- end }}
+}
+
 type lox struct {
 	_lex   _Lexer
-	_state _Stack[int32]
-	_sym   _Stack[any]
-	{{- if emit_bounds }}
-	_bounds _Stack[_Bounds]
-	{{- end }}
+	_stack _Stack[_item]
 
-	_lookahead     Token
-	_lookaheadType int
-	_errorToken    Token
+	_la     int
+	_lasym  any
+
+	_qla    int
+	_qlasym any
 }
 
 func (p *{{parser}}) parse(lex _Lexer) bool {
   const accept = {{ accept }}
 
 	p._lex = lex
+	p._qla = -1
+	p._stack.Push(_item{})
 
-	p._state.Push(0)
-	p._ReadToken()
+	p._readToken()
 
 	for {
-		if p._lookaheadType == ERROR {
-			_, ok := p._Recover()
-			if !ok {
-				return false
-			}
-		}
-		topState := p._state.Peek(0)
-		action, ok := _Find(
-			_Actions, topState, int32(p._lookaheadType))
+		topState := p._stack.Peek(0).State
+		action, ok := _Find(_actions, topState, int32(p._la))
 		if !ok {
-			action, ok = p._Recover()
-			if !ok {
+			if !p._recover() {
 				return false
 			}
+			continue
 		}
 		if action == accept {
 			break
 		} else if action >= 0 { // shift
-			p._state.Push(action)
-			p._sym.Push(p._lookahead)
 			{{- if emit_bounds }}
-			p._bounds.Push(
-				_Bounds{Begin: p._lookahead,
-				End: p._lookahead})
+			latok := p._lasym.(Token)
 			{{- end }}
-			p._ReadToken()
+			p._stack.Push(_item{
+				State: action,
+				Sym:   p._lasym,
+				{{- if emit_bounds }}
+				Bounds: _Bounds{
+					Begin: latok,
+					End:   latok,
+				},
+				{{- end }}
+			})
+			p._readToken()
 		} else { // reduce
 			prod := -action
-			termCount := _TermCounts[int(prod)]
-			rule := _LHS[int(prod)]
-			res := p._Act(prod)
+			termCount := _termCounts[int(prod)]
+			rule := _rules[int(prod)]
+			res := p._act(prod)
 			{{- if emit_bounds }}
 
 			// Compute reduction token bounds.
 			// Trim leading and trailing empty bounds.
-			boundSlice := p._bounds.PeekSlice(int(termCount))
-			for len(boundSlice) > 0 && boundSlice[0].Empty {
+			boundSlice := p._stack.PeekSlice(int(termCount))
+			for len(boundSlice) > 0 && boundSlice[0].Bounds.Empty {
 				boundSlice = boundSlice[1:]
 			}
-			for len(boundSlice) > 0 && boundSlice[len(boundSlice)-1].Empty {
+			for len(boundSlice) > 0 && boundSlice[len(boundSlice)-1].Bounds.Empty {
 				boundSlice = boundSlice[:len(boundSlice)-1]
 			}
 			var bounds _Bounds
 			if len(boundSlice) > 0 {
-				bounds.Begin = boundSlice[0].Begin
-				bounds.End = boundSlice[len(boundSlice)-1].End
+				bounds.Begin = boundSlice[0].Bounds.Begin
+				bounds.End = boundSlice[len(boundSlice)-1].Bounds.End
 			} else {
 				bounds.Empty = true
 			}
 			if !bounds.Empty {
 				p.{{ on_bounds_method }}(res, bounds.Begin, bounds.End)
 			}
-			p._bounds.Pop(int(termCount))
-			p._bounds.Push(bounds)
 
 			{{- end }}
-			p._state.Pop(int(termCount))
-			p._sym.Pop(int(termCount))
-			topState = p._state.Peek(0)
-			nextState, _ := _Find(_Goto, topState, rule)
-			p._state.Push(nextState)
-			p._sym.Push(res)
+			p._stack.Pop(int(termCount))
+			topState = p._stack.Peek(0).State
+			nextState, _ := _Find(_goto, topState, rule)
+			p._stack.Push(_item{
+				State: nextState,
+				Sym:   res,
+				{{- if emit_bounds }}
+				Bounds: bounds,
+				{{- end }}
+			})
 		}
 	}
 
 	return true
 }
 
-func (p *{{parser}}) errorToken() Token {
-	return p._errorToken
+// recoverLookahead can be called during an error production action (an action
+// for a production that has a @error term) to recover the lookahead that was
+// possibly lost in the process of reducing the error production.
+func (p *{{parser}}) recoverLookahead(typ int, tok Token) {
+	if p._qla != -1 {
+  	panic("recovered lookahead already pending")
+	}
+
+	p._qla = p._la
+	p._qlasym = p._lasym
+	p._la = typ
+	p._lasym = tok
 }
 
-func (p *{{parser}}) _ReadToken() {
-	p._lookahead, p._lookaheadType = p._lex.ReadToken()
-}
+func (p *{{parser}}) _readToken() {
+	if p._qla != -1 {
+		p._la = p._qla
+		p._lasym = p._qlasym
+		p._qla = -1
+		p._qlasym = nil
+		return
+	}
 
-func (p *{{parser}}) _Recover() (int32, bool) {
-	p._errorToken = p._lookahead
-	p.{{ on_error_method }}()
-
-	for {
-		for p._lookaheadType == ERROR {
-			p._ReadToken()
-		}
-
-		saveState := p._state
-		saveSym := p._sym
-		{{- if emit_bounds }}
-			saveBounds := p._bounds
-		{{- end }}
-
-		for len(p._state) > 1 {
-			topState := p._state.Peek(0)
-			action, ok := _Find(_Actions, topState, int32(ERROR))
-			if ok {
-				action2, ok := _Find(
-					_Actions, action, int32(p._lookaheadType))
-				if ok {
-					p._state.Push(action)
-					p._sym.Push(_errorPlaceholder)
-					{{- if emit_bounds }}
-					  p._bounds.Push(_Bounds{})
-					{{- end }}
-					return action2, true
-				}
-			}
-			p._state.Pop(1)
-			p._sym.Pop(1)
-			{{- if emit_bounds }}
-				p._bounds.Pop(1)
-			{{- end }}
-		}
-
-		if p._lookaheadType == EOF {
-			return 0, false
-		}
-
-		p._ReadToken()
-		p._state = saveState
-		p._sym = saveSym
-		{{- if emit_bounds }}
-		p._bounds = saveBounds
-		{{- end }}
+	p._lasym, p._la = p._lex.ReadToken()
+	if p._la == ERROR {
+		p._lasym = p._makeError()
 	}
 }
 
-func (p *{{parser}}) _Act(prod int32) any {
+func (p *{{parser}}) _recover() bool {
+	errSym, ok := p._lasym.(Error)
+	if !ok {
+		errSym = p._makeError()
+	}
+
+	for p._la == ERROR {
+		p._readToken()
+	}
+
+	for {
+		save := p._stack
+
+		for len(p._stack) >= 1 {
+			state := p._stack.Peek(0).State
+
+			for {
+				action, ok := _Find(_actions, state, int32(ERROR))
+				if !ok {
+					break
+				}
+
+				if action < 0 {
+					prod := -action
+					rule := _rules[int(prod)]
+					state, _ = _Find(_goto, state, rule)
+					continue
+				}
+
+				state = action
+
+				_, ok = _Find(_actions, state, int32(p._la))
+				if !ok {
+					break
+				}
+
+				p._qla = p._la
+				p._qlasym = p._lasym
+				p._la = ERROR
+				p._lasym = errSym
+				return true
+			}
+
+			p._stack.Pop(1)
+		}
+
+		if p._la == EOF {
+			return false
+		}
+
+		p._stack = save
+		p._readToken()
+	}
+}
+
+func (p *{{parser}}) _makeError() Error {
+	e := Error{
+		Token: p._lasym.(Token),
+	}
+
+	// Compile list of allowed tokens at this state.
+	// See _Find for the format of the _actions table.
+	s := p._stack.Peek(0).State
+	i := int(_actions[int(s)])
+	count := int(_actions[i])
+	i++
+	end := i + count
+	for ; i < end; i += 2 {
+		e.Expected = append(e.Expected, int(_actions[i]))
+	}
+
+	return e
+}
+
+func (p *{{parser}}) _act(prod int32) any {
 	switch prod {
 {{- range prod_index, prod := grammar.Prods }}
 	{{- rule := prod.Rule }}
@@ -231,7 +292,7 @@ func (p *{{parser}}) _Act(prod int32) any {
 			case {{ prod_index }}:
 				return p.{{ method.Name() }}(
 				{{- range param_index, param := method.Params }}
-				  _cast[{{ go_type(param) }}](p._sym.Peek({{ len(method.Params) - param_index - 1 }})),
+				  _cast[{{ go_type(param) }}](p._stack.Peek({{ len(method.Params) - param_index - 1 }}).Sym),
 				{{- end }}
 		    )
 	{{- else if generated == "one_or_more" }}
@@ -239,13 +300,13 @@ func (p *{{parser}}) _Act(prod int32) any {
 		{{- if len(prod.Terms) == 1 }}
 			{{- term_go_type := go_type(get_term_go_type(prod.Terms[0])) }}
 		  return []{{ term_go_type }}{
-				_cast[{{ term_go_type }}](p._sym.Peek(0)),
+				_cast[{{ term_go_type }}](p._stack.Peek(0).Sym),
 			}
 		{{- else }}
 			{{- term_go_type := go_type(get_term_go_type(prod.Terms[1])) }}
 			return append(
-				_cast[[]{{term_go_type}}](p._sym.Peek(1)),
-				_cast[{{ term_go_type }}](p._sym.Peek(0)),
+				_cast[[]{{term_go_type}}](p._stack.Peek(1).Sym),
+				_cast[{{ term_go_type }}](p._stack.Peek(0).Sym),
 			)
 		{{- end }}
 	{{- else if generated == "list" }}
@@ -253,20 +314,20 @@ func (p *{{parser}}) _Act(prod int32) any {
 		{{- if len(prod.Terms) == 1 }}
 			{{- term_go_type := go_type(get_term_go_type(prod.Terms[0])) }}
 		  return []{{ term_go_type }}{
-				_cast[{{ term_go_type }}](p._sym.Peek(0)),
+				_cast[{{ term_go_type }}](p._stack.Peek(0).Sym),
 			}
 		{{- else }}
 			{{- term_go_type := go_type(get_term_go_type(prod.Terms[2])) }}
 			return append(
-				_cast[[]{{ term_go_type }}](p._sym.Peek(2)),
-				_cast[{{ term_go_type }}](p._sym.Peek(0)),
+				_cast[[]{{ term_go_type }}](p._stack.Peek(2).Sym),
+				_cast[{{ term_go_type }}](p._stack.Peek(0).Sym),
 			)
 		{{- end }}
 	{{- else if generated == "zero_or_one" }}
   case {{ prod_index }}:  // ZeroOrOne
 		{{- term_go_type := go_type(rule_go_types[rule]) }}
 		{{- if len(prod.Terms) == 1 }}
-			return _cast[{{ term_go_type }}](p._sym.Peek(0))
+			return _cast[{{ term_go_type }}](p._stack.Peek(0).Sym)
 		{{- else }}
 			{
 				var zero {{term_go_type}}
@@ -277,7 +338,7 @@ func (p *{{parser}}) _Act(prod int32) any {
   case {{ prod_index }}:  // ZeroOrMore
 		{{- term_go_type := go_type(rule_go_types[rule]) }}
 		{{- if len(prod.Terms) == 1 }}
-			return _cast[{{ term_go_type }}](p._sym.Peek(0))
+			return _cast[{{ term_go_type }}](p._stack.Peek(0).Sym)
 		{{- else }}
 			{
 				var zero {{term_go_type}}

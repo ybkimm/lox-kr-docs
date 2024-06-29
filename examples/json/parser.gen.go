@@ -1,21 +1,20 @@
 package main
 
 import (
-	_i0 "errors"
-	_i1 "github.com/dcaiafa/lox/internal/base/baselexer"
+	_i0 "github.com/dcaiafa/loxlex/simplelexer"
 )
 
-var _LHS = []int32{
+var _rules = []int32{
 	0, 1, 2, 2, 2, 2, 2, 2, 2, 3, 4, 5, 6, 6,
 	7, 7, 8, 8, 9, 9,
 }
 
-var _TermCounts = []int32{
+var _termCounts = []int32{
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 1, 0,
 	3, 1, 1, 0, 3, 1,
 }
 
-var _Actions = []int32{
+var _actions = []int32{
 	27, 42, 51, 60, 69, 86, 91, 100, 109, 118, 121, 130, 133, 138,
 	141, 144, 149, 154, 157, 162, 27, 171, 180, 27, 183, 188, 193, 14,
 	9, 1, 10, 2, 12, 3, 4, 4, 2, 5, 11, 6, 8, 7,
@@ -33,7 +32,7 @@ var _Actions = []int32{
 	6, -18,
 }
 
-var _Goto = []int32{
+var _goto = []int32{
 	27, 36, 36, 36, 37, 48, 36, 36, 36, 36, 36, 36, 36, 36,
 	36, 36, 36, 36, 36, 36, 55, 36, 62, 65, 36, 36, 36, 8,
 	5, 8, 1, 9, 3, 10, 2, 11, 0, 10, 9, 16, 8, 17,
@@ -53,7 +52,10 @@ func _cast[T any](v any) T {
 	return cv
 }
 
-var _errorPlaceholder = _i0.New("error placeholder")
+type Error struct {
+	Token    Token
+	Expected []int
+}
 
 func _Find(table []int32, y, x int32) (int32, bool) {
 	i := int(table[int(y)])
@@ -72,163 +74,223 @@ type _Lexer interface {
 	ReadToken() (Token, int)
 }
 
+type _item struct {
+	State int32
+	Sym   any
+}
+
 type lox struct {
 	_lex   _Lexer
-	_state _Stack[int32]
-	_sym   _Stack[any]
+	_stack _Stack[_item]
 
-	_lookahead     Token
-	_lookaheadType int
-	_errorToken    Token
+	_la    int
+	_lasym any
+
+	_qla    int
+	_qlasym any
 }
 
 func (p *jsonParser) parse(lex _Lexer) bool {
 	const accept = 2147483647
 
 	p._lex = lex
+	p._qla = -1
+	p._stack.Push(_item{})
 
-	p._state.Push(0)
-	p._ReadToken()
+	p._readToken()
 
 	for {
-		if p._lookaheadType == ERROR {
-			_, ok := p._Recover()
-			if !ok {
-				return false
-			}
-		}
-		topState := p._state.Peek(0)
-		action, ok := _Find(
-			_Actions, topState, int32(p._lookaheadType))
+		topState := p._stack.Peek(0).State
+		action, ok := _Find(_actions, topState, int32(p._la))
 		if !ok {
-			action, ok = p._Recover()
-			if !ok {
+			if !p._recover() {
 				return false
 			}
+			continue
 		}
 		if action == accept {
 			break
 		} else if action >= 0 { // shift
-			p._state.Push(action)
-			p._sym.Push(p._lookahead)
-			p._ReadToken()
+			p._stack.Push(_item{
+				State: action,
+				Sym:   p._lasym,
+			})
+			p._readToken()
 		} else { // reduce
 			prod := -action
-			termCount := _TermCounts[int(prod)]
-			rule := _LHS[int(prod)]
-			res := p._Act(prod)
-			p._state.Pop(int(termCount))
-			p._sym.Pop(int(termCount))
-			topState = p._state.Peek(0)
-			nextState, _ := _Find(_Goto, topState, rule)
-			p._state.Push(nextState)
-			p._sym.Push(res)
+			termCount := _termCounts[int(prod)]
+			rule := _rules[int(prod)]
+			res := p._act(prod)
+			p._stack.Pop(int(termCount))
+			topState = p._stack.Peek(0).State
+			nextState, _ := _Find(_goto, topState, rule)
+			p._stack.Push(_item{
+				State: nextState,
+				Sym:   res,
+			})
 		}
 	}
 
 	return true
 }
 
-func (p *jsonParser) errorToken() Token {
-	return p._errorToken
+// recoverLookahead can be called during an error production action (an action
+// for a production that has a @error term) to recover the lookahead that was
+// possibly lost in the process of reducing the error production.
+func (p *jsonParser) recoverLookahead(typ int, tok Token) {
+	if p._qla != -1 {
+		panic("recovered lookahead already pending")
+	}
+
+	p._qla = p._la
+	p._qlasym = p._lasym
+	p._la = typ
+	p._lasym = tok
 }
 
-func (p *jsonParser) _ReadToken() {
-	p._lookahead, p._lookaheadType = p._lex.ReadToken()
-}
+func (p *jsonParser) _readToken() {
+	if p._qla != -1 {
+		p._la = p._qla
+		p._lasym = p._qlasym
+		p._qla = -1
+		p._qlasym = nil
+		return
+	}
 
-func (p *jsonParser) _Recover() (int32, bool) {
-	p._errorToken = p._lookahead
-	p._onError()
-
-	for {
-		for p._lookaheadType == ERROR {
-			p._ReadToken()
-		}
-
-		saveState := p._state
-		saveSym := p._sym
-
-		for len(p._state) > 1 {
-			topState := p._state.Peek(0)
-			action, ok := _Find(_Actions, topState, int32(ERROR))
-			if ok {
-				action2, ok := _Find(
-					_Actions, action, int32(p._lookaheadType))
-				if ok {
-					p._state.Push(action)
-					p._sym.Push(_errorPlaceholder)
-					return action2, true
-				}
-			}
-			p._state.Pop(1)
-			p._sym.Pop(1)
-		}
-
-		if p._lookaheadType == EOF {
-			return 0, false
-		}
-
-		p._ReadToken()
-		p._state = saveState
-		p._sym = saveSym
+	p._lasym, p._la = p._lex.ReadToken()
+	if p._la == ERROR {
+		p._lasym = p._makeError()
 	}
 }
 
-func (p *jsonParser) _Act(prod int32) any {
+func (p *jsonParser) _recover() bool {
+	errSym, ok := p._lasym.(Error)
+	if !ok {
+		errSym = p._makeError()
+	}
+
+	for p._la == ERROR {
+		p._readToken()
+	}
+
+	for {
+		save := p._stack
+
+		for len(p._stack) >= 1 {
+			state := p._stack.Peek(0).State
+
+			for {
+				action, ok := _Find(_actions, state, int32(ERROR))
+				if !ok {
+					break
+				}
+
+				if action < 0 {
+					prod := -action
+					rule := _rules[int(prod)]
+					state, _ = _Find(_goto, state, rule)
+					continue
+				}
+
+				state = action
+
+				_, ok = _Find(_actions, state, int32(p._la))
+				if !ok {
+					break
+				}
+
+				p._qla = p._la
+				p._qlasym = p._lasym
+				p._la = ERROR
+				p._lasym = errSym
+				return true
+			}
+
+			p._stack.Pop(1)
+		}
+
+		if p._la == EOF {
+			return false
+		}
+
+		p._stack = save
+		p._readToken()
+	}
+}
+
+func (p *jsonParser) _makeError() Error {
+	e := Error{
+		Token: p._lasym.(Token),
+	}
+
+	// Compile list of allowed tokens at this state.
+	// See _Find for the format of the _actions table.
+	s := p._stack.Peek(0).State
+	i := int(_actions[int(s)])
+	count := int(_actions[i])
+	i++
+	end := i + count
+	for ; i < end; i += 2 {
+		e.Expected = append(e.Expected, int(_actions[i]))
+	}
+
+	return e
+}
+
+func (p *jsonParser) _act(prod int32) any {
 	switch prod {
 	case 1:
 		return p.on_json(
-			_cast[any](p._sym.Peek(0)),
+			_cast[any](p._stack.Peek(0).Sym),
 		)
 	case 2:
 		return p.on_value__object(
-			_cast[map[string]any](p._sym.Peek(0)),
+			_cast[map[string]any](p._stack.Peek(0).Sym),
 		)
 	case 3:
 		return p.on_value__array(
-			_cast[[]any](p._sym.Peek(0)),
+			_cast[[]any](p._stack.Peek(0).Sym),
 		)
 	case 4:
 		return p.on_value__tok(
-			_cast[_i1.Token](p._sym.Peek(0)),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 5:
 		return p.on_value__tok(
-			_cast[_i1.Token](p._sym.Peek(0)),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 6:
 		return p.on_value__tok(
-			_cast[_i1.Token](p._sym.Peek(0)),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 7:
 		return p.on_value__tok(
-			_cast[_i1.Token](p._sym.Peek(0)),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 8:
 		return p.on_value__tok(
-			_cast[_i1.Token](p._sym.Peek(0)),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 9:
 		return p.on_object(
-			_cast[_i1.Token](p._sym.Peek(2)),
-			_cast[[]member](p._sym.Peek(1)),
-			_cast[_i1.Token](p._sym.Peek(0)),
+			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[[]member](p._stack.Peek(1).Sym),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 10:
 		return p.on_member(
-			_cast[_i1.Token](p._sym.Peek(2)),
-			_cast[_i1.Token](p._sym.Peek(1)),
-			_cast[any](p._sym.Peek(0)),
+			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[any](p._stack.Peek(0).Sym),
 		)
 	case 11:
 		return p.on_array(
-			_cast[_i1.Token](p._sym.Peek(2)),
-			_cast[[]any](p._sym.Peek(1)),
-			_cast[_i1.Token](p._sym.Peek(0)),
+			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[[]any](p._stack.Peek(1).Sym),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 12: // ZeroOrOne
-		return _cast[[]member](p._sym.Peek(0))
+		return _cast[[]member](p._stack.Peek(0).Sym)
 	case 13: // ZeroOrOne
 		{
 			var zero []member
@@ -236,15 +298,15 @@ func (p *jsonParser) _Act(prod int32) any {
 		}
 	case 14: // List
 		return append(
-			_cast[[]member](p._sym.Peek(2)),
-			_cast[member](p._sym.Peek(0)),
+			_cast[[]member](p._stack.Peek(2).Sym),
+			_cast[member](p._stack.Peek(0).Sym),
 		)
 	case 15: // List
 		return []member{
-			_cast[member](p._sym.Peek(0)),
+			_cast[member](p._stack.Peek(0).Sym),
 		}
 	case 16: // ZeroOrOne
-		return _cast[[]any](p._sym.Peek(0))
+		return _cast[[]any](p._stack.Peek(0).Sym)
 	case 17: // ZeroOrOne
 		{
 			var zero []any
@@ -252,12 +314,12 @@ func (p *jsonParser) _Act(prod int32) any {
 		}
 	case 18: // List
 		return append(
-			_cast[[]any](p._sym.Peek(2)),
-			_cast[any](p._sym.Peek(0)),
+			_cast[[]any](p._stack.Peek(2).Sym),
+			_cast[any](p._stack.Peek(0).Sym),
 		)
 	case 19: // List
 		return []any{
-			_cast[any](p._sym.Peek(0)),
+			_cast[any](p._stack.Peek(0).Sym),
 		}
 	default:
 		panic("unreachable")

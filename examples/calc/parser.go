@@ -5,7 +5,7 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/dcaiafa/lox/internal/base/baselexer"
+	"github.com/dcaiafa/loxlex/simplelexer"
 )
 
 func Eval(expr string) (float64, error) {
@@ -15,18 +15,20 @@ func Eval(expr string) (float64, error) {
 		Fset: fset,
 	}
 
-	onError := func(l *baselexer.Lexer) {
-		errs.Errorf(l.Pos(), "unexpected character: %c", l.Peek())
-	}
-
 	var parser calcParser
 	parser.errLogger = errs
-	lex := baselexer.New(new(_LexerStateMachine), onError, file, []byte(expr))
+
+	lex := simplelexer.New(simplelexer.Config{
+		StateMachine: new(_LexerStateMachine),
+		File:         file,
+		Input:        []byte(expr),
+	})
+
 	_ = parser.parse(lex)
 	return parser.result, errs.Err()
 }
 
-type Token = baselexer.Token
+type Token = simplelexer.Token
 
 type calcParser struct {
 	lox
@@ -82,10 +84,4 @@ func (p *calcParser) on_num__minus(_ Token, num Token) float64 {
 		return 0
 	}
 	return -v
-}
-
-func (p *calcParser) _onError() {
-	if p.errorToken().Type != ERROR {
-		p.errLogger.Errorf(p.errorToken().Pos, "unexpected token %v", p.errorToken())
-	}
 }

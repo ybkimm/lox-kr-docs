@@ -64,11 +64,10 @@ func (c *context) ParseGo() bool {
 	}
 	c.TokenType = tokenObj.Type()
 
-	// The "error" built-in type, it will be used for matching error-handling
-	// productions.
-	errorObj := gotypes.Universe.Lookup("error")
+	// The "Error" type is generated.
+	errorObj := scope.Lookup("Error")
 	if errorObj == nil {
-		panic("error is undefined")
+		panic("Error type is undefined")
 	}
 	c.ErrorType = errorObj.Type()
 

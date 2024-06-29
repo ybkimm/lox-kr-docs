@@ -6,12 +6,13 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/dcaiafa/loxlex/simplelexer"
+
 	"github.com/dcaiafa/lox/internal/ast"
-	"github.com/dcaiafa/lox/internal/base/baselexer"
 	"github.com/dcaiafa/lox/internal/base/errlogger"
 )
 
-type Token = baselexer.Token
+type Token = simplelexer.Token
 
 type parser struct {
 	lox
@@ -20,18 +21,27 @@ type parser struct {
 	unit *ast.Unit
 }
 
-func Parse(file *gotoken.File, data []byte, errs *errlogger.ErrLogger) *ast.Unit {
-	onError := func(l *baselexer.Lexer) {
-		errs.Errorf(l.Pos(), "unexpected character: %c", l.Peek())
-	}
-
-	lex := baselexer.New(new(_LexerStateMachine), onError, file, data)
+func Parse(
+	file *gotoken.File,
+	data []byte,
+	errs *errlogger.ErrLogger,
+) *ast.Unit {
+	lex := simplelexer.New(simplelexer.Config{
+		StateMachine: new(_LexerStateMachine),
+		File:         file,
+		Input:        data,
+	})
 
 	p := &parser{
 		file: file,
 		errs: errs,
 	}
-	p.parse(lex)
+
+	ok := p.parse(lex)
+	if !ok {
+		errs.Errorf(0, "Failed to parse")
+	}
+
 	return p.unit
 }
 
@@ -48,6 +58,11 @@ func (p *parser) on_spec(sections [][]ast.Statement) *ast.Unit {
 		Statements: stmts,
 	}
 	return p.unit
+}
+
+func (p *parser) on_spec__error(e Error) *ast.Unit {
+	p.errs.Errorf(e.Token.Pos, "unexpected %v", _TokenToString(e.Token.Type))
+	return nil
 }
 
 func (p *parser) on_section(sectionStmts []ast.Statement) []ast.Statement {
@@ -347,12 +362,6 @@ func (p *parser) _onBounds(r any, begin, end Token) {
 		Begin: begin.Pos,
 		End:   end.Pos + gotoken.Pos(len(end.Str)),
 	})
-}
-
-func (p *parser) _onError() {
-	tok := p.errorToken()
-	p.errs.Errorf(
-		tok.Pos, "unexpected %v %q", _TokenToString(tok.Type), string(tok.Str))
 }
 
 func fixLiteral(lit []byte) string {
