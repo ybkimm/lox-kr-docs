@@ -12,6 +12,10 @@ type MacroRule struct {
 
 func (r *MacroRule) RunPass(ctx *Context, pass Pass) {
 	if pass == CreateNames {
+		if err := validateTokenName(r.Name); err != nil {
+			ctx.Errs.Errorf(r.bounds.Begin, "%s", err)
+			return
+		}
 		if !ctx.RegisterName(r.Name, r) {
 			return
 		}

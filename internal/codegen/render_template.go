@@ -28,8 +28,8 @@ func renderTemplate(
 
 	// Functions available to all templates:
 
-	// imp(importPath string): replaces import_path with an alias, and adds the import
-	// to top import prologue.
+	// imp(importPath string): replaces import_path with an alias, and adds the
+	// import to top import prologue.
 	vars.Set("imp", imports.Import)
 
 	// go_type(t gotypes.Type): returns the Go type name including package prefix

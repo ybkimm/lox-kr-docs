@@ -136,34 +136,34 @@ sources:
         return t
       }
 
-inputs:
-  - |
-    [a-zA-Z]
-    [\n \] \[]
+tests:
+  - name: basic
+    inputs:
+      - |
+        [a-zA-Z]
+        [\n \] \[]
 
-  - |
-    [a-f
-    ]
+      - |
+        [a-f
+        ]
 
-  - |
-    "foo"
-    "Hello\n \"Bob\" \u01f3"
+      - |
+        "foo"
+        "Hello\n \"Bob\" \u01f3"
 
-  - |
-    "\u012"
+      - |
+        "\u012"
 
-  - |
-    [a-z]
-    "foo"
-    [0]
-    "bar"
+      - |
+        [a-z]
+        "foo"
+        [0]
+        "bar"
 
-  - |
-    10 - 20
-    [10-20]
-    10 + 20
+      - |
+        10 - 20
+        [10-20]
+        10 + 20
 
-  - |
-    `there are {3+2} apples ` + "in the basket"
-    
-
+      - |
+        `there are {3+2} apples ` + "in the basket"

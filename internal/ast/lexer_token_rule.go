@@ -1,6 +1,11 @@
 package ast
 
 import (
+	"errors"
+	"fmt"
+	"regexp"
+	"strings"
+
 	"github.com/dcaiafa/lox/internal/lexergen/mode"
 	"github.com/dcaiafa/lox/internal/parsergen/lr1"
 )
@@ -18,6 +23,11 @@ type TokenRule struct {
 func (r *TokenRule) RunPass(ctx *Context, pass Pass) {
 	switch pass {
 	case CreateNames:
+		if err := validateTokenName(r.Name); err != nil {
+			ctx.Errs.Errorf(r.bounds.Begin, "%s", err)
+			return
+		}
+
 		if !ctx.RegisterName(r.Name, r) {
 			return
 		}
@@ -73,4 +83,31 @@ func (r *TokenRule) RunPass(ctx *Context, pass Pass) {
 		nfaCons.E.Data = actions
 		ctx.CurrentLexerMode.Peek().AddRule(*nfaCons)
 	}
+}
+
+var tokenNameRegex = regexp.MustCompile(`^[A-Z][A-Z0-9_]*$`)
+
+var errTokenName = errors.New(
+	"name must be all uppercase, must start with a letter " +
+		"which may be followed by letters, numbers and underscore; it cannot " +
+		"end in a underscore and it cannot have more than one consecutive " +
+		"underscore")
+
+var reservedTokenNames = map[string]bool{
+	"EOF":   true,
+	"ERROR": true,
+}
+
+func validateTokenName(n string) error {
+	if !tokenNameRegex.MatchString(n) ||
+		strings.HasSuffix(n, "_") ||
+		strings.Contains(n, "__") {
+		return errTokenName
+	}
+
+	if reservedTokenNames[n] {
+		return fmt.Errorf("sorry, %q is a reserved name", n)
+	}
+
+	return nil
 }

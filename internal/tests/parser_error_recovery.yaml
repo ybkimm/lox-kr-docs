@@ -133,15 +133,17 @@ sources:
         return nil
       }
 
-inputs:
-  - |
-    {
-      f1(a, b, c);
-      f2 a, f);
-      f3(a, ;
-      f4();
-      f5(x, y
-      {
-        f6();
-      }
-    }
+tests:
+  - name: basic
+    inputs:
+      - |
+        {
+          f1(a, b, c);
+          f2 a, f);
+          f3(a, ;
+          f4();
+          f5(x, y
+          {
+            f6();
+          }
+        }
