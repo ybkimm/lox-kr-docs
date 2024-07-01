@@ -40,6 +40,7 @@ LEFT           = '@left'      ;
 LIST           = '@list'      ;
 RIGHT          = '@right'     ;
 EMIT           = '@emit'      ;
+EMPTY          = '@empty'     ;
 
 // KEYWORD is a catch-all for keyword errors. Normally, keywords are a subset
 // of identifiers but in Lox they start with @. Without KEYWORD, a typo like
@@ -97,7 +98,9 @@ parser_section   = PARSER parser_statement* ;
 parser_statement = parser_rule ;
 
 parser_rule      = '@start'? ID '=' @list(parser_prod, '|') ';' ;
-parser_prod      = parser_term_card+ parser_qualif? ;
+parser_prod      = parser_term_card+ parser_qualif?
+                 | '@empty' ;
+
 parser_term_card = parser_term parser_card? ;
 parser_term      = ID | LITERAL | '@error' | parser_list ;
 parser_list      = '@list' '(' parser_term ',' parser_term ')' ;

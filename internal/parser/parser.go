@@ -95,6 +95,10 @@ func (p *parser) on_parser_prod(terms []*ast.ParserTerm, qualif *ast.ProdQualifi
 	}
 }
 
+func (p *parser) on_parser_prod__empty(_ Token) *ast.ParserProd {
+	return &ast.ParserProd{}
+}
+
 func (p *parser) on_parser_term_card(term *ast.ParserTerm, typ ast.ParserTermType) *ast.ParserTerm {
 	if typ == ast.ParserTermSimple || typ == ast.ParserTermError {
 		return term
