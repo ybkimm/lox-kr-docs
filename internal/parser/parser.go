@@ -62,7 +62,7 @@ func (p *parser) on_spec(sections [][]ast.Statement) *ast.Unit {
 
 func (p *parser) on_spec__error(e Error) *ast.Unit {
 	p.errs.Errorf(e.Token.Pos, "unexpected %v", _TokenToString(e.Token.Type))
-	return nil
+	return &ast.Unit{}
 }
 
 func (p *parser) on_section(sectionStmts []ast.Statement) []ast.Statement {

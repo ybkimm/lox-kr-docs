@@ -251,7 +251,10 @@ func (p *parser) parse(lex _Lexer) bool {
 		if action == accept {
 			break
 		} else if action >= 0 { // shift
-			latok := p._lasym.(Token)
+			latok, ok := p._lasym.(Token)
+			if !ok {
+				latok = p._lasym.(Error).Token
+			}
 			p._stack.Push(_item{
 				State: action,
 				Sym:   p._lasym,

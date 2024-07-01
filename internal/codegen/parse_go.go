@@ -1,9 +1,13 @@
 package codegen
 
 import (
+	"errors"
 	"fmt"
+	gotoken "go/token"
 	gotypes "go/types"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/dcaiafa/lox/internal/base/assert"
 	"golang.org/x/tools/go/packages"
@@ -48,7 +52,9 @@ func (c *context) ParseGo() bool {
 
 	if len(pkgs[0].Errors) != 0 {
 		for _, err := range pkgs[0].Errors {
-			c.Errs.GeneralError(err)
+			if !c.logPackageError(err) {
+				break
+			}
 		}
 		return false
 	}
@@ -164,4 +170,51 @@ func (c *context) lookupParserType(scope *gotypes.Scope) {
 	}
 
 	c.ParserType = parserObj
+}
+
+// logPackageError logs an error returned by packages.Load doing its best to
+// adapt the error to the format used by Lox.
+func (c *context) logPackageError(perr error) bool {
+	var pkgError packages.Error
+	if !errors.As(perr, &pkgError) {
+		c.Errs.GeneralError(perr)
+		return true
+	}
+
+	if pkgError.Kind == packages.ListError {
+		return true
+	}
+
+	pathParts := strings.SplitN(pkgError.Pos, ":", 3)
+	if len(pathParts) < 2 {
+		c.Errs.GeneralError(perr)
+		return true
+	}
+
+	var pos gotoken.Position
+	pos.Filename = pathParts[0]
+
+	line, err := strconv.Atoi(pathParts[1])
+	if err != nil {
+		c.Errs.GeneralError(perr)
+		return true
+	}
+
+	pos.Line = line
+
+	if len(pathParts) == 3 {
+		pos.Column, _ = strconv.Atoi(pathParts[2])
+	}
+
+	c.Errs.Errorpf(pos, "%v", pkgError.Msg)
+
+	if pkgError.Kind == packages.TypeError &&
+		pkgError.Msg == "undefined: Token" {
+		c.Errs.Infopf(pos,
+			`You must define type named "Token" in the same package `+
+				`where the parser is defined.`)
+		return false
+	}
+
+	return true
 }
