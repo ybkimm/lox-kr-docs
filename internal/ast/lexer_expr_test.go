@@ -10,7 +10,7 @@ import (
 func TestExpr(t *testing.T) {
 	spec, ctx := parseAndAnalyze(t, `
 @lexer
-FOOBAR = 'foo' | 'bar' ;
+FOOBAR = 'foo' | 'bar'
 `)
 	term := spec.Units[0].Statements[0].(*ast.TokenRule).Expr
 	nfaCons := term.NFACons(ctx)

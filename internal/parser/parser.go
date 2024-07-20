@@ -204,7 +204,7 @@ func (p *parser) on_lexer_rule__nl(_ Token) ast.Statement {
 	return &ast.Noop{}
 }
 
-func (p *parser) on_mode(_ Token, name Token, _ Token, rules []ast.Statement, _ Token) *ast.Mode {
+func (p *parser) on_mode(_ Token, name Token, _ []Token, _ Token, rules []ast.Statement, _ Token) *ast.Mode {
 	return &ast.Mode{
 		Name:  string(name.Str),
 		Rules: rules,

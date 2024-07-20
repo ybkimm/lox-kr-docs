@@ -11,7 +11,7 @@ func TestFactor(t *testing.T) {
 	t.Run("1", func(t *testing.T) {
 		spec, ctx := parseAndAnalyze(t, `
 @lexer
-FOOBAR = 'foo' ;
+FOOBAR = 'foo'
 `)
 		it := spec.Units[0].Statements[0].(*ast.TokenRule).Expr.Factors[0]
 		nfaCons := it.NFACons(ctx)
@@ -38,7 +38,7 @@ digraph G {
 	t.Run("2", func(t *testing.T) {
 		spec, ctx := parseAndAnalyze(t, `
 @lexer
-FOOBAR = 'foo' 'bar' ;
+FOOBAR = 'foo' 'bar'
 `)
 		it := spec.Units[0].Statements[0].(*ast.TokenRule).Expr.Factors[0]
 		nfaCons := it.NFACons(ctx)

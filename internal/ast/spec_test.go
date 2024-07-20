@@ -11,20 +11,19 @@ func TestSpec_Calc(t *testing.T) {
 	spec, ctx := parseAndAnalyze(t, `
 @lexer
 
-NUM = [0-9]+ ;
-ADD = '+' ;
-SUB = '-' ;
-MUL = '*' ;
-DIV = '/' ;
-REM = '%' ;
-POW = '^' ;
-O_PAREN = '(' ;
-C_PAREN = ')' ;
+NUM = [0-9]+
+ADD = '+'
+SUB = '-'
+MUL = '*'
+DIV = '/'
+REM = '%'
+POW = '^'
+O_PAREN = '('
+C_PAREN = ')'
 
 @parser
 
-@start
-S = expr ;
+@start S = expr
 
 expr = expr '+' expr  @left(1)
      | expr '-' expr  @left(1)
@@ -33,10 +32,10 @@ expr = expr '+' expr  @left(1)
      | expr '%' expr  @left(2)
      | expr '^' expr  @right(3)
      | '(' expr ')'
-     | num ;
+     | num
 
 num = NUM
-    | '-' NUM ;
+    | '-' NUM
 `)
 
 	// TODO: turn this into a proper test

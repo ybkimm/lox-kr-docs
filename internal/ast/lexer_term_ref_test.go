@@ -11,8 +11,8 @@ func TestTermRef(t *testing.T) {
 	t.Run("simple1", func(t *testing.T) {
 		spec, ctx := parseAndAnalyze(t, `
 @lexer
-@macro FOO = 'foo' ;
-FOOBAR = FOO 'bar' ;
+@macro FOO = 'foo'
+FOOBAR = FOO 'bar'
 `)
 		it := spec.Units[0].Statements[1].(*ast.TokenRule).Expr
 		nfaCons := it.NFACons(ctx)
@@ -46,8 +46,8 @@ digraph G {
 	t.Run("undefined", func(t *testing.T) {
 		spec, ctx := parse(t, `
 @lexer
-@macro FOO = 'foo' ;
-FOOBAR = FO0 'bar' ;
+@macro FOO = 'foo'
+FOOBAR = FO0 'bar'
 `)
 		ctx.Analyze(spec, ast.AllPasses)
 		if !ctx.Errs.HasError() {
@@ -57,8 +57,8 @@ FOOBAR = FO0 'bar' ;
 	t.Run("not-macro", func(t *testing.T) {
 		spec, ctx := parse(t, `
 @lexer
-FOO = 'foo' ;
-FOOBAR = FOO 'bar' ;
+FOO = 'foo'
+FOOBAR = FOO 'bar'
 `)
 		ctx.Analyze(spec, ast.AllPasses)
 		if !ctx.Errs.HasError() {

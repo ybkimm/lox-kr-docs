@@ -16,8 +16,7 @@ func TestParseLox(t *testing.T) {
 	const file1 = `
 @parser
 
-@start
-S = expr ;
+@start S = expr
 
 expr = expr '+' expr  @left(1)
      | expr '-' expr  @left(1)
@@ -26,24 +25,24 @@ expr = expr '+' expr  @left(1)
      | expr '%' expr  @left(2)
      | expr '^' expr  @right(3)
      | '(' expr ')'
-     | num ;
+     | num
 
 num = NUM
-    | '-' NUM ;
+    | '-' NUM
 `
 
 	const file2 = `
 @lexer
 
-NUM = [0-9]+ ;
-ADD = '+' ;
-SUB = '-' ;
-MUL = '*' ;
-DIV = '/' ;
-REM = '%' ;
-POW = '^' ;
-O_PAREN = '(' ;
-C_PAREN = ')' ;
+NUM = [0-9]+
+ADD = '+'
+SUB = '-'
+MUL = '*'
+DIV = '/'
+REM = '%'
+POW = '^'
+O_PAREN = '('
+C_PAREN = ')'
 `
 
 	tmpDir, err := os.MkdirTemp("", "lox")

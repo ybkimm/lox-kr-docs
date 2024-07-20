@@ -11,7 +11,7 @@ func TestCharClass(t *testing.T) {
 	t.Run("simple1", func(t *testing.T) {
 		spec, ctx := parseAndAnalyze(t, `
 @lexer
-FOOBAR = [A-Za-z0-9-_] ;
+FOOBAR = [A-Za-z0-9-_]
 `)
 		it := spec.Units[0].Statements[0].(*ast.TokenRule).Expr
 		nfaCons := it.NFACons(ctx)
@@ -57,7 +57,7 @@ digraph G {
 	t.Run("negated", func(t *testing.T) {
 		spec, ctx := parseAndAnalyze(t, `
 @lexer
-FOOBAR = ~[b-d1-8\n] ;
+FOOBAR = ~[b-d1-8\n]
 `)
 		it := spec.Units[0].Statements[0].(*ast.TokenRule).Expr
 		nfaCons := it.NFACons(ctx)
@@ -99,7 +99,7 @@ digraph G {
 	t.Run("expr", func(t *testing.T) {
 		spec, ctx := parseAndAnalyze(t, `
 @lexer
-FOOBAR = [\u0020-\U0010FFFF] - [b-f];
+FOOBAR = [\u0020-\U0010FFFF] - [b-f]
 `)
 		it := spec.Units[0].Statements[0].(*ast.TokenRule).Expr
 		nfaCons := it.NFACons(ctx)

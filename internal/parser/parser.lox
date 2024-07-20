@@ -128,7 +128,7 @@ lexer_rule = token_rule
            | NL
 
 
-mode = MODE ID '{' lexer_rule* '}'
+mode = MODE ID NL* '{' lexer_rule* '}'
 
 token_rule    = ID '=' lexer_expr action* NL
 frag_rule     = FRAG lexer_expr action* NL

@@ -12,7 +12,7 @@ func TestLexerTokenRule(t *testing.T) {
 	t.Run("accept", func(t *testing.T) {
 		_, ctx := parseAndAnalyze(t, `
 @lexer
-ABC = 'abc' @pop_mode;
+ABC = 'abc' @pop_mode
 		`)
 
 		defaultMode := ctx.LexerModes[ast.DefaultModeName]
@@ -36,13 +36,13 @@ ABC = 'abc' @pop_mode;
 	t.Run("cannot_discard", func(t *testing.T) {
 		parseButFailAnalyze(t, `
 @lexer
-FOO = 'foo' @discard ;
+FOO = 'foo' @discard
 `, "tokens cannot be discarded")
 	})
 	t.Run("cannot_emit", func(t *testing.T) {
 		parseButFailAnalyze(t, `
 @lexer
-FOO = 'foo' @emit(FOO);
+FOO = 'foo' @emit(FOO)
 `, "@emit is not allowed")
 	})
 }

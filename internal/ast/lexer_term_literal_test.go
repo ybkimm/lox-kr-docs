@@ -10,7 +10,7 @@ import (
 func TestTermLiteral(t *testing.T) {
 	spec, ctx := parseAndAnalyze(t, `
 @lexer
-@macro FOO = 'abc' ;
+@macro FOO = 'abc'
 	`)
 
 	term := spec.Units[0].Statements[0].(*ast.MacroRule).Expr.Factors[0].Terms[0].Term.(*ast.LexerTermLiteral)

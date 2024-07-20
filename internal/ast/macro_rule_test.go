@@ -11,9 +11,9 @@ func TestMacroRule(t *testing.T) {
 	t.Run("simple1", func(t *testing.T) {
 		spec, ctx := parseAndAnalyze(t, `
 @lexer
-@macro FOO = 'foo' ;
-@macro BAR = 'bar' ;
-FOOBAR = FOO | BAR ;
+@macro FOO = 'foo'
+@macro BAR = 'bar'
+FOOBAR = FOO | BAR
 `)
 		it := spec.Units[0].Statements[2].(*ast.TokenRule).Expr
 		nfaCons := it.NFACons(ctx)
@@ -52,9 +52,9 @@ digraph G {
 	t.Run("simple2", func(t *testing.T) {
 		spec, ctx := parseAndAnalyze(t, `
 @lexer
-@macro FOOBAR_MACRO = 'foo' | BAR ;
-@macro BAR = 'bar' ;
-FOOBAR = FOOBAR_MACRO ;
+@macro FOOBAR_MACRO = 'foo' | BAR
+@macro BAR = 'bar'
+FOOBAR = FOOBAR_MACRO
 `)
 		it := spec.Units[0].Statements[2].(*ast.TokenRule).Expr
 		nfaCons := it.NFACons(ctx)
@@ -94,10 +94,10 @@ digraph G {
 	t.Run("cycle", func(t *testing.T) {
 		spec, ctx := parse(t, `
 @lexer
-@macro FOO = 'yay' | BAR ;
-@macro BAR = BAZ | 'stuff' ;
-@macro BAZ = FOO ;
-FOOBAR = FOO ;
+@macro FOO = 'yay' | BAR
+@macro BAR = BAZ | 'stuff'
+@macro BAZ = FOO
+FOOBAR = FOO
 `)
 		ctx.Analyze(spec, ast.AllPasses)
 		if !ctx.Errs.HasError() {

@@ -12,7 +12,7 @@ func TestLexerFragRule(t *testing.T) {
 	t.Run("accum", func(t *testing.T) {
 		_, ctx := parseAndAnalyze(t, `
 @lexer
-@frag 'abc' @pop_mode;
+@frag 'abc' @pop_mode
 		`)
 
 		defaultMode := ctx.LexerModes[ast.DefaultModeName]
@@ -38,7 +38,7 @@ func TestLexerFragRule(t *testing.T) {
 	t.Run("discard", func(t *testing.T) {
 		_, ctx := parseAndAnalyze(t, `
 @lexer
-@frag 'abc' @pop_mode @discard;
+@frag 'abc' @pop_mode @discard
 		`)
 
 		defaultMode := ctx.LexerModes[ast.DefaultModeName]
@@ -64,8 +64,8 @@ func TestLexerFragRule(t *testing.T) {
 	t.Run("emit", func(t *testing.T) {
 		_, ctx := parseAndAnalyze(t, `
 @lexer
-FOO = 'foo';
-@frag 'abc' @pop_mode @emit(FOO);
+FOO = 'foo'
+@frag 'abc' @pop_mode @emit(FOO)
 		`)
 
 		defaultMode := ctx.LexerModes[ast.DefaultModeName]
@@ -90,22 +90,22 @@ FOO = 'foo';
 	t.Run("cannot_discard_and_emit", func(t *testing.T) {
 		parseButFailAnalyze(t, `
 @lexer
-FOO = 'foo';
-@frag 'abc' @pop_mode @emit(FOO) @discard;
+FOO = 'foo'
+@frag 'abc' @pop_mode @emit(FOO) @discard
 		`, "cannot be discarded and emitted")
 	})
 	t.Run("only_one_emit", func(t *testing.T) {
 		parseButFailAnalyze(t, `
 @lexer
-FOO = 'foo';
-@frag 'abc' @pop_mode @emit(FOO) @emit(FOO);
+FOO = 'foo'
+@frag 'abc' @pop_mode @emit(FOO) @emit(FOO)
 		`, "one @emit")
 	})
 	t.Run("only_one_discard", func(t *testing.T) {
 		parseButFailAnalyze(t, `
 @lexer
-FOO = 'foo';
-@frag 'abc' @pop_mode @discard @discard;
+FOO = 'foo'
+@frag 'abc' @pop_mode @discard @discard
 		`, "one @discard")
 	})
 }

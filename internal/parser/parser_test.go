@@ -40,7 +40,8 @@ EXEC_PREFIX = 'e\''  @push_mode(EXEC)
   EXEC_SUFFIX  = '\'' @pop_mode
 }
 
-@mode EXEC_DQUOTE {
+@mode EXEC_DQUOTE
+{
 	@frag ~["\r\n\\]
 	@frag '\\' ([nrt"\\] | ('x' HEX_DIGIT HEX_DIGIT))
 	EXEC_DQUOTE_LITERAL = '"' @pop_mode

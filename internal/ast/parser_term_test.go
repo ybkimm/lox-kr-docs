@@ -9,13 +9,13 @@ func TestParserTermNormalize(t *testing.T) {
 	t.Run("ZeroOrMore", func(t *testing.T) {
 		spec, ctx := parseAndAnalyze(t, `
 @lexer
-P = '+' ;
+P = '+'
 @parser
-b = P ;
-c = P ;
-@start S = a | d ;
-a = b c* ;
-d = c* ;
+b = P
+c = P
+@start S = a | d
+a = b c*
+d = c*
 `)
 		var str strings.Builder
 		ctx.Print(spec, &str)
@@ -59,11 +59,11 @@ ParserRule: Name: c+
 	t.Run("OneOrMore", func(t *testing.T) {
 		spec, ctx := parseAndAnalyze(t, `
 @lexer
-P = '+' ;
+P = '+'
 @parser
-b = P ;
-c = P ;
-@start a = b c+ ;
+b = P
+c = P
+@start a = b c+
 `)
 		var str strings.Builder
 		ctx.Print(spec, &str)
@@ -95,11 +95,11 @@ ParserRule: Name: c+
 	t.Run("ZeroOrOne", func(t *testing.T) {
 		spec, ctx := parseAndAnalyze(t, `
 @lexer
-P = '+' ;
+P = '+'
 @parser
-b = P ;
-c = P ;
-@start a = b c? ;
+b = P
+c = P
+@start a = b c?
 `)
 		var str strings.Builder
 		ctx.Print(spec, &str)
@@ -129,13 +129,13 @@ ParserRule: Name: c?
 	t.Run("List", func(t *testing.T) {
 		spec, ctx := parseAndAnalyze(t, `
 @lexer
-P = '+' ;
+P = '+'
 @parser
-b = P ;
-c = P ;
-@start S = a | d ;
-a = b @list(c, P) ;
-d = @list(c, P) ;
+b = P
+c = P
+@start S = a | d
+a = b @list(c, P)
+d = @list(c, P)
 `)
 		var str strings.Builder
 		ctx.Print(spec, &str)
@@ -176,13 +176,13 @@ ParserRule: Name: @list(c,P)
 	t.Run("ListOpt", func(t *testing.T) {
 		spec, ctx := parseAndAnalyze(t, `
 @lexer
-P = '+' ;
+P = '+'
 @parser
-b = P ;
-c = P ;
-@start S = a | d ;
-a = b @list(c, P)? ;
-d = @list(c, P) ;
+b = P
+c = P
+@start S = a | d
+a = b @list(c, P)?
+d = @list(c, P)
 `)
 		var str strings.Builder
 		ctx.Print(spec, &str)
@@ -227,12 +227,12 @@ ParserRule: Name: @list(c,P)
 	t.Run("ListOnlySupportOpt", func(t *testing.T) {
 		failParse(t, `
 @lexer
-P = '+' ;
+P = '+'
 @parser
-b = P ;
-c = P ;
-@start S = a ;
-a = b @list(c, P)+ ;
+b = P
+c = P
+@start S = a
+a = b @list(c, P)+
 `, "@list term can only use the zero-or-more '?' cardinality")
 
 	})
@@ -240,44 +240,44 @@ a = b @list(c, P)+ ;
 	t.Run("ListEntryMustBeSimple1", func(t *testing.T) {
 		parseButFailAnalyze(t, `
 @lexer
-C = ',';
-N = '1';
+C = ','
+N = '1'
 @parser
-@start S = @list(@list(N, C), C);
-n = N N;
+@start S = @list(@list(N, C), C)
+n = N N
 		`, "@list entry param must be a simple token or rule")
 	})
 
 	t.Run("ListEntryMustBeSimple2", func(t *testing.T) {
 		parseButFailAnalyze(t, `
 @lexer
-C = ',';
-N = '1';
+C = ','
+N = '1'
 @parser
-@start S = @list(@list(N, C), C)?;
-n = N N;
+@start S = @list(@list(N, C), C)?
+n = N N
 		`, "@list entry param must be a simple token or rule")
 	})
 
 	t.Run("ListSepMustBeSimple", func(t *testing.T) {
 		_, _ = parseAndAnalyze(t, `
 @lexer
-C = ',';
-N = '1';
+C = ','
+N = '1'
 @parser
-@start S = @list(N, n);
-n = N N;
+@start S = @list(N, n)
+n = N N
 		`)
 	})
 
 	t.Run("ListSepMustBeSimple", func(t *testing.T) {
 		parseButFailAnalyze(t, `
 @lexer
-C = ',';
-N = '1';
+C = ','
+N = '1'
 @parser
-@start S = @list(N, @list(N, C));
-n = N N;
+@start S = @list(N, @list(N, C))
+n = N N
 		`, "@list separator param must be a simple token or rule")
 	})
 }
