@@ -26,7 +26,7 @@ func Parse(
 	data []byte,
 	errs *errlogger.ErrLogger,
 ) *ast.Unit {
-	lex := simplelexer.New(simplelexer.Config{
+	lex := newLexer(simplelexer.Config{
 		StateMachine: new(_LexerStateMachine),
 		File:         file,
 		Input:        data,
@@ -45,7 +45,7 @@ func Parse(
 	return p.unit
 }
 
-func (p *parser) on_spec(sections [][]ast.Statement) *ast.Unit {
+func (p *parser) on_spec(_ []Token, sections [][]ast.Statement) *ast.Unit {
 	n := 0
 	for _, section := range sections {
 		n += len(section)
@@ -72,12 +72,16 @@ func (p *parser) on_section(sectionStmts []ast.Statement) []ast.Statement {
 // Parser
 // ======
 
-func (p *parser) on_parser_section(_ Token, stmts []ast.Statement) []ast.Statement {
+func (p *parser) on_parser_section(_, _ Token, stmts []ast.Statement) []ast.Statement {
 	return stmts
 }
 
 func (p *parser) on_parser_statement(s ast.Statement) ast.Statement {
 	return s
+}
+
+func (p *parser) on_parser_statement__nl(_ Token) ast.Statement {
+	return &ast.Noop{}
 }
 
 func (p *parser) on_parser_rule(start Token, name Token, _ Token, prods []*ast.ParserProd, _ Token) *ast.ParserRule {
@@ -184,7 +188,7 @@ func (p *parser) on_parser_qualif(assoc Token, _ Token, prec Token, _ Token) *as
 // Lexer
 // =====
 
-func (p *parser) on_lexer_section(_ Token, stmts []ast.Statement) []ast.Statement {
+func (p *parser) on_lexer_section(_, _ Token, stmts []ast.Statement) []ast.Statement {
 	return stmts
 }
 
@@ -194,6 +198,10 @@ func (p *parser) on_lexer_statement(s ast.Statement) ast.Statement {
 
 func (p *parser) on_lexer_rule(r ast.Statement) ast.Statement {
 	return r
+}
+
+func (p *parser) on_lexer_rule__nl(_ Token) ast.Statement {
+	return &ast.Noop{}
 }
 
 func (p *parser) on_mode(_ Token, name Token, _ Token, rules []ast.Statement, _ Token) *ast.Mode {
@@ -222,6 +230,18 @@ func (p *parser) on_macro_rule(_ Token, name Token, _ Token, expr *ast.LexerExpr
 	return &ast.MacroRule{
 		Name: string(name.Str),
 		Expr: expr,
+	}
+}
+
+func (p *parser) on_external_rule(_ Token, names []*ast.ExternalName, _ Token) *ast.ExternalRule {
+	return &ast.ExternalRule{
+		Names: names,
+	}
+}
+
+func (p *parser) on_external_name(name Token) *ast.ExternalName {
+	return &ast.ExternalName{
+		Name: string(name.Str),
 	}
 }
 

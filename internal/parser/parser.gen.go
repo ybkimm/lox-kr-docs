@@ -1,184 +1,205 @@
 package parser
 
 import (
-	_i0 "github.com/dcaiafa/lox/internal/ast"
-	_i1 "github.com/dcaiafa/loxlex/simplelexer"
+	_i1 "github.com/dcaiafa/lox/internal/ast"
+	_i0 "github.com/dcaiafa/loxlex/simplelexer"
 )
 
 var _rules = []int32{
-	0, 1, 1, 2, 2, 3, 4, 5, 6, 6, 7, 8, 8, 8,
-	8, 9, 10, 10, 10, 11, 11, 12, 13, 13, 14, 14, 14, 15,
-	16, 17, 18, 19, 20, 21, 22, 22, 22, 23, 23, 23, 23, 24,
-	24, 25, 26, 26, 27, 27, 27, 27, 28, 29, 30, 31, 32, 32,
-	33, 33, 34, 34, 35, 35, 36, 36, 37, 37, 38, 38, 39, 39,
-	40, 40, 41, 41, 42, 42, 43, 43, 44, 44, 45, 45, 46, 46,
-	47, 47, 48, 48, 49, 49, 50, 50, 51, 51, 52, 52,
+	0, 1, 1, 2, 2, 3, 4, 4, 5, 6, 6, 7, 8, 8,
+	8, 8, 9, 10, 10, 10, 11, 11, 12, 13, 13, 14, 14, 14,
+	14, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 24, 24,
+	25, 25, 25, 25, 26, 26, 27, 28, 28, 29, 29, 29, 29, 30,
+	31, 32, 33, 34, 34, 35, 35, 36, 36, 37, 37, 38, 38, 39,
+	39, 40, 40, 41, 41, 42, 42, 43, 43, 44, 44, 45, 45, 46,
+	46, 47, 47, 48, 48, 49, 49, 50, 50, 51, 51, 52, 52, 53,
+	53, 54, 54, 55, 55, 56, 56, 57, 57,
 }
 
 var _termCounts = []int32{
-	1, 1, 1, 1, 1, 2, 1, 5, 2, 1, 2, 1, 1, 1,
-	1, 6, 1, 1, 1, 4, 4, 2, 1, 1, 1, 1, 1, 5,
-	5, 4, 5, 1, 1, 2, 1, 1, 1, 1, 1, 1, 3, 3,
-	1, 4, 1, 1, 1, 1, 1, 1, 1, 4, 1, 4, 1, 0,
-	2, 1, 1, 0, 2, 1, 1, 0, 3, 1, 2, 1, 1, 0,
-	1, 0, 1, 0, 2, 1, 1, 0, 2, 1, 1, 0, 2, 1,
-	3, 1, 2, 1, 1, 0, 1, 0, 2, 1, 1, 0,
+	1, 2, 1, 1, 1, 3, 1, 1, 5, 2, 1, 2, 1, 1,
+	1, 1, 6, 1, 1, 1, 4, 4, 3, 1, 1, 1, 1, 1,
+	1, 1, 5, 5, 4, 5, 3, 1, 1, 1, 2, 1, 1, 1,
+	1, 1, 1, 3, 3, 1, 4, 1, 1, 1, 1, 1, 1, 1,
+	4, 1, 4, 1, 0, 2, 1, 1, 0, 2, 1, 1, 0, 2,
+	1, 1, 0, 3, 1, 2, 1, 1, 0, 1, 0, 1, 0, 2,
+	1, 1, 0, 2, 1, 1, 0, 2, 1, 2, 1, 3, 1, 2,
+	1, 1, 0, 1, 0, 2, 1, 1, 0,
 }
 
 var _actions = []int32{
-	135, 144, 147, 162, 173, 180, 187, 194, 197, 204, 207, 210, 213, 224,
-	235, 242, 253, 264, 267, 270, 273, 290, 305, 320, 327, 342, 359, 374,
-	391, 398, 401, 253, 404, 419, 450, 253, 481, 484, 487, 520, 551, 562,
-	577, 608, 633, 658, 661, 672, 687, 698, 551, 707, 718, 721, 732, 735,
-	746, 749, 760, 771, 782, 793, 253, 253, 804, 829, 854, 879, 904, 929,
-	954, 957, 962, 967, 972, 977, 1004, 1031, 1034, 1061, 1088, 1093, 1116, 1133,
-	1150, 1159, 1162, 1171, 1174, 1191, 1194, 1225, 1256, 1263, 1270, 1277, 1284, 1289,
-	1292, 1303, 687, 1318, 1329, 1332, 1335, 1340, 1345, 1362, 1379, 1396, 1413, 1430,
-	1447, 1456, 1471, 1488, 1505, 1538, 1545, 1548, 1551, 1554, 1563, 1566, 1569, 1572,
-	1583, 1594, 1447, 1599, 1602, 1605, 1608, 1613, 1618, 8, 0, -55, 1, 1,
-	18, 2, 17, 3, 2, 0, -2, 14, 0, -73, 22, 16, 33, 17,
-	18, -73, 21, 18, 23, 19, 17, -73, 10, 0, -59, 33, -63, 18,
-	-59, 17, -59, 19, 10, 6, 0, -4, 18, -4, 17, -4, 6, 0,
-	-3, 18, -3, 17, -3, 6, 0, -57, 18, -57, 17, -57, 2, 0,
-	-1, 6, 0, -54, 18, 2, 17, 3, 2, 0, 2147483647, 2, 33, -62,
-	2, 33, 29, 10, 0, -6, 33, -6, 18, -6, 17, -6, 19, -6,
-	10, 0, -61, 33, -61, 18, -61, 17, -61, 19, -61, 6, 0, -5,
-	18, -5, 17, -5, 10, 0, -58, 33, -63, 18, -58, 17, -58, 19,
-	10, 10, 33, 33, 35, 34, 36, -91, 9, 35, 8, 36, 2, 4,
-	31, 2, 33, 45, 2, 33, 30, 16, 7, -25, 0, -25, 22, -25,
-	33, -25, 18, -25, 21, -25, 23, -25, 17, -25, 14, 0, -23, 22,
-	-23, 33, -23, 18, -23, 21, -23, 23, -23, 17, -23, 14, 0, -75,
-	22, -75, 33, -75, 18, -75, 21, -75, 23, -75, 17, -75, 6, 0,
-	-21, 18, -21, 17, -21, 14, 0, -72, 22, 16, 33, 17, 18, -72,
-	21, 18, 23, 19, 17, -72, 16, 7, -26, 0, -26, 22, -26, 33,
-	-26, 18, -26, 21, -26, 23, -26, 17, -26, 14, 0, -22, 22, -22,
-	33, -22, 18, -22, 21, -22, 23, -22, 17, -22, 16, 7, -24, 0,
-	-24, 22, -24, 33, -24, 18, -24, 21, -24, 23, -24, 17, -24, 6,
-	0, -56, 18, -56, 17, -56, 2, 4, 48, 2, 6, 49, 14, 10,
-	-31, 20, -31, 30, -31, 5, 63, 25, -31, 24, -31, 2, -31, 30,
-	10, -38, 20, -38, 30, -38, 33, -38, 35, -38, 36, -38, 14, -38,
-	9, -38, 5, -38, 25, -38, 24, -38, 2, -38, 8, -38, 13, -38,
-	12, -38, 30, 10, -37, 20, -37, 30, -37, 33, -37, 35, -37, 36,
-	-37, 14, -37, 9, -37, 5, -37, 25, -37, 24, -37, 2, -37, 8,
-	-37, 13, -37, 12, -37, 2, 36, -90, 2, 36, 72, 32, 10, -42,
-	20, -42, 30, -42, 33, -42, 35, -42, 36, -42, 14, -42, 9, -42,
-	5, -42, 25, -42, 24, -42, 2, -42, 11, 71, 8, -42, 13, -42,
-	12, -42, 30, 10, -39, 20, -39, 30, -39, 33, -39, 35, -39, 36,
-	-39, 14, -39, 9, -39, 5, -39, 25, -39, 24, -39, 2, -39, 8,
-	-39, 13, -39, 12, -39, 10, 20, 51, 30, 52, 25, 53, 24, 54,
-	2, -81, 14, 10, -85, 20, -85, 30, -85, 5, -85, 25, -85, 24,
-	-85, 2, -85, 30, 10, -89, 20, -89, 30, -89, 33, -89, 35, -89,
-	36, -89, 14, 65, 9, -89, 5, -89, 25, -89, 24, -89, 2, -89,
-	8, -89, 13, 66, 12, 67, 24, 10, -87, 20, -87, 30, -87, 33,
-	-87, 35, -87, 36, -87, 9, -87, 5, -87, 25, -87, 24, -87, 2,
-	-87, 8, -87, 24, 10, -32, 20, -32, 30, -32, 33, 33, 35, 34,
-	36, -91, 9, 35, 5, -32, 25, -32, 24, -32, 2, -32, 8, 36,
-	2, 4, 62, 10, 0, -60, 33, -60, 18, -60, 17, -60, 19, -60,
-	14, 0, -74, 22, -74, 33, -74, 18, -74, 21, -74, 23, -74, 17,
-	-74, 10, 31, 74, 26, 75, 33, 76, 28, 77, 35, 78, 8, 7,
-	-77, 22, 16, 33, 17, 21, 18, 10, 20, -50, 30, -50, 25, -50,
-	24, -50, 2, -50, 2, 9, 97, 10, 20, -52, 30, -52, 25, -52,
-	24, -52, 2, -52, 2, 9, 96, 10, 20, -83, 30, -83, 25, -83,
-	24, -83, 2, -83, 2, 2, 88, 10, 20, 51, 30, 52, 25, 53,
-	24, 54, 2, -80, 10, 20, -46, 30, -46, 25, -46, 24, -46, 2,
-	-46, 10, 20, -49, 30, -49, 25, -49, 24, -49, 2, -49, 10, 20,
-	-48, 30, -48, 25, -48, 24, -48, 2, -48, 10, 20, -47, 30, -47,
-	25, -47, 24, -47, 2, -47, 24, 10, -86, 20, -86, 30, -86, 33,
-	-86, 35, -86, 36, -86, 9, -86, 5, -86, 25, -86, 24, -86, 2,
-	-86, 8, -86, 24, 10, -36, 20, -36, 30, -36, 33, -36, 35, -36,
-	36, -36, 9, -36, 5, -36, 25, -36, 24, -36, 2, -36, 8, -36,
-	24, 10, -35, 20, -35, 30, -35, 33, -35, 35, -35, 36, -35, 9,
-	-35, 5, -35, 25, -35, 24, -35, 2, -35, 8, -35, 24, 10, -34,
-	20, -34, 30, -34, 33, -34, 35, -34, 36, -34, 9, -34, 5, -34,
-	25, -34, 24, -34, 2, -34, 8, -34, 24, 10, -88, 20, -88, 30,
-	-88, 33, -88, 35, -88, 36, -88, 9, -88, 5, -88, 25, -88, 24,
-	-88, 2, -88, 8, -88, 24, 10, -33, 20, -33, 30, -33, 33, -33,
-	35, -33, 36, -33, 9, -33, 5, -33, 25, -33, 24, -33, 2, -33,
-	8, -33, 2, 10, 90, 4, 36, -91, 8, 36, 4, 39, 92, 38,
-	93, 4, 5, 100, 2, 101, 4, 5, -9, 2, -9, 26, 3, -13,
-	10, -13, 26, -13, 33, -13, 27, -13, 28, -13, 35, -13, 14, -13,
-	5, -13, 29, -13, 2, -13, 13, -13, 12, -13, 26, 3, -11, 10,
-	-11, 26, -11, 33, -11, 27, -11, 28, -11, 35, -11, 14, -11, 5,
-	-11, 29, -11, 2, -11, 13, -11, 12, -11, 2, 9, 112, 26, 3,
-	-12, 10, -12, 26, -12, 33, -12, 27, -12, 28, -12, 35, -12, 14,
-	-12, 5, -12, 29, -12, 2, -12, 13, -12, 12, -12, 26, 3, -14,
-	10, -14, 26, -14, 33, -14, 27, -14, 28, -14, 35, -14, 14, -14,
-	5, -14, 29, -14, 2, -14, 13, -14, 12, -14, 4, 5, -65, 2,
-	-65, 22, 26, -71, 33, -71, 27, -71, 28, -71, 35, -71, 14, 107,
-	5, -71, 29, -71, 2, -71, 13, 108, 12, 109, 16, 26, -67, 33,
-	-67, 27, -67, 28, -67, 35, -67, 5, -67, 29, -67, 2, -67, 16,
-	26, 75, 33, 76, 27, 102, 28, 77, 35, 78, 5, -69, 29, 103,
-	2, -69, 8, 7, -79, 22, -79, 33, -79, 21, -79, 2, 7, 113,
-	8, 7, -76, 22, 16, 33, 17, 21, 18, 2, 2, 114, 16, 7,
-	-29, 0, -29, 22, -29, 33, -29, 18, -29, 21, -29, 23, -29, 17,
-	-29, 2, 2, 115, 30, 10, -40, 20, -40, 30, -40, 33, -40, 35,
-	-40, 36, -40, 14, -40, 9, -40, 5, -40, 25, -40, 24, -40, 2,
-	-40, 8, -40, 13, -40, 12, -40, 30, 10, -41, 20, -41, 30, -41,
-	33, -41, 35, -41, 36, -41, 14, -41, 9, -41, 5, -41, 25, -41,
-	24, -41, 2, -41, 8, -41, 13, -41, 12, -41, 6, 37, -44, 39,
-	-44, 38, -44, 6, 37, -45, 39, -45, 38, -45, 6, 37, -93, 39,
-	-93, 38, -93, 6, 37, 116, 39, 92, 38, 93, 4, 10, -95, 33,
-	118, 2, 33, 120, 10, 20, -82, 30, -82, 25, -82, 24, -82, 2,
-	-82, 14, 10, -84, 20, -84, 30, -84, 5, -84, 25, -84, 24, -84,
-	2, -84, 10, 0, -7, 33, -7, 18, -7, 17, -7, 19, -7, 2,
-	9, 123, 2, 9, 124, 4, 5, -68, 2, -68, 4, 5, -8, 2,
-	-8, 16, 26, -66, 33, -66, 27, -66, 28, -66, 35, -66, 5, -66,
-	29, -66, 2, -66, 16, 26, -17, 33, -17, 27, -17, 28, -17, 35,
-	-17, 5, -17, 29, -17, 2, -17, 16, 26, -16, 33, -16, 27, -16,
-	28, -16, 35, -16, 5, -16, 29, -16, 2, -16, 16, 26, -18, 33,
-	-18, 27, -18, 28, -18, 35, -18, 5, -18, 29, -18, 2, -18, 16,
-	26, -70, 33, -70, 27, -70, 28, -70, 35, -70, 5, -70, 29, -70,
-	2, -70, 16, 26, -10, 33, -10, 27, -10, 28, -10, 35, -10, 5,
-	-10, 29, -10, 2, -10, 8, 26, 75, 33, 76, 28, 77, 35, 78,
-	14, 0, -27, 22, -27, 33, -27, 18, -27, 21, -27, 23, -27, 17,
-	-27, 16, 7, -28, 0, -28, 22, -28, 33, -28, 18, -28, 21, -28,
-	23, -28, 17, -28, 16, 7, -30, 0, -30, 22, -30, 33, -30, 18,
-	-30, 21, -30, 23, -30, 17, -30, 32, 10, -43, 20, -43, 30, -43,
-	33, -43, 35, -43, 36, -43, 14, -43, 9, -43, 5, -43, 25, -43,
-	24, -43, 2, -43, 11, -43, 8, -43, 13, -43, 12, -43, 6, 37,
-	-92, 39, -92, 38, -92, 2, 10, -94, 2, 10, 125, 2, 10, 126,
-	8, 7, -78, 22, -78, 33, -78, 21, -78, 2, 3, 128, 2, 34,
-	129, 2, 34, 130, 10, 20, -51, 30, -51, 25, -51, 24, -51, 2,
-	-51, 10, 20, -53, 30, -53, 25, -53, 24, -53, 2, -53, 4, 5,
-	-64, 2, -64, 2, 10, 132, 2, 10, 133, 2, 10, 134, 4, 5,
-	-19, 2, -19, 4, 5, -20, 2, -20, 26, 3, -15, 10, -15, 26,
-	-15, 33, -15, 27, -15, 28, -15, 35, -15, 14, -15, 5, -15, 29,
-	-15, 2, -15, 13, -15, 12, -15,
+	150, 161, 164, 173, 180, 189, 192, 195, 198, 205, 212, 219, 222, 229,
+	238, 251, 270, 277, 290, 293, 296, 309, 322, 329, 342, 345, 356, 359,
+	362, 365, 386, 407, 428, 447, 466, 473, 492, 513, 532, 553, 556, 345,
+	559, 574, 605, 345, 636, 639, 642, 675, 706, 717, 732, 763, 788, 813,
+	816, 821, 826, 831, 844, 863, 874, 706, 887, 898, 901, 912, 915, 926,
+	929, 940, 951, 962, 973, 345, 984, 1005, 345, 1010, 1035, 1060, 1085, 1110,
+	1135, 1160, 1163, 1168, 1173, 1178, 1183, 1210, 1237, 1240, 1267, 1294, 1299, 1322,
+	1339, 1356, 1369, 1372, 1385, 1388, 1409, 1412, 1443, 1474, 1481, 1488, 1495, 1502,
+	1507, 1510, 1521, 1536, 863, 1549, 1552, 1555, 1560, 1565, 1582, 1599, 1616, 1633,
+	1650, 1667, 1676, 1695, 1716, 1737, 1770, 1777, 1780, 1783, 1786, 1799, 1802, 1805,
+	1808, 1819, 1830, 1667, 1835, 1838, 1841, 1844, 1849, 1854, 10, 0, -60, 1,
+	1, 17, -60, 40, 2, 16, -60, 2, 0, -2, 8, 0, -62, 17,
+	-62, 40, -62, 16, -62, 6, 0, -64, 17, 6, 16, 7, 8, 0,
+	-59, 17, -59, 40, 13, 16, -59, 2, 0, 2147483647, 2, 40, 15, 2,
+	40, 14, 6, 0, -4, 17, -4, 16, -4, 6, 0, -3, 17, -3,
+	16, -3, 6, 0, -66, 17, -66, 16, -66, 2, 0, -1, 6, 0,
+	-63, 17, 6, 16, 7, 8, 0, -61, 17, -61, 40, -61, 16, -61,
+	12, 0, -68, 33, -72, 17, -68, 40, 17, 16, -68, 18, 18, 18,
+	0, -82, 31, 24, 21, 25, 33, 26, 17, -82, 20, 27, 22, 28,
+	40, 29, 16, -82, 6, 0, -65, 17, -65, 16, -65, 12, 0, -7,
+	33, -7, 17, -7, 40, -7, 16, -7, 18, -7, 2, 33, -71, 2,
+	33, 39, 12, 0, -6, 33, -6, 17, -6, 40, -6, 16, -6, 18,
+	-6, 12, 0, -70, 33, -70, 17, -70, 40, -70, 16, -70, 18, -70,
+	6, 0, -5, 17, -5, 16, -5, 12, 0, -67, 33, -72, 17, -67,
+	40, 17, 16, -67, 18, 18, 2, 33, 56, 10, 33, 43, 35, 44,
+	36, -102, 8, 45, 7, 46, 2, 3, 41, 2, 33, 55, 2, 33,
+	40, 20, 6, -29, 0, -29, 31, -29, 21, -29, 33, -29, 17, -29,
+	20, -29, 22, -29, 40, -29, 16, -29, 20, 6, -28, 0, -28, 31,
+	-28, 21, -28, 33, -28, 17, -28, 20, -28, 22, -28, 40, -28, 16,
+	-28, 20, 6, -26, 0, -26, 31, -26, 21, -26, 33, -26, 17, -26,
+	20, -26, 22, -26, 40, -26, 16, -26, 18, 0, -24, 31, -24, 21,
+	-24, 33, -24, 17, -24, 20, -24, 22, -24, 40, -24, 16, -24, 18,
+	0, -84, 31, -84, 21, -84, 33, -84, 17, -84, 20, -84, 22, -84,
+	40, -84, 16, -84, 6, 0, -22, 17, -22, 16, -22, 18, 0, -81,
+	31, 24, 21, 25, 33, 26, 17, -81, 20, 27, 22, 28, 40, 29,
+	16, -81, 20, 6, -27, 0, -27, 31, -27, 21, -27, 33, -27, 17,
+	-27, 20, -27, 22, -27, 40, -27, 16, -27, 18, 0, -23, 31, -23,
+	21, -23, 33, -23, 17, -23, 20, -23, 22, -23, 40, -23, 16, -23,
+	20, 6, -25, 0, -25, 31, -25, 21, -25, 33, -25, 17, -25, 20,
+	-25, 22, -25, 40, -25, 16, -25, 2, 3, 61, 2, 5, 62, 14,
+	9, -36, 19, -36, 29, -36, 40, -36, 4, 78, 24, -36, 23, -36,
+	30, 9, -43, 19, -43, 29, -43, 33, -43, 35, -43, 40, -43, 36,
+	-43, 13, -43, 8, -43, 4, -43, 24, -43, 23, -43, 7, -43, 12,
+	-43, 11, -43, 30, 9, -42, 19, -42, 29, -42, 33, -42, 35, -42,
+	40, -42, 36, -42, 13, -42, 8, -42, 4, -42, 24, -42, 23, -42,
+	7, -42, 12, -42, 11, -42, 2, 36, -101, 2, 36, 87, 32, 9,
+	-47, 19, -47, 29, -47, 33, -47, 35, -47, 40, -47, 36, -47, 13,
+	-47, 8, -47, 4, -47, 24, -47, 23, -47, 10, 86, 7, -47, 12,
+	-47, 11, -47, 30, 9, -44, 19, -44, 29, -44, 33, -44, 35, -44,
+	40, -44, 36, -44, 13, -44, 8, -44, 4, -44, 24, -44, 23, -44,
+	7, -44, 12, -44, 11, -44, 10, 19, 64, 29, 65, 40, -90, 24,
+	66, 23, 67, 14, 9, -96, 19, -96, 29, -96, 40, -96, 4, -96,
+	24, -96, 23, -96, 30, 9, -100, 19, -100, 29, -100, 33, -100, 35,
+	-100, 40, -100, 36, -100, 13, 80, 8, -100, 4, -100, 24, -100, 23,
+	-100, 7, -100, 12, 81, 11, 82, 24, 9, -98, 19, -98, 29, -98,
+	33, -98, 35, -98, 40, -98, 36, -98, 8, -98, 4, -98, 24, -98,
+	23, -98, 7, -98, 24, 9, -37, 19, -37, 29, -37, 33, 43, 35,
+	44, 40, -37, 36, -102, 8, 45, 4, -37, 24, -37, 23, -37, 7,
+	46, 2, 3, 75, 4, 33, -35, 40, -35, 4, 33, -94, 40, -94,
+	4, 33, 56, 40, 76, 12, 0, -69, 33, -69, 17, -69, 40, -69,
+	16, -69, 18, -69, 18, 0, -83, 31, -83, 21, -83, 33, -83, 17,
+	-83, 20, -83, 22, -83, 40, -83, 16, -83, 10, 30, 89, 25, 90,
+	33, 91, 27, 92, 35, 93, 12, 6, -86, 31, 24, 21, 25, 33,
+	26, 20, 27, 40, 29, 10, 19, -55, 29, -55, 40, -55, 24, -55,
+	23, -55, 2, 8, 112, 10, 19, -57, 29, -57, 40, -57, 24, -57,
+	23, -57, 2, 8, 111, 10, 19, -92, 29, -92, 40, -92, 24, -92,
+	23, -92, 2, 40, 103, 10, 19, 64, 29, 65, 40, -89, 24, 66,
+	23, 67, 10, 19, -51, 29, -51, 40, -51, 24, -51, 23, -51, 10,
+	19, -54, 29, -54, 40, -54, 24, -54, 23, -54, 10, 19, -53, 29,
+	-53, 40, -53, 24, -53, 23, -53, 10, 19, -52, 29, -52, 40, -52,
+	24, -52, 23, -52, 20, 6, -34, 0, -34, 31, -34, 21, -34, 33,
+	-34, 17, -34, 20, -34, 22, -34, 40, -34, 16, -34, 4, 33, -93,
+	40, -93, 24, 9, -97, 19, -97, 29, -97, 33, -97, 35, -97, 40,
+	-97, 36, -97, 8, -97, 4, -97, 24, -97, 23, -97, 7, -97, 24,
+	9, -41, 19, -41, 29, -41, 33, -41, 35, -41, 40, -41, 36, -41,
+	8, -41, 4, -41, 24, -41, 23, -41, 7, -41, 24, 9, -40, 19,
+	-40, 29, -40, 33, -40, 35, -40, 40, -40, 36, -40, 8, -40, 4,
+	-40, 24, -40, 23, -40, 7, -40, 24, 9, -39, 19, -39, 29, -39,
+	33, -39, 35, -39, 40, -39, 36, -39, 8, -39, 4, -39, 24, -39,
+	23, -39, 7, -39, 24, 9, -99, 19, -99, 29, -99, 33, -99, 35,
+	-99, 40, -99, 36, -99, 8, -99, 4, -99, 24, -99, 23, -99, 7,
+	-99, 24, 9, -38, 19, -38, 29, -38, 33, -38, 35, -38, 40, -38,
+	36, -38, 8, -38, 4, -38, 24, -38, 23, -38, 7, -38, 2, 9,
+	105, 4, 36, -102, 7, 46, 4, 39, 107, 38, 108, 4, 40, 115,
+	4, 116, 4, 40, -10, 4, -10, 26, 2, -14, 9, -14, 25, -14,
+	33, -14, 26, -14, 27, -14, 35, -14, 40, -14, 13, -14, 4, -14,
+	28, -14, 12, -14, 11, -14, 26, 2, -12, 9, -12, 25, -12, 33,
+	-12, 26, -12, 27, -12, 35, -12, 40, -12, 13, -12, 4, -12, 28,
+	-12, 12, -12, 11, -12, 2, 8, 127, 26, 2, -13, 9, -13, 25,
+	-13, 33, -13, 26, -13, 27, -13, 35, -13, 40, -13, 13, -13, 4,
+	-13, 28, -13, 12, -13, 11, -13, 26, 2, -15, 9, -15, 25, -15,
+	33, -15, 26, -15, 27, -15, 35, -15, 40, -15, 13, -15, 4, -15,
+	28, -15, 12, -15, 11, -15, 4, 40, -74, 4, -74, 22, 25, -80,
+	33, -80, 26, -80, 27, -80, 35, -80, 40, -80, 13, 122, 4, -80,
+	28, -80, 12, 123, 11, 124, 16, 25, -76, 33, -76, 26, -76, 27,
+	-76, 35, -76, 40, -76, 4, -76, 28, -76, 16, 25, 90, 33, 91,
+	26, 117, 27, 92, 35, 93, 40, -78, 4, -78, 28, 118, 12, 6,
+	-88, 31, -88, 21, -88, 33, -88, 20, -88, 40, -88, 2, 6, 128,
+	12, 6, -85, 31, 24, 21, 25, 33, 26, 20, 27, 40, 29, 2,
+	40, 129, 20, 6, -32, 0, -32, 31, -32, 21, -32, 33, -32, 17,
+	-32, 20, -32, 22, -32, 40, -32, 16, -32, 2, 40, 130, 30, 9,
+	-45, 19, -45, 29, -45, 33, -45, 35, -45, 40, -45, 36, -45, 13,
+	-45, 8, -45, 4, -45, 24, -45, 23, -45, 7, -45, 12, -45, 11,
+	-45, 30, 9, -46, 19, -46, 29, -46, 33, -46, 35, -46, 40, -46,
+	36, -46, 13, -46, 8, -46, 4, -46, 24, -46, 23, -46, 7, -46,
+	12, -46, 11, -46, 6, 37, -49, 39, -49, 38, -49, 6, 37, -50,
+	39, -50, 38, -50, 6, 37, -104, 39, -104, 38, -104, 6, 37, 131,
+	39, 107, 38, 108, 4, 9, -106, 33, 133, 2, 33, 135, 10, 19,
+	-91, 29, -91, 40, -91, 24, -91, 23, -91, 14, 9, -95, 19, -95,
+	29, -95, 40, -95, 4, -95, 24, -95, 23, -95, 12, 0, -8, 33,
+	-8, 17, -8, 40, -8, 16, -8, 18, -8, 2, 8, 138, 2, 8,
+	139, 4, 40, -77, 4, -77, 4, 40, -9, 4, -9, 16, 25, -75,
+	33, -75, 26, -75, 27, -75, 35, -75, 40, -75, 4, -75, 28, -75,
+	16, 25, -18, 33, -18, 26, -18, 27, -18, 35, -18, 40, -18, 4,
+	-18, 28, -18, 16, 25, -17, 33, -17, 26, -17, 27, -17, 35, -17,
+	40, -17, 4, -17, 28, -17, 16, 25, -19, 33, -19, 26, -19, 27,
+	-19, 35, -19, 40, -19, 4, -19, 28, -19, 16, 25, -79, 33, -79,
+	26, -79, 27, -79, 35, -79, 40, -79, 4, -79, 28, -79, 16, 25,
+	-11, 33, -11, 26, -11, 27, -11, 35, -11, 40, -11, 4, -11, 28,
+	-11, 8, 25, 90, 33, 91, 27, 92, 35, 93, 18, 0, -30, 31,
+	-30, 21, -30, 33, -30, 17, -30, 20, -30, 22, -30, 40, -30, 16,
+	-30, 20, 6, -31, 0, -31, 31, -31, 21, -31, 33, -31, 17, -31,
+	20, -31, 22, -31, 40, -31, 16, -31, 20, 6, -33, 0, -33, 31,
+	-33, 21, -33, 33, -33, 17, -33, 20, -33, 22, -33, 40, -33, 16,
+	-33, 32, 9, -48, 19, -48, 29, -48, 33, -48, 35, -48, 40, -48,
+	36, -48, 13, -48, 8, -48, 4, -48, 24, -48, 23, -48, 10, -48,
+	7, -48, 12, -48, 11, -48, 6, 37, -103, 39, -103, 38, -103, 2,
+	9, -105, 2, 9, 140, 2, 9, 141, 12, 6, -87, 31, -87, 21,
+	-87, 33, -87, 20, -87, 40, -87, 2, 2, 143, 2, 34, 144, 2,
+	34, 145, 10, 19, -56, 29, -56, 40, -56, 24, -56, 23, -56, 10,
+	19, -58, 29, -58, 40, -58, 24, -58, 23, -58, 4, 40, -73, 4,
+	-73, 2, 9, 147, 2, 9, 148, 2, 9, 149, 4, 40, -20, 4,
+	-20, 4, 40, -21, 4, -21, 26, 2, -16, 9, -16, 25, -16, 33,
+	-16, 26, -16, 27, -16, 35, -16, 40, -16, 13, -16, 4, -16, 28,
+	-16, 12, -16, 11, -16,
 }
 
 var _goto = []int32{
-	135, 148, 149, 166, 148, 148, 148, 148, 177, 148, 148, 148, 148, 148,
-	148, 184, 191, 148, 148, 148, 148, 148, 148, 148, 210, 148, 148, 148,
-	148, 148, 148, 223, 148, 148, 148, 242, 148, 148, 148, 148, 261, 148,
-	276, 148, 281, 148, 148, 148, 292, 305, 318, 148, 148, 148, 148, 148,
-	148, 333, 148, 148, 148, 148, 344, 363, 148, 148, 148, 148, 148, 148,
-	148, 378, 383, 148, 148, 148, 148, 148, 148, 148, 148, 388, 148, 393,
-	148, 148, 404, 148, 148, 148, 148, 148, 148, 148, 148, 413, 416, 148,
-	148, 148, 419, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148,
-	430, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148,
-	148, 148, 435, 148, 148, 148, 148, 148, 148, 12, 12, 4, 3, 5,
-	2, 6, 32, 7, 33, 8, 1, 9, 0, 16, 17, 20, 14, 21,
-	13, 22, 41, 23, 42, 24, 18, 25, 15, 26, 16, 27, 10, 36,
-	11, 5, 12, 4, 13, 34, 14, 35, 15, 6, 12, 4, 3, 5,
-	2, 28, 6, 36, 11, 5, 12, 4, 46, 18, 47, 32, 50, 37,
-	25, 38, 24, 39, 19, 40, 20, 41, 23, 42, 21, 43, 48, 44,
-	12, 17, 20, 14, 21, 13, 47, 18, 25, 15, 26, 16, 27, 18,
-	47, 32, 50, 37, 25, 38, 24, 39, 19, 50, 20, 41, 23, 42,
-	21, 43, 48, 44, 18, 47, 32, 50, 37, 25, 38, 24, 39, 19,
-	70, 20, 41, 23, 42, 21, 43, 48, 44, 14, 27, 55, 45, 56,
-	46, 57, 28, 58, 31, 59, 30, 60, 29, 61, 4, 22, 68, 49,
-	69, 10, 50, 37, 25, 38, 24, 39, 23, 42, 21, 64, 12, 37,
-	73, 9, 79, 6, 80, 8, 81, 7, 82, 38, 83, 12, 17, 20,
-	14, 84, 43, 85, 44, 86, 18, 25, 16, 27, 14, 27, 55, 45,
-	87, 46, 57, 28, 58, 31, 59, 30, 60, 29, 61, 10, 27, 98,
-	28, 58, 31, 59, 30, 60, 29, 61, 18, 47, 32, 50, 37, 25,
-	38, 24, 39, 19, 89, 20, 41, 23, 42, 21, 43, 48, 44, 14,
-	50, 37, 25, 38, 24, 39, 20, 99, 23, 42, 21, 43, 48, 44,
-	4, 50, 37, 25, 91, 4, 26, 94, 51, 95, 4, 10, 110, 40,
-	111, 10, 9, 79, 11, 104, 39, 105, 8, 81, 7, 106, 8, 17,
-	20, 14, 121, 18, 25, 16, 27, 2, 26, 117, 2, 52, 119, 10,
-	9, 79, 6, 127, 8, 81, 7, 82, 38, 83, 4, 9, 79, 8,
-	122, 4, 9, 79, 8, 131,
+	150, 157, 157, 158, 157, 157, 157, 157, 157, 157, 157, 157, 169, 157,
+	176, 187, 157, 157, 157, 157, 157, 157, 157, 206, 213, 218, 157, 157,
+	157, 157, 157, 157, 157, 157, 157, 237, 157, 157, 157, 157, 157, 252,
+	157, 157, 157, 271, 157, 157, 157, 157, 290, 157, 305, 157, 310, 157,
+	157, 157, 321, 157, 157, 324, 337, 352, 157, 157, 157, 157, 157, 157,
+	367, 157, 157, 157, 157, 378, 157, 157, 397, 157, 157, 157, 157, 157,
+	157, 157, 412, 417, 157, 157, 157, 157, 157, 157, 157, 157, 422, 157,
+	427, 157, 157, 438, 157, 157, 157, 157, 157, 157, 157, 157, 449, 452,
+	157, 157, 157, 157, 455, 157, 157, 157, 157, 157, 157, 157, 157, 157,
+	157, 466, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157, 157,
+	157, 157, 157, 471, 157, 157, 157, 157, 157, 157, 6, 34, 3, 35,
+	4, 1, 5, 0, 10, 12, 8, 3, 9, 2, 10, 36, 11, 37,
+	12, 6, 12, 8, 3, 9, 2, 16, 10, 40, 19, 5, 20, 4,
+	21, 38, 22, 39, 23, 18, 19, 30, 17, 31, 14, 32, 13, 33,
+	45, 34, 46, 35, 18, 36, 15, 37, 16, 38, 6, 40, 19, 5,
+	20, 4, 59, 4, 20, 57, 51, 58, 18, 52, 42, 55, 47, 27,
+	48, 26, 49, 21, 50, 22, 51, 25, 52, 23, 53, 53, 54, 14,
+	19, 30, 17, 31, 14, 32, 13, 60, 18, 36, 15, 37, 16, 38,
+	18, 52, 42, 55, 47, 27, 48, 26, 49, 21, 63, 22, 51, 25,
+	52, 23, 53, 53, 54, 18, 52, 42, 55, 47, 27, 48, 26, 49,
+	21, 85, 22, 51, 25, 52, 23, 53, 53, 54, 14, 29, 68, 49,
+	69, 50, 70, 30, 71, 33, 72, 32, 73, 31, 74, 4, 24, 83,
+	54, 84, 10, 55, 47, 27, 48, 26, 49, 25, 52, 23, 79, 2,
+	20, 77, 12, 41, 88, 9, 94, 6, 95, 8, 96, 7, 97, 42,
+	98, 14, 19, 30, 17, 31, 14, 99, 47, 100, 48, 101, 18, 36,
+	16, 38, 14, 29, 68, 49, 102, 50, 70, 30, 71, 33, 72, 32,
+	73, 31, 74, 10, 29, 113, 30, 71, 33, 72, 32, 73, 31, 74,
+	18, 52, 42, 55, 47, 27, 48, 26, 49, 21, 104, 22, 51, 25,
+	52, 23, 53, 53, 54, 14, 55, 47, 27, 48, 26, 49, 22, 114,
+	25, 52, 23, 53, 53, 54, 4, 55, 47, 27, 106, 4, 28, 109,
+	56, 110, 4, 10, 125, 44, 126, 10, 9, 94, 11, 119, 43, 120,
+	8, 96, 7, 121, 10, 19, 30, 17, 31, 14, 136, 18, 36, 16,
+	38, 2, 28, 132, 2, 57, 134, 10, 9, 94, 6, 142, 8, 96,
+	7, 97, 42, 98, 4, 9, 94, 8, 137, 4, 9, 94, 8, 146,
 }
 
 type _Bounds struct {
@@ -411,7 +432,8 @@ func (p *parser) _act(prod int32) any {
 	switch prod {
 	case 1:
 		return p.on_spec(
-			_cast[[][]_i0.Statement](p._stack.Peek(0).Sym),
+			_cast[[]_i0.Token](p._stack.Peek(1).Sym),
+			_cast[[][]_i1.Statement](p._stack.Peek(0).Sym),
 		)
 	case 2:
 		return p.on_spec__error(
@@ -419,421 +441,470 @@ func (p *parser) _act(prod int32) any {
 		)
 	case 3:
 		return p.on_section(
-			_cast[[]_i0.Statement](p._stack.Peek(0).Sym),
+			_cast[[]_i1.Statement](p._stack.Peek(0).Sym),
 		)
 	case 4:
 		return p.on_section(
-			_cast[[]_i0.Statement](p._stack.Peek(0).Sym),
+			_cast[[]_i1.Statement](p._stack.Peek(0).Sym),
 		)
 	case 5:
 		return p.on_parser_section(
-			_cast[_i1.Token](p._stack.Peek(1).Sym),
-			_cast[[]_i0.Statement](p._stack.Peek(0).Sym),
+			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[[]_i1.Statement](p._stack.Peek(0).Sym),
 		)
 	case 6:
 		return p.on_parser_statement(
-			_cast[_i0.Statement](p._stack.Peek(0).Sym),
+			_cast[_i1.Statement](p._stack.Peek(0).Sym),
 		)
 	case 7:
-		return p.on_parser_rule(
-			_cast[_i1.Token](p._stack.Peek(4).Sym),
-			_cast[_i1.Token](p._stack.Peek(3).Sym),
-			_cast[_i1.Token](p._stack.Peek(2).Sym),
-			_cast[[]*_i0.ParserProd](p._stack.Peek(1).Sym),
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+		return p.on_parser_statement__nl(
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 8:
-		return p.on_parser_prod(
-			_cast[[]*_i0.ParserTerm](p._stack.Peek(1).Sym),
-			_cast[*_i0.ProdQualifier](p._stack.Peek(0).Sym),
+		return p.on_parser_rule(
+			_cast[_i0.Token](p._stack.Peek(4).Sym),
+			_cast[_i0.Token](p._stack.Peek(3).Sym),
+			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[[]*_i1.ParserProd](p._stack.Peek(1).Sym),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 9:
-		return p.on_parser_prod__empty(
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+		return p.on_parser_prod(
+			_cast[[]*_i1.ParserTerm](p._stack.Peek(1).Sym),
+			_cast[*_i1.ProdQualifier](p._stack.Peek(0).Sym),
 		)
 	case 10:
-		return p.on_parser_term_card(
-			_cast[*_i0.ParserTerm](p._stack.Peek(1).Sym),
-			_cast[_i0.ParserTermType](p._stack.Peek(0).Sym),
+		return p.on_parser_prod__empty(
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 11:
-		return p.on_parser_term__token(
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+		return p.on_parser_term_card(
+			_cast[*_i1.ParserTerm](p._stack.Peek(1).Sym),
+			_cast[_i1.ParserTermType](p._stack.Peek(0).Sym),
 		)
 	case 12:
 		return p.on_parser_term__token(
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 13:
 		return p.on_parser_term__token(
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 14:
-		return p.on_parser_term__list(
-			_cast[*_i0.ParserTerm](p._stack.Peek(0).Sym),
+		return p.on_parser_term__token(
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 15:
-		return p.on_parser_list(
-			_cast[_i1.Token](p._stack.Peek(5).Sym),
-			_cast[_i1.Token](p._stack.Peek(4).Sym),
-			_cast[*_i0.ParserTerm](p._stack.Peek(3).Sym),
-			_cast[_i1.Token](p._stack.Peek(2).Sym),
-			_cast[*_i0.ParserTerm](p._stack.Peek(1).Sym),
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+		return p.on_parser_term__list(
+			_cast[*_i1.ParserTerm](p._stack.Peek(0).Sym),
 		)
 	case 16:
-		return p.on_parser_card(
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+		return p.on_parser_list(
+			_cast[_i0.Token](p._stack.Peek(5).Sym),
+			_cast[_i0.Token](p._stack.Peek(4).Sym),
+			_cast[*_i1.ParserTerm](p._stack.Peek(3).Sym),
+			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[*_i1.ParserTerm](p._stack.Peek(1).Sym),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 17:
 		return p.on_parser_card(
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 18:
 		return p.on_parser_card(
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 19:
-		return p.on_parser_qualif(
-			_cast[_i1.Token](p._stack.Peek(3).Sym),
-			_cast[_i1.Token](p._stack.Peek(2).Sym),
-			_cast[_i1.Token](p._stack.Peek(1).Sym),
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+		return p.on_parser_card(
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 20:
 		return p.on_parser_qualif(
-			_cast[_i1.Token](p._stack.Peek(3).Sym),
-			_cast[_i1.Token](p._stack.Peek(2).Sym),
-			_cast[_i1.Token](p._stack.Peek(1).Sym),
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+			_cast[_i0.Token](p._stack.Peek(3).Sym),
+			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 21:
-		return p.on_lexer_section(
-			_cast[_i1.Token](p._stack.Peek(1).Sym),
-			_cast[[]_i0.Statement](p._stack.Peek(0).Sym),
+		return p.on_parser_qualif(
+			_cast[_i0.Token](p._stack.Peek(3).Sym),
+			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 22:
-		return p.on_lexer_statement(
-			_cast[_i0.Statement](p._stack.Peek(0).Sym),
+		return p.on_lexer_section(
+			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[[]_i1.Statement](p._stack.Peek(0).Sym),
 		)
 	case 23:
 		return p.on_lexer_statement(
-			_cast[_i0.Statement](p._stack.Peek(0).Sym),
+			_cast[_i1.Statement](p._stack.Peek(0).Sym),
 		)
 	case 24:
-		return p.on_lexer_rule(
-			_cast[_i0.Statement](p._stack.Peek(0).Sym),
+		return p.on_lexer_statement(
+			_cast[_i1.Statement](p._stack.Peek(0).Sym),
 		)
 	case 25:
 		return p.on_lexer_rule(
-			_cast[_i0.Statement](p._stack.Peek(0).Sym),
+			_cast[_i1.Statement](p._stack.Peek(0).Sym),
 		)
 	case 26:
 		return p.on_lexer_rule(
-			_cast[_i0.Statement](p._stack.Peek(0).Sym),
+			_cast[_i1.Statement](p._stack.Peek(0).Sym),
 		)
 	case 27:
-		return p.on_mode(
-			_cast[_i1.Token](p._stack.Peek(4).Sym),
-			_cast[_i1.Token](p._stack.Peek(3).Sym),
-			_cast[_i1.Token](p._stack.Peek(2).Sym),
-			_cast[[]_i0.Statement](p._stack.Peek(1).Sym),
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+		return p.on_lexer_rule(
+			_cast[_i1.Statement](p._stack.Peek(0).Sym),
 		)
 	case 28:
-		return p.on_token_rule(
-			_cast[_i1.Token](p._stack.Peek(4).Sym),
-			_cast[_i1.Token](p._stack.Peek(3).Sym),
-			_cast[*_i0.LexerExpr](p._stack.Peek(2).Sym),
-			_cast[[]_i0.Action](p._stack.Peek(1).Sym),
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+		return p.on_lexer_rule(
+			_cast[_i1.Statement](p._stack.Peek(0).Sym),
 		)
 	case 29:
-		return p.on_frag_rule(
-			_cast[_i1.Token](p._stack.Peek(3).Sym),
-			_cast[*_i0.LexerExpr](p._stack.Peek(2).Sym),
-			_cast[[]_i0.Action](p._stack.Peek(1).Sym),
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+		return p.on_lexer_rule__nl(
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 30:
-		return p.on_macro_rule(
-			_cast[_i1.Token](p._stack.Peek(4).Sym),
-			_cast[_i1.Token](p._stack.Peek(3).Sym),
-			_cast[_i1.Token](p._stack.Peek(2).Sym),
-			_cast[*_i0.LexerExpr](p._stack.Peek(1).Sym),
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+		return p.on_mode(
+			_cast[_i0.Token](p._stack.Peek(4).Sym),
+			_cast[_i0.Token](p._stack.Peek(3).Sym),
+			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[[]_i1.Statement](p._stack.Peek(1).Sym),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 31:
-		return p.on_lexer_expr(
-			_cast[[]*_i0.LexerFactor](p._stack.Peek(0).Sym),
+		return p.on_token_rule(
+			_cast[_i0.Token](p._stack.Peek(4).Sym),
+			_cast[_i0.Token](p._stack.Peek(3).Sym),
+			_cast[*_i1.LexerExpr](p._stack.Peek(2).Sym),
+			_cast[[]_i1.Action](p._stack.Peek(1).Sym),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 32:
-		return p.on_lexer_factor(
-			_cast[[]*_i0.LexerTermCard](p._stack.Peek(0).Sym),
+		return p.on_frag_rule(
+			_cast[_i0.Token](p._stack.Peek(3).Sym),
+			_cast[*_i1.LexerExpr](p._stack.Peek(2).Sym),
+			_cast[[]_i1.Action](p._stack.Peek(1).Sym),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 33:
-		return p.on_lexer_term_card(
-			_cast[_i0.LexerTerm](p._stack.Peek(1).Sym),
-			_cast[_i0.Card](p._stack.Peek(0).Sym),
+		return p.on_macro_rule(
+			_cast[_i0.Token](p._stack.Peek(4).Sym),
+			_cast[_i0.Token](p._stack.Peek(3).Sym),
+			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[*_i1.LexerExpr](p._stack.Peek(1).Sym),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 34:
-		return p.on_lexer_card(
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+		return p.on_external_rule(
+			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[[]*_i1.ExternalName](p._stack.Peek(1).Sym),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 35:
-		return p.on_lexer_card(
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+		return p.on_external_name(
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 36:
-		return p.on_lexer_card(
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+		return p.on_lexer_expr(
+			_cast[[]*_i1.LexerFactor](p._stack.Peek(0).Sym),
 		)
 	case 37:
-		return p.on_lexer_term__tok(
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+		return p.on_lexer_factor(
+			_cast[[]*_i1.LexerTermCard](p._stack.Peek(0).Sym),
 		)
 	case 38:
-		return p.on_lexer_term__tok(
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+		return p.on_lexer_term_card(
+			_cast[_i1.LexerTerm](p._stack.Peek(1).Sym),
+			_cast[_i1.Card](p._stack.Peek(0).Sym),
 		)
 	case 39:
-		return p.on_lexer_term__char_class_expr(
-			_cast[_i0.CharClassExpr](p._stack.Peek(0).Sym),
+		return p.on_lexer_card(
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 40:
-		return p.on_lexer_term__expr(
-			_cast[_i1.Token](p._stack.Peek(2).Sym),
-			_cast[*_i0.LexerExpr](p._stack.Peek(1).Sym),
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+		return p.on_lexer_card(
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 41:
-		return p.on_char_class_expr__binary(
-			_cast[_i0.CharClassExpr](p._stack.Peek(2).Sym),
-			_cast[_i1.Token](p._stack.Peek(1).Sym),
-			_cast[_i0.CharClassExpr](p._stack.Peek(0).Sym),
+		return p.on_lexer_card(
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 42:
-		return p.on_char_class_expr__char_class(
-			_cast[*_i0.CharClass](p._stack.Peek(0).Sym),
+		return p.on_lexer_term__tok(
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 43:
-		return p.on_char_class(
-			_cast[_i1.Token](p._stack.Peek(3).Sym),
-			_cast[_i1.Token](p._stack.Peek(2).Sym),
-			_cast[[]_i1.Token](p._stack.Peek(1).Sym),
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+		return p.on_lexer_term__tok(
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 44:
-		return p.on_char_class_item(
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+		return p.on_lexer_term__char_class_expr(
+			_cast[_i1.CharClassExpr](p._stack.Peek(0).Sym),
 		)
 	case 45:
-		return p.on_char_class_item(
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+		return p.on_lexer_term__expr(
+			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[*_i1.LexerExpr](p._stack.Peek(1).Sym),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 46:
-		return p.on_action(
-			_cast[_i0.Action](p._stack.Peek(0).Sym),
+		return p.on_char_class_expr__binary(
+			_cast[_i1.CharClassExpr](p._stack.Peek(2).Sym),
+			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[_i1.CharClassExpr](p._stack.Peek(0).Sym),
 		)
 	case 47:
-		return p.on_action(
-			_cast[_i0.Action](p._stack.Peek(0).Sym),
+		return p.on_char_class_expr__char_class(
+			_cast[*_i1.CharClass](p._stack.Peek(0).Sym),
 		)
 	case 48:
-		return p.on_action(
-			_cast[_i0.Action](p._stack.Peek(0).Sym),
+		return p.on_char_class(
+			_cast[_i0.Token](p._stack.Peek(3).Sym),
+			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[[]_i0.Token](p._stack.Peek(1).Sym),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 49:
-		return p.on_action(
-			_cast[_i0.Action](p._stack.Peek(0).Sym),
+		return p.on_char_class_item(
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 50:
-		return p.on_action_discard(
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+		return p.on_char_class_item(
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
 	case 51:
-		return p.on_action_push_mode(
-			_cast[_i1.Token](p._stack.Peek(3).Sym),
-			_cast[_i1.Token](p._stack.Peek(2).Sym),
-			_cast[_i1.Token](p._stack.Peek(1).Sym),
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+		return p.on_action(
+			_cast[_i1.Action](p._stack.Peek(0).Sym),
 		)
 	case 52:
-		return p.on_action_pop_mode(
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+		return p.on_action(
+			_cast[_i1.Action](p._stack.Peek(0).Sym),
 		)
 	case 53:
+		return p.on_action(
+			_cast[_i1.Action](p._stack.Peek(0).Sym),
+		)
+	case 54:
+		return p.on_action(
+			_cast[_i1.Action](p._stack.Peek(0).Sym),
+		)
+	case 55:
+		return p.on_action_discard(
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
+		)
+	case 56:
+		return p.on_action_push_mode(
+			_cast[_i0.Token](p._stack.Peek(3).Sym),
+			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
+		)
+	case 57:
+		return p.on_action_pop_mode(
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
+		)
+	case 58:
 		return p.on_action_emit(
-			_cast[_i1.Token](p._stack.Peek(3).Sym),
-			_cast[_i1.Token](p._stack.Peek(2).Sym),
-			_cast[_i1.Token](p._stack.Peek(1).Sym),
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+			_cast[_i0.Token](p._stack.Peek(3).Sym),
+			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		)
-	case 54: // ZeroOrMore
-		return _cast[[][]_i0.Statement](p._stack.Peek(0).Sym)
-	case 55: // ZeroOrMore
-		{
-			var zero [][]_i0.Statement
-			return zero
-		}
-	case 56: // OneOrMore
-		return append(
-			_cast[[][]_i0.Statement](p._stack.Peek(1).Sym),
-			_cast[[]_i0.Statement](p._stack.Peek(0).Sym),
-		)
-	case 57: // OneOrMore
-		return [][]_i0.Statement{
-			_cast[[]_i0.Statement](p._stack.Peek(0).Sym),
-		}
-	case 58: // ZeroOrMore
-		return _cast[[]_i0.Statement](p._stack.Peek(0).Sym)
 	case 59: // ZeroOrMore
+		return _cast[[]_i0.Token](p._stack.Peek(0).Sym)
+	case 60: // ZeroOrMore
 		{
-			var zero []_i0.Statement
+			var zero []_i0.Token
 			return zero
 		}
-	case 60: // OneOrMore
-		return append(
-			_cast[[]_i0.Statement](p._stack.Peek(1).Sym),
-			_cast[_i0.Statement](p._stack.Peek(0).Sym),
-		)
 	case 61: // OneOrMore
-		return []_i0.Statement{
-			_cast[_i0.Statement](p._stack.Peek(0).Sym),
+		return append(
+			_cast[[]_i0.Token](p._stack.Peek(1).Sym),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
+		)
+	case 62: // OneOrMore
+		return []_i0.Token{
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
 		}
-	case 62: // ZeroOrOne
-		return _cast[_i1.Token](p._stack.Peek(0).Sym)
-	case 63: // ZeroOrOne
+	case 63: // ZeroOrMore
+		return _cast[[][]_i1.Statement](p._stack.Peek(0).Sym)
+	case 64: // ZeroOrMore
 		{
-			var zero _i1.Token
+			var zero [][]_i1.Statement
 			return zero
 		}
-	case 64: // List
+	case 65: // OneOrMore
 		return append(
-			_cast[[]*_i0.ParserProd](p._stack.Peek(2).Sym),
-			_cast[*_i0.ParserProd](p._stack.Peek(0).Sym),
+			_cast[[][]_i1.Statement](p._stack.Peek(1).Sym),
+			_cast[[]_i1.Statement](p._stack.Peek(0).Sym),
 		)
-	case 65: // List
-		return []*_i0.ParserProd{
-			_cast[*_i0.ParserProd](p._stack.Peek(0).Sym),
-		}
 	case 66: // OneOrMore
-		return append(
-			_cast[[]*_i0.ParserTerm](p._stack.Peek(1).Sym),
-			_cast[*_i0.ParserTerm](p._stack.Peek(0).Sym),
-		)
-	case 67: // OneOrMore
-		return []*_i0.ParserTerm{
-			_cast[*_i0.ParserTerm](p._stack.Peek(0).Sym),
+		return [][]_i1.Statement{
+			_cast[[]_i1.Statement](p._stack.Peek(0).Sym),
 		}
-	case 68: // ZeroOrOne
-		return _cast[*_i0.ProdQualifier](p._stack.Peek(0).Sym)
-	case 69: // ZeroOrOne
+	case 67: // ZeroOrMore
+		return _cast[[]_i1.Statement](p._stack.Peek(0).Sym)
+	case 68: // ZeroOrMore
 		{
-			var zero *_i0.ProdQualifier
+			var zero []_i1.Statement
 			return zero
 		}
-	case 70: // ZeroOrOne
-		return _cast[_i0.ParserTermType](p._stack.Peek(0).Sym)
+	case 69: // OneOrMore
+		return append(
+			_cast[[]_i1.Statement](p._stack.Peek(1).Sym),
+			_cast[_i1.Statement](p._stack.Peek(0).Sym),
+		)
+	case 70: // OneOrMore
+		return []_i1.Statement{
+			_cast[_i1.Statement](p._stack.Peek(0).Sym),
+		}
 	case 71: // ZeroOrOne
+		return _cast[_i0.Token](p._stack.Peek(0).Sym)
+	case 72: // ZeroOrOne
 		{
-			var zero _i0.ParserTermType
+			var zero _i0.Token
 			return zero
 		}
-	case 72: // ZeroOrMore
-		return _cast[[]_i0.Statement](p._stack.Peek(0).Sym)
-	case 73: // ZeroOrMore
-		{
-			var zero []_i0.Statement
-			return zero
-		}
-	case 74: // OneOrMore
+	case 73: // List
 		return append(
-			_cast[[]_i0.Statement](p._stack.Peek(1).Sym),
-			_cast[_i0.Statement](p._stack.Peek(0).Sym),
+			_cast[[]*_i1.ParserProd](p._stack.Peek(2).Sym),
+			_cast[*_i1.ParserProd](p._stack.Peek(0).Sym),
 		)
+	case 74: // List
+		return []*_i1.ParserProd{
+			_cast[*_i1.ParserProd](p._stack.Peek(0).Sym),
+		}
 	case 75: // OneOrMore
-		return []_i0.Statement{
-			_cast[_i0.Statement](p._stack.Peek(0).Sym),
+		return append(
+			_cast[[]*_i1.ParserTerm](p._stack.Peek(1).Sym),
+			_cast[*_i1.ParserTerm](p._stack.Peek(0).Sym),
+		)
+	case 76: // OneOrMore
+		return []*_i1.ParserTerm{
+			_cast[*_i1.ParserTerm](p._stack.Peek(0).Sym),
 		}
-	case 76: // ZeroOrMore
-		return _cast[[]_i0.Statement](p._stack.Peek(0).Sym)
-	case 77: // ZeroOrMore
+	case 77: // ZeroOrOne
+		return _cast[*_i1.ProdQualifier](p._stack.Peek(0).Sym)
+	case 78: // ZeroOrOne
 		{
-			var zero []_i0.Statement
+			var zero *_i1.ProdQualifier
 			return zero
 		}
-	case 78: // OneOrMore
-		return append(
-			_cast[[]_i0.Statement](p._stack.Peek(1).Sym),
-			_cast[_i0.Statement](p._stack.Peek(0).Sym),
-		)
-	case 79: // OneOrMore
-		return []_i0.Statement{
-			_cast[_i0.Statement](p._stack.Peek(0).Sym),
+	case 79: // ZeroOrOne
+		return _cast[_i1.ParserTermType](p._stack.Peek(0).Sym)
+	case 80: // ZeroOrOne
+		{
+			var zero _i1.ParserTermType
+			return zero
 		}
-	case 80: // ZeroOrMore
-		return _cast[[]_i0.Action](p._stack.Peek(0).Sym)
 	case 81: // ZeroOrMore
+		return _cast[[]_i1.Statement](p._stack.Peek(0).Sym)
+	case 82: // ZeroOrMore
 		{
-			var zero []_i0.Action
+			var zero []_i1.Statement
 			return zero
 		}
-	case 82: // OneOrMore
-		return append(
-			_cast[[]_i0.Action](p._stack.Peek(1).Sym),
-			_cast[_i0.Action](p._stack.Peek(0).Sym),
-		)
 	case 83: // OneOrMore
-		return []_i0.Action{
-			_cast[_i0.Action](p._stack.Peek(0).Sym),
-		}
-	case 84: // List
 		return append(
-			_cast[[]*_i0.LexerFactor](p._stack.Peek(2).Sym),
-			_cast[*_i0.LexerFactor](p._stack.Peek(0).Sym),
+			_cast[[]_i1.Statement](p._stack.Peek(1).Sym),
+			_cast[_i1.Statement](p._stack.Peek(0).Sym),
 		)
-	case 85: // List
-		return []*_i0.LexerFactor{
-			_cast[*_i0.LexerFactor](p._stack.Peek(0).Sym),
+	case 84: // OneOrMore
+		return []_i1.Statement{
+			_cast[_i1.Statement](p._stack.Peek(0).Sym),
 		}
-	case 86: // OneOrMore
-		return append(
-			_cast[[]*_i0.LexerTermCard](p._stack.Peek(1).Sym),
-			_cast[*_i0.LexerTermCard](p._stack.Peek(0).Sym),
-		)
+	case 85: // ZeroOrMore
+		return _cast[[]_i1.Statement](p._stack.Peek(0).Sym)
+	case 86: // ZeroOrMore
+		{
+			var zero []_i1.Statement
+			return zero
+		}
 	case 87: // OneOrMore
-		return []*_i0.LexerTermCard{
-			_cast[*_i0.LexerTermCard](p._stack.Peek(0).Sym),
-		}
-	case 88: // ZeroOrOne
-		return _cast[_i0.Card](p._stack.Peek(0).Sym)
-	case 89: // ZeroOrOne
-		{
-			var zero _i0.Card
-			return zero
-		}
-	case 90: // ZeroOrOne
-		return _cast[_i1.Token](p._stack.Peek(0).Sym)
-	case 91: // ZeroOrOne
-		{
-			var zero _i1.Token
-			return zero
-		}
-	case 92: // OneOrMore
 		return append(
-			_cast[[]_i1.Token](p._stack.Peek(1).Sym),
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+			_cast[[]_i1.Statement](p._stack.Peek(1).Sym),
+			_cast[_i1.Statement](p._stack.Peek(0).Sym),
 		)
-	case 93: // OneOrMore
-		return []_i1.Token{
-			_cast[_i1.Token](p._stack.Peek(0).Sym),
+	case 88: // OneOrMore
+		return []_i1.Statement{
+			_cast[_i1.Statement](p._stack.Peek(0).Sym),
 		}
-	case 94: // ZeroOrOne
-		return _cast[_i1.Token](p._stack.Peek(0).Sym)
-	case 95: // ZeroOrOne
+	case 89: // ZeroOrMore
+		return _cast[[]_i1.Action](p._stack.Peek(0).Sym)
+	case 90: // ZeroOrMore
 		{
-			var zero _i1.Token
+			var zero []_i1.Action
+			return zero
+		}
+	case 91: // OneOrMore
+		return append(
+			_cast[[]_i1.Action](p._stack.Peek(1).Sym),
+			_cast[_i1.Action](p._stack.Peek(0).Sym),
+		)
+	case 92: // OneOrMore
+		return []_i1.Action{
+			_cast[_i1.Action](p._stack.Peek(0).Sym),
+		}
+	case 93: // OneOrMore
+		return append(
+			_cast[[]*_i1.ExternalName](p._stack.Peek(1).Sym),
+			_cast[*_i1.ExternalName](p._stack.Peek(0).Sym),
+		)
+	case 94: // OneOrMore
+		return []*_i1.ExternalName{
+			_cast[*_i1.ExternalName](p._stack.Peek(0).Sym),
+		}
+	case 95: // List
+		return append(
+			_cast[[]*_i1.LexerFactor](p._stack.Peek(2).Sym),
+			_cast[*_i1.LexerFactor](p._stack.Peek(0).Sym),
+		)
+	case 96: // List
+		return []*_i1.LexerFactor{
+			_cast[*_i1.LexerFactor](p._stack.Peek(0).Sym),
+		}
+	case 97: // OneOrMore
+		return append(
+			_cast[[]*_i1.LexerTermCard](p._stack.Peek(1).Sym),
+			_cast[*_i1.LexerTermCard](p._stack.Peek(0).Sym),
+		)
+	case 98: // OneOrMore
+		return []*_i1.LexerTermCard{
+			_cast[*_i1.LexerTermCard](p._stack.Peek(0).Sym),
+		}
+	case 99: // ZeroOrOne
+		return _cast[_i1.Card](p._stack.Peek(0).Sym)
+	case 100: // ZeroOrOne
+		{
+			var zero _i1.Card
+			return zero
+		}
+	case 101: // ZeroOrOne
+		return _cast[_i0.Token](p._stack.Peek(0).Sym)
+	case 102: // ZeroOrOne
+		{
+			var zero _i0.Token
+			return zero
+		}
+	case 103: // OneOrMore
+		return append(
+			_cast[[]_i0.Token](p._stack.Peek(1).Sym),
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
+		)
+	case 104: // OneOrMore
+		return []_i0.Token{
+			_cast[_i0.Token](p._stack.Peek(0).Sym),
+		}
+	case 105: // ZeroOrOne
+		return _cast[_i0.Token](p._stack.Peek(0).Sym)
+	case 106: // ZeroOrOne
+		{
+			var zero _i0.Token
 			return zero
 		}
 	default:

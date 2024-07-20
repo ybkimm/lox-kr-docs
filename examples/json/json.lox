@@ -4,42 +4,42 @@
 
 @lexer
 
-OCURLY   = '{';
-CCURLY   = '}';
-OBRACKET = '[';
-CBRACKET = ']';
-COMMA    = ',';
-COLON    = ':';
+OCURLY   = '{'
+CCURLY   = '}'
+OBRACKET = '['
+CBRACKET = ']'
+COMMA    = ','
+COLON    = ':'
 
-TRUE  = 'true';
-FALSE = 'false';
-NULL  = 'null';
+TRUE  = 'true'
+FALSE = 'false'
+NULL  = 'null'
 
-@macro HEX = [0-9a-fA-F];
+@macro HEX = [0-9a-fA-F]
 
-@frag '"' @push_mode(String);
+@frag '"' @push_mode(String)
 @mode String {
-  STRING = '"'  @pop_mode;
-  @frag [\u0020-\U0010FFFF]-[\\];
-  @frag '\\' ["\\/bfnrt];
-  @frag '\\u' HEX HEX HEX HEX;
+  STRING = '"'  @pop_mode
+  @frag [\u0020-\U0010FFFF]-[\\]
+  @frag '\\' ["\\/bfnrt]
+  @frag '\\u' HEX HEX HEX HEX
 }
 
-@macro ONE_NINE = [1-9];
-@macro DIGIT    = '0' | ONE_NINE;
+@macro ONE_NINE = [1-9]
+@macro DIGIT    = '0' | ONE_NINE
 @macro INTEGER  = DIGIT
                 | ONE_NINE DIGIT+
                 | '-' DIGIT
-                | '-' ONE_NINE DIGIT+;
-@macro FRACTION = '.' [0-9]+;
-@macro EXPONENT = [eE] [+-]? [1-9] [0-9]*;
-NUMBER = INTEGER FRACTION? EXPONENT?;
+                | '-' ONE_NINE DIGIT+
+@macro FRACTION = '.' [0-9]+
+@macro EXPONENT = [eE] [+-]? [1-9] [0-9]*
+NUMBER = INTEGER FRACTION? EXPONENT?
 
-@frag [ \r\n\t]+  @discard;
+@frag [ \r\n\t]+  @discard
 
 @parser
 
-@start json = value;
+@start json = value
 
 value = object
       | array
@@ -48,10 +48,10 @@ value = object
       | 'true'
       | 'false'
       | 'null'
-      ;
 
-object = '{' @list(member, ',')? '}';
 
-member = STRING ':' value;
+object = '{' @list(member, ',')? '}'
 
-array = '[' @list(value, ',')? ']';
+member = STRING ':' value
+
+array = '[' @list(value, ',')? ']'

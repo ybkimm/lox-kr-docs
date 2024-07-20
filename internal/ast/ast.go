@@ -40,6 +40,12 @@ type baseStatement struct {
 
 func (s *baseStatement) isStatement() {}
 
+type Noop struct {
+	baseStatement
+}
+
+func (n *Noop) RunPass(ctx *Context, pass Pass) {}
+
 type LexerTerm interface {
 	AST
 	NFACons(ctx *Context) *mode.NFAComposite

@@ -3,25 +3,24 @@ sources:
     data: |
       @lexer
 
-      NUM = [0-9]+;
-      COMMA = ',';
-      SEMICOLON = ';';
-      OPAREN = '(';
-      CPAREN = ')';
-      HASH = '#';
-      AT = '@';
+      NUM = [0-9]+
+      COMMA = ','
+      SEMICOLON = ';'
+      OPAREN = '('
+      CPAREN = ')'
+      HASH = '#'
+      AT = '@'
 
-      @frag [ \r\n\t]+  @discard;
+      @frag [ \r\n\t]+  @discard
 
       @parser
 
-      @start
-      S = list*;
+      @start S = list*
 
-      list = @list(pair, ',') ';';
-      pair = prefix? '(' num ',' num ')' '#'?;
-      num = NUM;
-      prefix = '@';
+      list = @list(pair, ',') ';'
+      pair = prefix? '(' num ',' num ')' '#'?
+      num = NUM
+      prefix = '@'
 
   - name: parser.go
     data: |

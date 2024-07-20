@@ -3,49 +3,48 @@ sources:
     data: |
       @lexer
 
-      @macro HEX_CHAR = [0-9a-fA-F] ;
+      @macro HEX_CHAR = [0-9a-fA-F]
 
-      NUM = [0-9]+ ;
-      ADD = '+'    ;
-      SUB = '-'    ;
+      NUM = [0-9]+
+      ADD = '+'
+      SUB = '-'
 
-      OCURLY = '{' @push_mode();
-      CCURLY = '}' @pop_mode;
+      OCURLY = '{' @push_mode()
+      CCURLY = '}' @pop_mode
 
-      @frag [ \r\n\t]+  @discard ;
+      @frag [ \r\n\t]+  @discard
 
-      OBRACKET = '[' @push_mode(CharClass) ;
+      OBRACKET = '[' @push_mode(CharClass)
       @mode CharClass {
-        CBRACKET   = ']' @pop_mode ;
-        CLASS_DASH = '-' ; 
-        CLASS_CHAR = '\\'([nrt\\-] | ']' | '[') | ~[\r\n\\] ;
+        CBRACKET   = ']' @pop_mode
+        CLASS_DASH = '-'
+        CLASS_CHAR = '\\'([nrt\\-] | ']' | '[') | ~[\r\n\\]
       }
 
-      @frag '"' @push_mode(StringLiteral) ;
+      @frag '"' @push_mode(StringLiteral)
       @mode StringLiteral {
-        STRING = '"' @pop_mode ;
-        @frag '\\' [nrt"] ;
-        @frag '\\u' HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR ;
-        @frag ~[\r\n] ;
+        STRING = '"' @pop_mode
+        @frag '\\' [nrt"]
+        @frag '\\u' HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR
+        @frag ~[\r\n]
       }
 
       @macro STRING_FRAG = '\\' [nrt"] 
                          | '\\u' HEX_CHAR HEX_CHAR HEX_CHAR HEX_CHAR
-                         | ~[\r\n{}`] ;
+                         | ~[\r\n{}`]
 
-      BACKTICK = '`' @push_mode(InterpString);
+      BACKTICK = '`' @push_mode(InterpString)
       @mode InterpString {
-        @frag '`' @pop_mode @emit(BACKTICK);
-        STRING_PIECE = STRING_FRAG+;
-        @frag '{' @push_mode() @emit(OCURLY);
+        @frag '`' @pop_mode @emit(BACKTICK)
+        STRING_PIECE = STRING_FRAG+
+        @frag '{' @push_mode() @emit(OCURLY)
       }
 
       @parser
 
-      @start
-      S = token*
-        | @error
-        ;
+      @start S = token*
+               | @error
+
 
       token = NUM
             | ADD
@@ -59,7 +58,7 @@ sources:
             | STRING
             | BACKTICK
             | STRING_PIECE
-            ;
+
 
   - name: parser.go
     data: |

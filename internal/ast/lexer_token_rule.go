@@ -27,7 +27,6 @@ func (r *TokenRule) RunPass(ctx *Context, pass Pass) {
 			ctx.Errs.Errorf(r.bounds.Begin, "%s", err)
 			return
 		}
-
 		if !ctx.RegisterName(r.Name, r) {
 			return
 		}

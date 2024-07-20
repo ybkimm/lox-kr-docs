@@ -3,36 +3,35 @@ sources:
     data: |
       @lexer
 
-      ID = [A-Za-z] [A-Za-z0-9_]*;
-      COMMA = ',';
-      SEMICOLON = ';';
-      OPAREN = '(';
-      CPAREN = ')';
-      OCURLY = '{';
-      CCURLY = '}';
+      ID = [A-Za-z] [A-Za-z0-9_]*
+      COMMA = ','
+      SEMICOLON = ';'
+      OPAREN = '('
+      CPAREN = ')'
+      OCURLY = '{'
+      CCURLY = '}'
 
-      @frag [ \r\n\t]+  @discard;
+      @frag [ \r\n\t]+  @discard
 
       @parser
 
-      @start
-      S = block
-        | @error
-        ;
+      @start S = block
+               | @error
+
 
       block = '{' statement* '}'
             | @error '}'
-            ;
+
 
       statement = func_call ';'
                 | @error ';'
                 | @error '{'
                 | block
-                ;
 
-      func_call = ID '(' params? ')'; 
 
-      params = @list(ID, ',');
+      func_call = ID '(' params? ')'
+
+      params = @list(ID, ',')
 
   - name: parser.go
     data: |
