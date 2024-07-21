@@ -81,7 +81,9 @@ func (p *parser) on_parser_statement(s ast.Statement) ast.Statement {
 }
 
 func (p *parser) on_parser_statement__nl(_ Token) ast.Statement {
-	return &ast.Noop{}
+	// This matches an empty line. Return a dummy statement that will be discarded
+	// because of the *! cardinality.
+	return ast.DiscardStatementSingleton
 }
 
 func (p *parser) on_parser_rule(start Token, name Token, _ Token, prods []*ast.ParserProd, _ Token) *ast.ParserRule {
@@ -152,6 +154,8 @@ func (p *parser) on_parser_card(card Token) ast.ParserTermType {
 	switch card.Type {
 	case ZERO_OR_MORE:
 		return ast.ParserTermZeroOrMore
+	case ZERO_OR_MORE_F:
+		return ast.ParserTermZeroOrMoreF
 	case ONE_OR_MORE:
 		return ast.ParserTermOneOrMore
 	case ZERO_OR_ONE:
@@ -201,7 +205,7 @@ func (p *parser) on_lexer_rule(r ast.Statement) ast.Statement {
 }
 
 func (p *parser) on_lexer_rule__nl(_ Token) ast.Statement {
-	return &ast.Noop{}
+	return &ast.DiscardStatement{}
 }
 
 func (p *parser) on_mode(_ Token, name Token, _ []Token, _ Token, rules []ast.Statement, _ Token) *ast.Mode {

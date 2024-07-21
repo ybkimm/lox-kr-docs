@@ -32,6 +32,7 @@ func (a *baseAST) Bounds() Bounds {
 type Statement interface {
 	AST
 	isStatement()
+	Discard() bool
 }
 
 type baseStatement struct {
@@ -40,11 +41,22 @@ type baseStatement struct {
 
 func (s *baseStatement) isStatement() {}
 
-type Noop struct {
-	baseStatement
-}
+func (s *baseStatement) Discard() bool { return false }
 
-func (n *Noop) RunPass(ctx *Context, pass Pass) {}
+// DiscardStatement is a dummy Statement that will be discarded by the parser.
+// It is used with the *! cardinality which makes the parser call the Discard()
+// method.
+type DiscardStatement struct{}
+
+func (s *DiscardStatement) SetBounds(b Bounds)              {}
+func (s *DiscardStatement) Bounds() Bounds                  { return Bounds{} }
+func (n *DiscardStatement) RunPass(ctx *Context, pass Pass) {}
+func (n *DiscardStatement) isStatement()                    {}
+func (n *DiscardStatement) Discard() bool                   { return true } // Discard me!
+
+// DiscardStatementSingleton is a singleton for DiscardStatement. It works
+// because DiscardStatement has no data and will be discarded by the parser.
+var DiscardStatementSingleton = &DiscardStatement{}
 
 type LexerTerm interface {
 	AST

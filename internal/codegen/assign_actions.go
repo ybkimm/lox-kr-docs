@@ -221,7 +221,7 @@ func (c *context) getReduceTypeForGeneratedRule(
 			panic("not-reached")
 		}
 
-	case generatedZeroOrMore:
+	case generatedZeroOrMore, generatedZeroOrMoreF:
 		// a = b c*
 		//   =>
 		// a = b a'
@@ -234,7 +234,7 @@ func (c *context) getReduceTypeForGeneratedRule(
 		assert.True(typeCplus != nil)
 		return typeCplus
 
-	case generatedOneOrMore, generatedList:
+	case generatedOneOrMore, generatedOneOrMoreF, generatedList:
 		// a = b c+
 		//  =>
 		// a = b a'

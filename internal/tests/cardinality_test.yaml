@@ -1,0 +1,116 @@
+sources:
+  - name: parser.lox
+    data: |
+      @lexer
+
+      TOK = 'x'+
+
+      ZERO_OR_MORE   = 'zero_or_more'
+      ZERO_OR_MORE_F = 'zero_or_more_f'
+      ONE_OR_MORE    = 'one_or_more'
+
+      @frag [ \r\n\t]+  @discard
+
+      @parser
+
+      @start S = 'zero_or_more' item*
+               | 'zero_or_more_f' item*!
+               | 'one_or_more' item+
+
+      item = TOK
+
+  - name: parser.go
+    data: |
+      package main
+
+      import (
+        gotoken "go/token"
+        "io"
+        "os"
+        "fmt"
+
+        "github.com/dcaiafa/loxlex/simplelexer"
+
+        "github.com/dcaiafa/lox/internal/base/errlogger"
+      )
+
+      type Token = simplelexer.Token
+
+      type Item int
+
+      func (i Item) Discard() bool {
+        return i % 2 == 0
+      }
+
+      func main() {
+        input, err := io.ReadAll(os.Stdin)
+        if err != nil {
+          panic(err)
+        }
+
+        fset := gotoken.NewFileSet()
+        file := fset.AddFile("expr", -1, len(input))
+        errs := errlogger.New(fset, os.Stdout)
+
+        var parser parser
+        parser.errs = errs
+        parser.fset = fset
+        lex := simplelexer.New(simplelexer.Config{
+          StateMachine: new(_LexerStateMachine),
+          File: file,
+          Input: input,
+        })
+        ok := parser.parse(lex)
+
+        if !ok {
+          fmt.Println("Failed to parse.")
+          return
+        }
+        if errs.HasError() {
+          fmt.Println("Errors occurred.")
+          return
+        }
+      }
+
+      type parser struct {
+        lox
+        fset   *gotoken.FileSet
+        errs   *errlogger.ErrLogger
+      }
+
+      func (p *parser) on_S(n Token, items []Item) any {
+        fmt.Print(_TokenToString(n.Type))
+        for _, item := range items {
+          fmt.Print(" ", item)
+        }
+        fmt.Println("")
+        return nil
+      }
+
+      func (p *parser) on_item(tok Token) Item  {
+        return Item(len(tok.Str))
+      }
+
+tests:
+  - name: basic
+    inputs:
+      - |
+        zero_or_more x xx xxx xxxx xxxxx xxxxxx
+
+      - |
+        zero_or_more
+
+      - |
+        zero_or_more_f x xx xxx xxxx xxxxx xxxxxx
+
+      - |
+        zero_or_more_f
+
+      - |
+        zero_or_more_f xx xxxx
+
+      - |
+        one_or_more x xx xxx xxxx xxxxx xxxxxx
+
+      - |
+        one_or_more

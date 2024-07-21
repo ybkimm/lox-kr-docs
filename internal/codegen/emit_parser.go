@@ -312,6 +312,26 @@ func (p *{{parser}}) _act(prod int32) any {
 				_cast[{{ term_go_type }}](p._stack.Peek(0).Sym),
 			)
 		{{- end }}
+	{{- else if generated == "one_or_more_f" }}
+	case {{ prod_index }}: { // OneOrMoreF
+		{{- if len(prod.Terms) == 1 }}
+			{{- term_go_type := go_type(get_term_go_type(prod.Terms[0])) }}
+			var l []{{ term_go_type }}
+			e := _cast[{{ term_go_type }}](p._stack.Peek(0).Sym)
+			if !e.Discard() {
+				l = append(l, e)
+			}
+		  return l
+		{{- else }}
+			{{- term_go_type := go_type(get_term_go_type(prod.Terms[1])) }}
+			l := _cast[[]{{term_go_type}}](p._stack.Peek(1).Sym)
+			e := _cast[{{ term_go_type }}](p._stack.Peek(0).Sym)
+			if !e.Discard() {
+				l = append(l, e)
+			}
+			return l
+		{{- end }}
+	}
 	{{- else if generated == "list" }}
 	case {{ prod_index }}:  // List
 		{{- if len(prod.Terms) == 1 }}
@@ -337,7 +357,7 @@ func (p *{{parser}}) _act(prod int32) any {
 				return zero
 			}
 		{{- end }}
-	{{- else if generated == "zero_or_more" }}
+	{{- else if generated == "zero_or_more" || generated == "zero_or_more_f" }}
   case {{ prod_index }}:  // ZeroOrMore
 		{{- term_go_type := go_type(rule_go_types[rule]) }}
 		{{- if len(prod.Terms) == 1 }}

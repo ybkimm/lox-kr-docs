@@ -19,11 +19,10 @@ OPAREN      = '('
 CPAREN      = ')'
 SUB         = '-'
 
-ZERO_OR_ONE      = '?'
-ZERO_OR_MORE     = '*'
-ONE_OR_MORE      = '+'
-ZERO_OR_MORE_NG  = '*?'
-ONE_OR_MORE_NG   = '+?'
+ZERO_OR_ONE    = '?'
+ZERO_OR_MORE   = '*'
+ONE_OR_MORE    = '+'
+ZERO_OR_MORE_F = '*!'
 
 PARSER         = '@parser'
 LEXER          = '@lexer'
@@ -110,14 +109,14 @@ parser_prod      = parser_term_card+ parser_qualif?
 parser_term_card = parser_term parser_card?
 parser_term      = ID | LITERAL | '@error' | parser_list
 parser_list      = '@list' '(' parser_term ',' parser_term ')'
-parser_card      = '*' | '+' | '?'
+parser_card      = '*' | '*!' | '+' | '?'
 parser_qualif    = '@left' '(' NUM ')'
                  | '@right' '(' NUM ')'
 
 // Lexer
 // =====
 
-lexer_section = LEXER NL lexer_statement*
+lexer_section = LEXER NL lexer_statement*!
 
 lexer_statement = mode | lexer_rule
 
@@ -126,7 +125,6 @@ lexer_rule = token_rule
            | macro_rule
            | external_rule
            | NL
-
 
 mode = MODE ID NL* '{' lexer_rule* '}'
 

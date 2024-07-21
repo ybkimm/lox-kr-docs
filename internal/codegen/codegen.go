@@ -32,12 +32,14 @@ func (m *actionMethod) Name() string {
 type generated string
 
 const (
-	notGenerated        generated = "not_generated"
-	generatedSPrime     generated = "sprime"
-	generatedZeroOrMore generated = "zero_or_more"
-	generatedOneOrMore  generated = "one_or_more"
-	generatedZeroOrOne  generated = "zero_or_one"
-	generatedList       generated = "list"
+	notGenerated         generated = "not_generated"
+	generatedSPrime      generated = "sprime"
+	generatedZeroOrMore  generated = "zero_or_more"
+	generatedZeroOrMoreF generated = "zero_or_more_f"
+	generatedOneOrMore   generated = "one_or_more"
+	generatedOneOrMoreF  generated = "one_or_more_f"
+	generatedZeroOrOne   generated = "zero_or_one"
+	generatedList        generated = "list"
 )
 
 func RuleGenerated(r *lr1.Rule) generated {
@@ -46,8 +48,12 @@ func RuleGenerated(r *lr1.Rule) generated {
 		return generatedSPrime
 	case strings.HasSuffix(r.Name, "*"):
 		return generatedZeroOrMore
+	case strings.HasSuffix(r.Name, "*!"):
+		return generatedZeroOrMoreF
 	case strings.HasSuffix(r.Name, "+"):
 		return generatedOneOrMore
+	case strings.HasSuffix(r.Name, "+!"):
+		return generatedOneOrMoreF
 	case strings.HasSuffix(r.Name, "?"):
 		return generatedZeroOrOne
 	case strings.HasPrefix(r.Name, "@list"):

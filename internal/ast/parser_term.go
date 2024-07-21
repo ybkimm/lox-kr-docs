@@ -10,13 +10,15 @@ import (
 type ParserTermType int
 
 const (
-	ParserTermSimple     ParserTermType = iota
-	ParserTermZeroOrMore                // *
-	ParserTermOneOrMore                 // +
-	ParserTermZeroOrOne                 // ?
-	ParserTermList                      // @list
-	ParserTermListOpt                   // @list?
-	ParserTermError                     // @error
+	ParserTermSimple      ParserTermType = iota
+	ParserTermZeroOrMore                 // *
+	ParserTermZeroOrMoreF                // *!
+	ParserTermOneOrMore                  // +
+	ParserTermOneOrMoreF                 // +!
+	ParserTermZeroOrOne                  // ?
+	ParserTermList                       // @list
+	ParserTermListOpt                    // @list?
+	ParserTermError                      // @error
 )
 
 func (t ParserTermType) String() string {
@@ -191,6 +193,22 @@ func (t *ParserTerm) normalize(ctx *Context) {
 			}
 		})
 
+	case ParserTermZeroOrMoreF:
+		// a = b c*
+		//   =>
+		// a = b a'
+		// a' = c+ | ε
+		generate(t.Child.Symbol.TermName()+"*!", func(r *ParserRule) {
+			r.Prods = []*ParserProd{
+				{
+					Terms: []*ParserTerm{
+						{Type: ParserTermOneOrMoreF, Child: t.Child},
+					},
+				},
+				{},
+			}
+		})
+
 	case ParserTermOneOrMore:
 		// a = b c+
 		//   =>
@@ -198,6 +216,28 @@ func (t *ParserTerm) normalize(ctx *Context) {
 		// a' = a' c
 		//    | c
 		generate(t.Child.Symbol.TermName()+"+", func(r *ParserRule) {
+			r.Prods = []*ParserProd{
+				{
+					Terms: []*ParserTerm{
+						{Name: r.Name},
+						t.Child,
+					},
+				},
+				{
+					Terms: []*ParserTerm{
+						t.Child,
+					},
+				},
+			}
+		})
+
+	case ParserTermOneOrMoreF:
+		// a = b c+
+		//   =>
+		// a = b a'
+		// a' = a' c
+		//    | c
+		generate(t.Child.Symbol.TermName()+"+!", func(r *ParserRule) {
 			r.Prods = []*ParserProd{
 				{
 					Terms: []*ParserTerm{

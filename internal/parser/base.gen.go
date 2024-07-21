@@ -1,48 +1,47 @@
 package parser
 
 const (
-	EOF             int = 0
-	ERROR           int = 1
-	COMMA           int = 2
-	EQ              int = 3
-	OR              int = 4
-	OCURLY          int = 5
-	CCURLY          int = 6
-	TILDE           int = 7
-	OPAREN          int = 8
-	CPAREN          int = 9
-	SUB             int = 10
-	ZERO_OR_ONE     int = 11
-	ZERO_OR_MORE    int = 12
-	ONE_OR_MORE     int = 13
-	ZERO_OR_MORE_NG int = 14
-	ONE_OR_MORE_NG  int = 15
-	PARSER          int = 16
-	LEXER           int = 17
-	START           int = 18
-	DISCARD         int = 19
-	MACRO           int = 20
-	FRAG            int = 21
-	MODE            int = 22
-	PUSH_MODE       int = 23
-	POP_MODE        int = 24
-	ERROR_KEYWORD   int = 25
-	LEFT            int = 26
-	LIST            int = 27
-	RIGHT           int = 28
-	EMIT            int = 29
-	EMPTY           int = 30
-	EXTERNAL        int = 31
-	KEYWORD         int = 32
-	ID              int = 33
-	NUM             int = 34
-	LITERAL         int = 35
-	OBRACKET        int = 36
-	CBRACKET        int = 37
-	CLASS_DASH      int = 38
-	CLASS_CHAR      int = 39
-	NL              int = 40
-	EXTEND          int = 41
+	EOF            int = 0
+	ERROR          int = 1
+	COMMA          int = 2
+	EQ             int = 3
+	OR             int = 4
+	OCURLY         int = 5
+	CCURLY         int = 6
+	TILDE          int = 7
+	OPAREN         int = 8
+	CPAREN         int = 9
+	SUB            int = 10
+	ZERO_OR_ONE    int = 11
+	ZERO_OR_MORE   int = 12
+	ONE_OR_MORE    int = 13
+	ZERO_OR_MORE_F int = 14
+	PARSER         int = 15
+	LEXER          int = 16
+	START          int = 17
+	DISCARD        int = 18
+	MACRO          int = 19
+	FRAG           int = 20
+	MODE           int = 21
+	PUSH_MODE      int = 22
+	POP_MODE       int = 23
+	ERROR_KEYWORD  int = 24
+	LEFT           int = 25
+	LIST           int = 26
+	RIGHT          int = 27
+	EMIT           int = 28
+	EMPTY          int = 29
+	EXTERNAL       int = 30
+	KEYWORD        int = 31
+	ID             int = 32
+	NUM            int = 33
+	LITERAL        int = 34
+	OBRACKET       int = 35
+	CBRACKET       int = 36
+	CLASS_DASH     int = 37
+	CLASS_CHAR     int = 38
+	NL             int = 39
+	EXTEND         int = 40
 )
 
 func _TokenToString(t int) string {
@@ -75,10 +74,8 @@ func _TokenToString(t int) string {
 		return "ZERO_OR_MORE"
 	case ONE_OR_MORE:
 		return "ONE_OR_MORE"
-	case ZERO_OR_MORE_NG:
-		return "ZERO_OR_MORE_NG"
-	case ONE_OR_MORE_NG:
-		return "ONE_OR_MORE_NG"
+	case ZERO_OR_MORE_F:
+		return "ZERO_OR_MORE_F"
 	case PARSER:
 		return "PARSER"
 	case LEXER:
