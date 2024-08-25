@@ -1,0 +1,45 @@
+// Rock Paper Scissors
+// Powered by Bolox
+
+rock     = 0
+paper    = 1
+scissors = 2
+
+while true {
+  // Computer's pick is random.
+  compPick = rand(3)
+
+  // Prompt the user for the their choice.
+  userPickStr = prompt("Rock({rock}), paper({paper}), scissors({scissors})?")
+  userPick = parse_int(userPickStr)
+  if userPick == nil or userPick < rock or userPick > scissors {
+    print("{userPickStr} is not a valid option!")
+    continue
+  }
+
+  // Convert computer's pick to string to present the result.
+  if compPick == rock {
+    compPickStr = "rock"
+  } elif compPick == paper {
+    compPickStr = "paper"
+  } else {
+    compPickStr = "scissors"
+  }
+
+  print("The computer picked: {compPickStr}")
+
+  if userPick == compPick {
+    print("It is a tie!")
+    continue
+  }
+
+  win = userPick == rock and compPick == scissors or \
+        userPick == paper and compPick == rock or    \
+        userPick == scissors and compPick == paper
+
+  if win {
+    print("You win!")
+  } else {
+    print("You lose!")
+  }
+}
