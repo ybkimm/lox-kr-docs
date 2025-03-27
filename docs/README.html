@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,24 +11,41 @@
   <link rel="stylesheet" href="./css.css" />
   <link 
 </head>
-<body class="index">
-  <div class="article">
-    <h1 id="lox">Lox</h1>
-    <h2>Lexer and parser generator for Go</h2>
+<body>
+  <div class="sidebar">
+    <h1><a href="./index.html">Lox</a></h1>
+    <ul>
+  <li>
+    <a href="getting_started.html">Getting Started</a>
+  </li>
+      <li><a href="./reference.html">Reference</a>
+        <ul>
+  <li>
+    <a href="lexer_reference.html">Lexer Reference</a>
+  </li>
+  <li>
+    <a href="parser_reference.html">Parser Reference</a>
+  </li>
+  <li>
+    <a href="go_reference.html">Go Reference</a>
+  </li>
+        </ul>
+      </li>
+      <li><a href="./advanced.html">Advanced</a>
+        <ul>
+  <li>
+    <a href="parser_conflicts.html">Parser Conflicts</a>
+  </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
 
-    <nav>
-      <a href="./getting_started.html">
-        Getting Started
-      </a> 
-      |
-      <a href="./reference.html">
-        Reference
-      </a>
-      |
-      <a href="https://github.com/dcaiafa/lox">
-        GitHub
-      </a>
-    </nav>
+  <div class="article">
+    <a href="javascript:void(0)" onclick="toggleSidebar()">X</a>
+    <h1 id="lox">Lox</h1>
+
+<p>Lox is a parser/lexer generator for Go.</p>
 
 <pre><code class="language-lox">@lexer
 

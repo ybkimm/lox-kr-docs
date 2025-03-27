@@ -1,6 +1,5 @@
 @lexer
 
-NUM = [0-9]+
 ADD = '+'
 SUB = '-'
 MUL = '*'
@@ -10,11 +9,14 @@ POW = '^'
 O_PAREN = '('
 C_PAREN = ')'
 
-@frag ' '+  @discard
+NUM = ('0' | [1-9][0-9]*) ('.' [0-9]+)? 
+
+@frag ' '+  @discard  // Discard whitespace.
 
 @parser
 
 @start S = expr
+         | @error
 
 expr = expr '+' expr  @left(1)
      | expr '-' expr  @left(1)

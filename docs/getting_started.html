@@ -1,0 +1,179 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Lox</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="description" content="Lox is a lexer and parser generator for Go" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0" />
+  <link rel="stylesheet" href="./prism.css"/>
+  <link rel="stylesheet" href="./css.css" />
+  <link 
+</head>
+<body>
+  <div class="sidebar">
+    <h1><a href="./index.html">Lox</a></h1>
+    <ul>
+  <li>
+    <a href="getting_started.html">Getting Started</a>
+      <ul>
+  <li>
+    <a href="#installing-lox">Installing Lox</a>
+  </li>
+  <li>
+    <a href="#try-an-example">Try an example</a>
+  </li>
+  <li>
+    <a href="#next-steps">Next Steps</a>
+  </li>
+      </ul>
+  </li>
+      <li><a href="./reference.html">Reference</a>
+        <ul>
+  <li>
+    <a href="lexer_reference.html">Lexer Reference</a>
+  </li>
+  <li>
+    <a href="parser_reference.html">Parser Reference</a>
+  </li>
+  <li>
+    <a href="go_reference.html">Go Reference</a>
+  </li>
+        </ul>
+      </li>
+      <li><a href="./advanced.html">Advanced</a>
+        <ul>
+  <li>
+    <a href="parser_conflicts.html">Parser Conflicts</a>
+  </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+
+  <div class="article">
+    <div class="sidebar-button">
+      <a  href="javascript:void(0)" onclick="toggleSidebar()"></a>
+    </div>
+    <h1 id="getting-started">Getting started</h1>
+
+<p>Lox is a parser/lexer generator for the Go language. It consists of the <code>lox</code>
+tool which analyzes a project&rsquo;s grammar and Go sources, and generates a
+dependency-free parser in Go.</p>
+
+<h2 id="installing-lox">Installing Lox</h2>
+
+<p>Download the <a href="https://github.com/dcaiafa/lox/releases/latest" target="_blank">latest</a> version of
+<code>lox</code> matching your platform. Unpack it and copy the <code>lox</code> binary to a directory
+in your <code>PATH</code>.</p>
+
+<p class="notice">Because <code>lox</code> analyzes Go sources, it is very important to update it often,
+especially when upgrading your Go tooling.</p>
+
+<h2 id="try-an-example">Try an example</h2>
+
+<p>The best way to start learning Lox is to play with an
+<a href="https://github.com/dcaiafa/lox/tree/main/examples" target="_blank">example</a>. In this section,
+we are going to use the
+<a href="https://github.com/dcaiafa/lox/tree/main/examples/calc" target="_blank">calculator</a>.</p>
+
+<p>First, try running the example by going to the <code>calc</code> directory in your terminal
+and running it using <code>go run .</code>. Enter an expression like <code>2 * (1+3)</code> and you
+should see the result.</p>
+
+<p>Next, let&rsquo;s extend the project to support built-in functions so you can evaluate
+something like <code>pow(2,8) - 1</code>. We need an identifier token that will match
+function names (<code>sqrt</code>, <code>pow</code>, etc.). We will also need a comma token to use as
+the parameter separator.</p>
+
+<p>Open <code>calc.lox</code> in an editor, then add the following to the end of the <code>@lexer</code>
+section, right after the definition of <code>NUM</code>:</p>
+
+<pre><code class="language-lox">COMMA = ','
+ID = [A-Za-z][A-Za-z0-9]*
+</code></pre>
+
+<p>Now add a parser rule for a function call. Add the following to the end of the
+<code>@parser</code> section (at the end of the file):</p>
+
+<pre><code class="language-lox">func_call = ID '(' @list(expr, ',')? ')'
+</code></pre>
+
+<p>The <code>ID</code> <code>'('</code> <code>')'</code> part should look pretty straightforward. The <code>@list(expr,
+',')</code> term will match one or more <code>expr</code> separated by <code>,</code>. The <code>?</code> qualifier
+makes it optional so you can have functions that take no parameters (e.g.
+<code>pi()</code>). Notice that you can reference tokens in your grammar using their name
+(e.g. <code>COMMA</code>) or their literal value (e.g. <code>','</code>). The latter is usually easier
+to read, but is only allowed when the token definition is a simple literal.</p>
+
+<p>Now, change the definition of <code>expr</code> to include <code>func_call</code>:</p>
+
+<pre><code class="language-lox">expr = expr '+' expr  @left(1)
+     | expr '-' expr  @left(1)
+     | expr '*' expr  @left(2)
+     | expr '/' expr  @left(2)
+     | expr '%' expr  @left(2)
+     | expr '^' expr  @right(3)
+     | '(' expr ')'
+     | num
+     | func_call
+</code></pre>
+
+<p>We are done with the grammar changes. Before moving on to the Go changes, run
+<code>lox .</code> from the <code>calc</code> directory. You should see an error like the following:</p>
+
+<pre><code> $ lox .
+calc.lox:35:1: rule missing action method: func_call
+Error: errors ocurred
+</code></pre>
+
+<p>You got this error because Lox expects every production from every rule to have
+a corresponding action.</p>
+
+<p>Let&rsquo;s add one for <code>func_call</code>. Open <code>parser.go</code> in your IDE, then add the
+following to the end of the file:</p>
+
+<pre><code class="language-go">func (p *calcParser) on_func_call(
+	id Token, _ Token, args []float64, _ Token,
+) float64 {
+	name := string(id.Str)
+	switch name {
+	case &quot;pow&quot;:
+		if len(args) != 2 {
+			p.errLogger.Errorf(id.Pos, &quot;pow takes 2 arguments&quot;)
+			return 0
+		}
+		return math.Pow(args[0], args[1])
+
+	default:
+		p.errLogger.Errorf(id.Pos, &quot;invalid function %v&quot;, name)
+		return 0
+	}
+}
+</code></pre>
+
+<p>Try running <code>lox .</code> again. You should get no errors. And you should be able to
+run the project again and get a result for an expression like <code>pow(2, 8) - 1</code>.</p>
+
+<p>Hopefully the implementation of <code>on_func_call</code> looks pretty straightforward. But
+there is a lot of magic happening in the method signature. Lox uses both the
+method&rsquo;s name and the number and type of its parameters to match the action to a
+production. Check out the docs for <a href="./go_reference.html#action-methods">Action Methods</a>
+for more details.</p>
+
+<h2 id="next-steps">Next Steps</h2>
+
+<ul>
+<li>Check out the <a href="./reference.html">reference</a> docs.</li>
+<li>Explore other <a href="https://github.com/dcaiafa/lox/tree/main/examples" target="_blank">examples</a>.</li>
+<li>Lox is built on itself. Take a look at its
+<a href="https://github.com/dcaiafa/lox/blob/main/internal/parser/parser.lox" target="_blank">parser</a>.</li>
+</ul>
+
+  </div>
+
+  <script src="./scripts.js"></script>
+  <script src="./prism.js"></script>
+  <script src="./prism-lox.js"></script>
+</body>
