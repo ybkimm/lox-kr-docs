@@ -1,9 +1,5 @@
 package main
 
-import (
-	_i0 "github.com/dcaiafa/loxlex/simplelexer"
-)
-
 var _rules = []int32{
 	0, 1, 2, 2, 2, 2, 2, 2, 2, 3, 4, 5, 6, 6,
 	7, 7, 8, 8, 9, 9,
@@ -253,41 +249,41 @@ func (p *jsonParser) _act(prod int32) any {
 		)
 	case 4:
 		return p.on_value__tok(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 5:
 		return p.on_value__tok(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 6:
 		return p.on_value__tok(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 7:
 		return p.on_value__tok(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 8:
 		return p.on_value__tok(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 9:
 		return p.on_object(
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
 			_cast[[]member](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 10:
 		return p.on_member(
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
 			_cast[any](p._stack.Peek(0).Sym),
 		)
 	case 11:
 		return p.on_array(
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
 			_cast[[]any](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 12: // ZeroOrOne
 		return _cast[[]member](p._stack.Peek(0).Sym)

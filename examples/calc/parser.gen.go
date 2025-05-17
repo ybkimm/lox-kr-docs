@@ -1,9 +1,5 @@
 package main
 
-import (
-	_i0 "github.com/dcaiafa/loxlex/simplelexer"
-)
-
 var _rules = []int32{
 	0, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3,
 }
@@ -250,44 +246,44 @@ func (p *calcParser) _act(prod int32) any {
 	case 3:
 		return p.on_expr__binary(
 			_cast[float64](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
 			_cast[float64](p._stack.Peek(0).Sym),
 		)
 	case 4:
 		return p.on_expr__binary(
 			_cast[float64](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
 			_cast[float64](p._stack.Peek(0).Sym),
 		)
 	case 5:
 		return p.on_expr__binary(
 			_cast[float64](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
 			_cast[float64](p._stack.Peek(0).Sym),
 		)
 	case 6:
 		return p.on_expr__binary(
 			_cast[float64](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
 			_cast[float64](p._stack.Peek(0).Sym),
 		)
 	case 7:
 		return p.on_expr__binary(
 			_cast[float64](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
 			_cast[float64](p._stack.Peek(0).Sym),
 		)
 	case 8:
 		return p.on_expr__binary(
 			_cast[float64](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
 			_cast[float64](p._stack.Peek(0).Sym),
 		)
 	case 9:
 		return p.on_expr__paren(
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
 			_cast[float64](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 10:
 		return p.on_expr__num(
@@ -295,12 +291,12 @@ func (p *calcParser) _act(prod int32) any {
 		)
 	case 11:
 		return p.on_num(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 12:
 		return p.on_num__minus(
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	default:
 		panic("unreachable")

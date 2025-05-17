@@ -1,8 +1,7 @@
 package parser
 
 import (
-	_i1 "github.com/dcaiafa/lox/internal/ast"
-	_i0 "github.com/dcaiafa/loxlex/simplelexer"
+	_i0 "github.com/dcaiafa/lox/internal/ast"
 )
 
 var _rules = []int32{
@@ -436,8 +435,8 @@ func (p *parser) _act(prod int32) any {
 	switch prod {
 	case 1:
 		return p.on_spec(
-			_cast[[]_i0.Token](p._stack.Peek(1).Sym),
-			_cast[[][]_i1.Statement](p._stack.Peek(0).Sym),
+			_cast[[]Token](p._stack.Peek(1).Sym),
+			_cast[[][]_i0.Statement](p._stack.Peek(0).Sym),
 		)
 	case 2:
 		return p.on_spec__error(
@@ -445,383 +444,383 @@ func (p *parser) _act(prod int32) any {
 		)
 	case 3:
 		return p.on_section(
-			_cast[[]_i1.Statement](p._stack.Peek(0).Sym),
+			_cast[[]_i0.Statement](p._stack.Peek(0).Sym),
 		)
 	case 4:
 		return p.on_section(
-			_cast[[]_i1.Statement](p._stack.Peek(0).Sym),
+			_cast[[]_i0.Statement](p._stack.Peek(0).Sym),
 		)
 	case 5:
 		return p.on_parser_section(
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
-			_cast[[]_i1.Statement](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
+			_cast[[]_i0.Statement](p._stack.Peek(0).Sym),
 		)
 	case 6:
 		return p.on_parser_statement(
-			_cast[_i1.Statement](p._stack.Peek(0).Sym),
+			_cast[_i0.Statement](p._stack.Peek(0).Sym),
 		)
 	case 7:
 		return p.on_parser_statement__nl(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 8:
 		return p.on_parser_rule(
-			_cast[_i0.Token](p._stack.Peek(4).Sym),
-			_cast[_i0.Token](p._stack.Peek(3).Sym),
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
-			_cast[[]*_i1.ParserProd](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(4).Sym),
+			_cast[Token](p._stack.Peek(3).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
+			_cast[[]*_i0.ParserProd](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 9:
 		return p.on_parser_prod(
-			_cast[[]*_i1.ParserTerm](p._stack.Peek(1).Sym),
-			_cast[*_i1.ProdQualifier](p._stack.Peek(0).Sym),
+			_cast[[]*_i0.ParserTerm](p._stack.Peek(1).Sym),
+			_cast[*_i0.ProdQualifier](p._stack.Peek(0).Sym),
 		)
 	case 10:
 		return p.on_parser_prod__empty(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 11:
 		return p.on_parser_term_card(
-			_cast[*_i1.ParserTerm](p._stack.Peek(1).Sym),
-			_cast[_i1.ParserTermType](p._stack.Peek(0).Sym),
+			_cast[*_i0.ParserTerm](p._stack.Peek(1).Sym),
+			_cast[_i0.ParserTermType](p._stack.Peek(0).Sym),
 		)
 	case 12:
 		return p.on_parser_term__token(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 13:
 		return p.on_parser_term__token(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 14:
 		return p.on_parser_term__token(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 15:
 		return p.on_parser_term__list(
-			_cast[*_i1.ParserTerm](p._stack.Peek(0).Sym),
+			_cast[*_i0.ParserTerm](p._stack.Peek(0).Sym),
 		)
 	case 16:
 		return p.on_parser_list(
-			_cast[_i0.Token](p._stack.Peek(5).Sym),
-			_cast[_i0.Token](p._stack.Peek(4).Sym),
-			_cast[*_i1.ParserTerm](p._stack.Peek(3).Sym),
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
-			_cast[*_i1.ParserTerm](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(5).Sym),
+			_cast[Token](p._stack.Peek(4).Sym),
+			_cast[*_i0.ParserTerm](p._stack.Peek(3).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
+			_cast[*_i0.ParserTerm](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 17:
 		return p.on_parser_card(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 18:
 		return p.on_parser_card(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 19:
 		return p.on_parser_card(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 20:
 		return p.on_parser_card(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 21:
 		return p.on_parser_qualif(
-			_cast[_i0.Token](p._stack.Peek(3).Sym),
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(3).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 22:
 		return p.on_parser_qualif(
-			_cast[_i0.Token](p._stack.Peek(3).Sym),
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(3).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 23:
 		return p.on_lexer_section(
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
-			_cast[[]_i1.Statement](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
+			_cast[[]_i0.Statement](p._stack.Peek(0).Sym),
 		)
 	case 24:
 		return p.on_lexer_statement(
-			_cast[_i1.Statement](p._stack.Peek(0).Sym),
+			_cast[_i0.Statement](p._stack.Peek(0).Sym),
 		)
 	case 25:
 		return p.on_lexer_statement(
-			_cast[_i1.Statement](p._stack.Peek(0).Sym),
+			_cast[_i0.Statement](p._stack.Peek(0).Sym),
 		)
 	case 26:
 		return p.on_lexer_rule(
-			_cast[_i1.Statement](p._stack.Peek(0).Sym),
+			_cast[_i0.Statement](p._stack.Peek(0).Sym),
 		)
 	case 27:
 		return p.on_lexer_rule(
-			_cast[_i1.Statement](p._stack.Peek(0).Sym),
+			_cast[_i0.Statement](p._stack.Peek(0).Sym),
 		)
 	case 28:
 		return p.on_lexer_rule(
-			_cast[_i1.Statement](p._stack.Peek(0).Sym),
+			_cast[_i0.Statement](p._stack.Peek(0).Sym),
 		)
 	case 29:
 		return p.on_lexer_rule(
-			_cast[_i1.Statement](p._stack.Peek(0).Sym),
+			_cast[_i0.Statement](p._stack.Peek(0).Sym),
 		)
 	case 30:
 		return p.on_lexer_rule__nl(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 31:
 		return p.on_mode(
-			_cast[_i0.Token](p._stack.Peek(5).Sym),
-			_cast[_i0.Token](p._stack.Peek(4).Sym),
-			_cast[[]_i0.Token](p._stack.Peek(3).Sym),
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
-			_cast[[]_i1.Statement](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(5).Sym),
+			_cast[Token](p._stack.Peek(4).Sym),
+			_cast[[]Token](p._stack.Peek(3).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
+			_cast[[]_i0.Statement](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 32:
 		return p.on_token_rule(
-			_cast[_i0.Token](p._stack.Peek(4).Sym),
-			_cast[_i0.Token](p._stack.Peek(3).Sym),
-			_cast[*_i1.LexerExpr](p._stack.Peek(2).Sym),
-			_cast[[]_i1.Action](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(4).Sym),
+			_cast[Token](p._stack.Peek(3).Sym),
+			_cast[*_i0.LexerExpr](p._stack.Peek(2).Sym),
+			_cast[[]_i0.Action](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 33:
 		return p.on_frag_rule(
-			_cast[_i0.Token](p._stack.Peek(3).Sym),
-			_cast[*_i1.LexerExpr](p._stack.Peek(2).Sym),
-			_cast[[]_i1.Action](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(3).Sym),
+			_cast[*_i0.LexerExpr](p._stack.Peek(2).Sym),
+			_cast[[]_i0.Action](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 34:
 		return p.on_macro_rule(
-			_cast[_i0.Token](p._stack.Peek(4).Sym),
-			_cast[_i0.Token](p._stack.Peek(3).Sym),
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
-			_cast[*_i1.LexerExpr](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(4).Sym),
+			_cast[Token](p._stack.Peek(3).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
+			_cast[*_i0.LexerExpr](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 35:
 		return p.on_external_rule(
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
-			_cast[[]*_i1.ExternalName](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
+			_cast[[]*_i0.ExternalName](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 36:
 		return p.on_external_name(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 37:
 		return p.on_lexer_expr(
-			_cast[[]*_i1.LexerFactor](p._stack.Peek(0).Sym),
+			_cast[[]*_i0.LexerFactor](p._stack.Peek(0).Sym),
 		)
 	case 38:
 		return p.on_lexer_factor(
-			_cast[[]*_i1.LexerTermCard](p._stack.Peek(0).Sym),
+			_cast[[]*_i0.LexerTermCard](p._stack.Peek(0).Sym),
 		)
 	case 39:
 		return p.on_lexer_term_card(
-			_cast[_i1.LexerTerm](p._stack.Peek(1).Sym),
-			_cast[_i1.Card](p._stack.Peek(0).Sym),
+			_cast[_i0.LexerTerm](p._stack.Peek(1).Sym),
+			_cast[_i0.Card](p._stack.Peek(0).Sym),
 		)
 	case 40:
 		return p.on_lexer_card(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 41:
 		return p.on_lexer_card(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 42:
 		return p.on_lexer_card(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 43:
 		return p.on_lexer_term__tok(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 44:
 		return p.on_lexer_term__tok(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 45:
 		return p.on_lexer_term__char_class_expr(
-			_cast[_i1.CharClassExpr](p._stack.Peek(0).Sym),
+			_cast[_i0.CharClassExpr](p._stack.Peek(0).Sym),
 		)
 	case 46:
 		return p.on_lexer_term__expr(
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
-			_cast[*_i1.LexerExpr](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
+			_cast[*_i0.LexerExpr](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 47:
 		return p.on_char_class_expr__binary(
-			_cast[_i1.CharClassExpr](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
-			_cast[_i1.CharClassExpr](p._stack.Peek(0).Sym),
+			_cast[_i0.CharClassExpr](p._stack.Peek(2).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
+			_cast[_i0.CharClassExpr](p._stack.Peek(0).Sym),
 		)
 	case 48:
 		return p.on_char_class_expr__char_class(
-			_cast[*_i1.CharClass](p._stack.Peek(0).Sym),
+			_cast[*_i0.CharClass](p._stack.Peek(0).Sym),
 		)
 	case 49:
 		return p.on_char_class(
-			_cast[_i0.Token](p._stack.Peek(3).Sym),
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
-			_cast[[]_i0.Token](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(3).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
+			_cast[[]Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 50:
 		return p.on_char_class_item(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 51:
 		return p.on_char_class_item(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 52:
 		return p.on_action(
-			_cast[_i1.Action](p._stack.Peek(0).Sym),
+			_cast[_i0.Action](p._stack.Peek(0).Sym),
 		)
 	case 53:
 		return p.on_action(
-			_cast[_i1.Action](p._stack.Peek(0).Sym),
+			_cast[_i0.Action](p._stack.Peek(0).Sym),
 		)
 	case 54:
 		return p.on_action(
-			_cast[_i1.Action](p._stack.Peek(0).Sym),
+			_cast[_i0.Action](p._stack.Peek(0).Sym),
 		)
 	case 55:
 		return p.on_action(
-			_cast[_i1.Action](p._stack.Peek(0).Sym),
+			_cast[_i0.Action](p._stack.Peek(0).Sym),
 		)
 	case 56:
 		return p.on_action_discard(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 57:
 		return p.on_action_push_mode(
-			_cast[_i0.Token](p._stack.Peek(3).Sym),
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(3).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 58:
 		return p.on_action_pop_mode(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 59:
 		return p.on_action_emit(
-			_cast[_i0.Token](p._stack.Peek(3).Sym),
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(3).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 60: // ZeroOrMore
-		return _cast[[]_i0.Token](p._stack.Peek(0).Sym)
+		return _cast[[]Token](p._stack.Peek(0).Sym)
 	case 61: // ZeroOrMore
 		{
-			var zero []_i0.Token
+			var zero []Token
 			return zero
 		}
 	case 62: // OneOrMore
 		return append(
-			_cast[[]_i0.Token](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[[]Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 63: // OneOrMore
-		return []_i0.Token{
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+		return []Token{
+			_cast[Token](p._stack.Peek(0).Sym),
 		}
 	case 64: // ZeroOrMore
-		return _cast[[][]_i1.Statement](p._stack.Peek(0).Sym)
+		return _cast[[][]_i0.Statement](p._stack.Peek(0).Sym)
 	case 65: // ZeroOrMore
 		{
-			var zero [][]_i1.Statement
+			var zero [][]_i0.Statement
 			return zero
 		}
 	case 66: // OneOrMore
 		return append(
-			_cast[[][]_i1.Statement](p._stack.Peek(1).Sym),
-			_cast[[]_i1.Statement](p._stack.Peek(0).Sym),
+			_cast[[][]_i0.Statement](p._stack.Peek(1).Sym),
+			_cast[[]_i0.Statement](p._stack.Peek(0).Sym),
 		)
 	case 67: // OneOrMore
-		return [][]_i1.Statement{
-			_cast[[]_i1.Statement](p._stack.Peek(0).Sym),
+		return [][]_i0.Statement{
+			_cast[[]_i0.Statement](p._stack.Peek(0).Sym),
 		}
 	case 68: // ZeroOrMore
-		return _cast[[]_i1.Statement](p._stack.Peek(0).Sym)
+		return _cast[[]_i0.Statement](p._stack.Peek(0).Sym)
 	case 69: // ZeroOrMore
 		{
-			var zero []_i1.Statement
+			var zero []_i0.Statement
 			return zero
 		}
 	case 70: // OneOrMore
 		return append(
-			_cast[[]_i1.Statement](p._stack.Peek(1).Sym),
-			_cast[_i1.Statement](p._stack.Peek(0).Sym),
+			_cast[[]_i0.Statement](p._stack.Peek(1).Sym),
+			_cast[_i0.Statement](p._stack.Peek(0).Sym),
 		)
 	case 71: // OneOrMore
-		return []_i1.Statement{
-			_cast[_i1.Statement](p._stack.Peek(0).Sym),
+		return []_i0.Statement{
+			_cast[_i0.Statement](p._stack.Peek(0).Sym),
 		}
 	case 72: // ZeroOrOne
-		return _cast[_i0.Token](p._stack.Peek(0).Sym)
+		return _cast[Token](p._stack.Peek(0).Sym)
 	case 73: // ZeroOrOne
 		{
-			var zero _i0.Token
+			var zero Token
 			return zero
 		}
 	case 74: // List
 		return append(
-			_cast[[]*_i1.ParserProd](p._stack.Peek(2).Sym),
-			_cast[*_i1.ParserProd](p._stack.Peek(0).Sym),
+			_cast[[]*_i0.ParserProd](p._stack.Peek(2).Sym),
+			_cast[*_i0.ParserProd](p._stack.Peek(0).Sym),
 		)
 	case 75: // List
-		return []*_i1.ParserProd{
-			_cast[*_i1.ParserProd](p._stack.Peek(0).Sym),
+		return []*_i0.ParserProd{
+			_cast[*_i0.ParserProd](p._stack.Peek(0).Sym),
 		}
 	case 76: // OneOrMore
 		return append(
-			_cast[[]*_i1.ParserTerm](p._stack.Peek(1).Sym),
-			_cast[*_i1.ParserTerm](p._stack.Peek(0).Sym),
+			_cast[[]*_i0.ParserTerm](p._stack.Peek(1).Sym),
+			_cast[*_i0.ParserTerm](p._stack.Peek(0).Sym),
 		)
 	case 77: // OneOrMore
-		return []*_i1.ParserTerm{
-			_cast[*_i1.ParserTerm](p._stack.Peek(0).Sym),
+		return []*_i0.ParserTerm{
+			_cast[*_i0.ParserTerm](p._stack.Peek(0).Sym),
 		}
 	case 78: // ZeroOrOne
-		return _cast[*_i1.ProdQualifier](p._stack.Peek(0).Sym)
+		return _cast[*_i0.ProdQualifier](p._stack.Peek(0).Sym)
 	case 79: // ZeroOrOne
 		{
-			var zero *_i1.ProdQualifier
+			var zero *_i0.ProdQualifier
 			return zero
 		}
 	case 80: // ZeroOrOne
-		return _cast[_i1.ParserTermType](p._stack.Peek(0).Sym)
+		return _cast[_i0.ParserTermType](p._stack.Peek(0).Sym)
 	case 81: // ZeroOrOne
 		{
-			var zero _i1.ParserTermType
+			var zero _i0.ParserTermType
 			return zero
 		}
 	case 82: // ZeroOrMore
-		return _cast[[]_i1.Statement](p._stack.Peek(0).Sym)
+		return _cast[[]_i0.Statement](p._stack.Peek(0).Sym)
 	case 83: // ZeroOrMore
 		{
-			var zero []_i1.Statement
+			var zero []_i0.Statement
 			return zero
 		}
 	case 84:
 		{ // OneOrMoreF
-			l := _cast[[]_i1.Statement](p._stack.Peek(1).Sym)
-			e := _cast[_i1.Statement](p._stack.Peek(0).Sym)
+			l := _cast[[]_i0.Statement](p._stack.Peek(1).Sym)
+			e := _cast[_i0.Statement](p._stack.Peek(0).Sym)
 			if !e.Discard() {
 				l = append(l, e)
 			}
@@ -829,100 +828,100 @@ func (p *parser) _act(prod int32) any {
 		}
 	case 85:
 		{ // OneOrMoreF
-			var l []_i1.Statement
-			e := _cast[_i1.Statement](p._stack.Peek(0).Sym)
+			var l []_i0.Statement
+			e := _cast[_i0.Statement](p._stack.Peek(0).Sym)
 			if !e.Discard() {
 				l = append(l, e)
 			}
 			return l
 		}
 	case 86: // ZeroOrMore
-		return _cast[[]_i1.Statement](p._stack.Peek(0).Sym)
+		return _cast[[]_i0.Statement](p._stack.Peek(0).Sym)
 	case 87: // ZeroOrMore
 		{
-			var zero []_i1.Statement
+			var zero []_i0.Statement
 			return zero
 		}
 	case 88: // OneOrMore
 		return append(
-			_cast[[]_i1.Statement](p._stack.Peek(1).Sym),
-			_cast[_i1.Statement](p._stack.Peek(0).Sym),
+			_cast[[]_i0.Statement](p._stack.Peek(1).Sym),
+			_cast[_i0.Statement](p._stack.Peek(0).Sym),
 		)
 	case 89: // OneOrMore
-		return []_i1.Statement{
-			_cast[_i1.Statement](p._stack.Peek(0).Sym),
+		return []_i0.Statement{
+			_cast[_i0.Statement](p._stack.Peek(0).Sym),
 		}
 	case 90: // ZeroOrMore
-		return _cast[[]_i1.Action](p._stack.Peek(0).Sym)
+		return _cast[[]_i0.Action](p._stack.Peek(0).Sym)
 	case 91: // ZeroOrMore
 		{
-			var zero []_i1.Action
+			var zero []_i0.Action
 			return zero
 		}
 	case 92: // OneOrMore
 		return append(
-			_cast[[]_i1.Action](p._stack.Peek(1).Sym),
-			_cast[_i1.Action](p._stack.Peek(0).Sym),
+			_cast[[]_i0.Action](p._stack.Peek(1).Sym),
+			_cast[_i0.Action](p._stack.Peek(0).Sym),
 		)
 	case 93: // OneOrMore
-		return []_i1.Action{
-			_cast[_i1.Action](p._stack.Peek(0).Sym),
+		return []_i0.Action{
+			_cast[_i0.Action](p._stack.Peek(0).Sym),
 		}
 	case 94: // OneOrMore
 		return append(
-			_cast[[]*_i1.ExternalName](p._stack.Peek(1).Sym),
-			_cast[*_i1.ExternalName](p._stack.Peek(0).Sym),
+			_cast[[]*_i0.ExternalName](p._stack.Peek(1).Sym),
+			_cast[*_i0.ExternalName](p._stack.Peek(0).Sym),
 		)
 	case 95: // OneOrMore
-		return []*_i1.ExternalName{
-			_cast[*_i1.ExternalName](p._stack.Peek(0).Sym),
+		return []*_i0.ExternalName{
+			_cast[*_i0.ExternalName](p._stack.Peek(0).Sym),
 		}
 	case 96: // List
 		return append(
-			_cast[[]*_i1.LexerFactor](p._stack.Peek(2).Sym),
-			_cast[*_i1.LexerFactor](p._stack.Peek(0).Sym),
+			_cast[[]*_i0.LexerFactor](p._stack.Peek(2).Sym),
+			_cast[*_i0.LexerFactor](p._stack.Peek(0).Sym),
 		)
 	case 97: // List
-		return []*_i1.LexerFactor{
-			_cast[*_i1.LexerFactor](p._stack.Peek(0).Sym),
+		return []*_i0.LexerFactor{
+			_cast[*_i0.LexerFactor](p._stack.Peek(0).Sym),
 		}
 	case 98: // OneOrMore
 		return append(
-			_cast[[]*_i1.LexerTermCard](p._stack.Peek(1).Sym),
-			_cast[*_i1.LexerTermCard](p._stack.Peek(0).Sym),
+			_cast[[]*_i0.LexerTermCard](p._stack.Peek(1).Sym),
+			_cast[*_i0.LexerTermCard](p._stack.Peek(0).Sym),
 		)
 	case 99: // OneOrMore
-		return []*_i1.LexerTermCard{
-			_cast[*_i1.LexerTermCard](p._stack.Peek(0).Sym),
+		return []*_i0.LexerTermCard{
+			_cast[*_i0.LexerTermCard](p._stack.Peek(0).Sym),
 		}
 	case 100: // ZeroOrOne
-		return _cast[_i1.Card](p._stack.Peek(0).Sym)
+		return _cast[_i0.Card](p._stack.Peek(0).Sym)
 	case 101: // ZeroOrOne
 		{
-			var zero _i1.Card
+			var zero _i0.Card
 			return zero
 		}
 	case 102: // ZeroOrOne
-		return _cast[_i0.Token](p._stack.Peek(0).Sym)
+		return _cast[Token](p._stack.Peek(0).Sym)
 	case 103: // ZeroOrOne
 		{
-			var zero _i0.Token
+			var zero Token
 			return zero
 		}
 	case 104: // OneOrMore
 		return append(
-			_cast[[]_i0.Token](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[[]Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 105: // OneOrMore
-		return []_i0.Token{
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+		return []Token{
+			_cast[Token](p._stack.Peek(0).Sym),
 		}
 	case 106: // ZeroOrOne
-		return _cast[_i0.Token](p._stack.Peek(0).Sym)
+		return _cast[Token](p._stack.Peek(0).Sym)
 	case 107: // ZeroOrOne
 		{
-			var zero _i0.Token
+			var zero Token
 			return zero
 		}
 	default:

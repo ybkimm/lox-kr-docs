@@ -1,9 +1,5 @@
 package main
 
-import (
-	_i0 "github.com/dcaiafa/loxlex/simplelexer"
-)
-
 var _rules = []int32{
 	0, 1, 1, 2, 3, 3, 3, 3, 3, 3, 4, 5, 6, 7,
 	8, 9, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
@@ -408,39 +404,39 @@ func (p *parser) _act(prod int32) any {
 	case 4:
 		return p.on_stmt(
 			_cast[Statement](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 5:
 		return p.on_stmt(
 			_cast[Statement](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 6:
 		return p.on_stmt(
 			_cast[Statement](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 7:
 		return p.on_stmt(
 			_cast[Statement](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 8:
 		return p.on_stmt__kw(
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 9:
 		return p.on_stmt__nl(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 10:
 		return p.on_while_stmt(
-			_cast[_i0.Token](p._stack.Peek(4).Sym),
+			_cast[Token](p._stack.Peek(4).Sym),
 			_cast[Expr](p._stack.Peek(3).Sym),
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
 			_cast[*Block](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 11:
 		return p.on_func_call_stmt(
@@ -448,113 +444,113 @@ func (p *parser) _act(prod int32) any {
 		)
 	case 12:
 		return p.on_if_stmt(
-			_cast[_i0.Token](p._stack.Peek(6).Sym),
+			_cast[Token](p._stack.Peek(6).Sym),
 			_cast[Expr](p._stack.Peek(5).Sym),
-			_cast[_i0.Token](p._stack.Peek(4).Sym),
+			_cast[Token](p._stack.Peek(4).Sym),
 			_cast[*Block](p._stack.Peek(3).Sym),
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
 			_cast[[]*Elif](p._stack.Peek(1).Sym),
 			_cast[*Else](p._stack.Peek(0).Sym),
 		)
 	case 13:
 		return p.on_elif(
-			_cast[_i0.Token](p._stack.Peek(4).Sym),
+			_cast[Token](p._stack.Peek(4).Sym),
 			_cast[Expr](p._stack.Peek(3).Sym),
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
 			_cast[*Block](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 14:
 		return p.on_else(
-			_cast[_i0.Token](p._stack.Peek(3).Sym),
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[Token](p._stack.Peek(3).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
 			_cast[*Block](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 15:
 		return p.on_var_assign(
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
 			_cast[Expr](p._stack.Peek(0).Sym),
 		)
 	case 16:
 		return p.on_func_call(
-			_cast[_i0.Token](p._stack.Peek(3).Sym),
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[Token](p._stack.Peek(3).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
 			_cast[[]Expr](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 17:
 		return p.on_expr__bin(
 			_cast[Expr](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
 			_cast[Expr](p._stack.Peek(0).Sym),
 		)
 	case 18:
 		return p.on_expr__bin(
 			_cast[Expr](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
 			_cast[Expr](p._stack.Peek(0).Sym),
 		)
 	case 19:
 		return p.on_expr__bin(
 			_cast[Expr](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
 			_cast[Expr](p._stack.Peek(0).Sym),
 		)
 	case 20:
 		return p.on_expr__bin(
 			_cast[Expr](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
 			_cast[Expr](p._stack.Peek(0).Sym),
 		)
 	case 21:
 		return p.on_expr__bin(
 			_cast[Expr](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
 			_cast[Expr](p._stack.Peek(0).Sym),
 		)
 	case 22:
 		return p.on_expr__bin(
 			_cast[Expr](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
 			_cast[Expr](p._stack.Peek(0).Sym),
 		)
 	case 23:
 		return p.on_expr__bin(
 			_cast[Expr](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
 			_cast[Expr](p._stack.Peek(0).Sym),
 		)
 	case 24:
 		return p.on_expr__bin(
 			_cast[Expr](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
 			_cast[Expr](p._stack.Peek(0).Sym),
 		)
 	case 25:
 		return p.on_expr__bin(
 			_cast[Expr](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
 			_cast[Expr](p._stack.Peek(0).Sym),
 		)
 	case 26:
 		return p.on_expr__bin(
 			_cast[Expr](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
 			_cast[Expr](p._stack.Peek(0).Sym),
 		)
 	case 27:
 		return p.on_expr__bin(
 			_cast[Expr](p._stack.Peek(2).Sym),
-			_cast[_i0.Token](p._stack.Peek(1).Sym),
+			_cast[Token](p._stack.Peek(1).Sym),
 			_cast[Expr](p._stack.Peek(0).Sym),
 		)
 	case 28:
 		return p.on_expr__paren(
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
 			_cast[Expr](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 29:
 		return p.on_expr__simple(
@@ -574,23 +570,23 @@ func (p *parser) _act(prod int32) any {
 		)
 	case 33:
 		return p.on_var_ref(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 34:
 		return p.on_literal__tok(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 35:
 		return p.on_literal__tok(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 36:
 		return p.on_literal__tok(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 37:
 		return p.on_literal__tok(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 38:
 		return p.on_literal__string(
@@ -598,19 +594,19 @@ func (p *parser) _act(prod int32) any {
 		)
 	case 39:
 		return p.on_string(
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
 			_cast[[]Expr](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 40:
 		return p.on_string_part__char_seq(
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 41:
 		return p.on_string_part__expr(
-			_cast[_i0.Token](p._stack.Peek(2).Sym),
+			_cast[Token](p._stack.Peek(2).Sym),
 			_cast[Expr](p._stack.Peek(1).Sym),
-			_cast[_i0.Token](p._stack.Peek(0).Sym),
+			_cast[Token](p._stack.Peek(0).Sym),
 		)
 	case 42: // ZeroOrMore
 		return _cast[[]Statement](p._stack.Peek(0).Sym)
