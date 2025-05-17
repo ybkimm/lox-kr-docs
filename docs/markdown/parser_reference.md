@@ -60,6 +60,31 @@ restrictions:
   - **Must not** start with an underscore (`_`).
   - **Must not** contain consecutive underscores.
 
+### Line Continuation
+
+Rules are terminated by an end-of-line. The line-continuation backslash `\` can
+be used to split a rule into multiple lines. The backlash can be omitted when
+the vertical bar `|` is the next line's first token. In this case, the
+line-continuation is implicit.                   
+
+For example:
+
+```lox
+term = ID | \
+       LITERAL | \
+       '@error' | \ 
+       list
+```
+Is equivalent to:
+```lox
+term = ID
+     | LITERAL
+     | '@error'
+     | list
+```
+It is idiomatic to use the latter form, and to only use the `\` when a rule
+cannot be split at a `|`.
+
 ### Start Rule
 
 One, and only one rule, must be marked as the root or start rule using the

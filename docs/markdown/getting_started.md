@@ -14,7 +14,7 @@ in your `PATH`.
 Because `lox` analyzes Go sources, it is very important to update it often,
 especially when upgrading your Go tooling.
 
-## Try an example
+## Trying an Example
 
 The best way to start learning Lox is to play with an
 [example](https://github.com/dcaiafa/lox/tree/main/examples). In this section,

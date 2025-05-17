@@ -45,6 +45,14 @@
   </li>
   <li>
     <a href="#generated-code">Generated Code</a>
+      <ul>
+  <li>
+    <a href="#lox">lox</a>
+  </li>
+  <li>
+    <a href="#lexer">_Lexer</a>
+  </li>
+      </ul>
   </li>
       </ul>
   </li>
@@ -126,9 +134,6 @@ correspond to an action parameter. The Go type of the rule or token referenced
 by the term must be <a href="https://go.dev/ref/spec#Assignability" target="_blank">assignable</a> to its
 corresponding parameter type.</p>
 
-<p>An action method must match a single production. Lox will report an error if an
-action method can be matched to multiple productions.</p>
-
 <p>For example:</p>
 
 <pre><code class="language-lox">statement = ID '=' expr
@@ -158,6 +163,25 @@ type).</li>
 actions return <code>Expr</code>).</li>
 </ul>
 
+<p>A production must match a single action method.</p>
+
+<p>For example:</p>
+
+<pre><code class="language-lox">statement = 'ID' = 'expr'
+</code></pre>
+
+<pre><code class="language-go">func (p *myParser) on_statement__1(id Token, _ Token, e Expr) Statement {
+    return &amp;AssignStat{id, e}
+}
+func (p *myParser) on_statement__2(id, _, e any) Statement {
+    return &amp;AssignStat{id.(Token), e.(Expr)}
+}
+</code></pre>
+
+<p>In this example, <code>lox</code> will produce an error because both <code>on_statement__1</code> and
+<code>on_statement__2</code> could be used as the action method for the one <code>statement</code>
+production.</p>
+
 <h3 id="onbounds">_onBounds</h3>
 
 <p>If your <a href="#parser-type">parser type</a> defines a method called <code>_onBounds</code>, the
@@ -180,11 +204,38 @@ will not be called.</p>
 <p>Check out
 <a href="https://github.com/dcaiafa/lox/blob/main/examples/bolox/parser.go" target="_blank">Bolox</a>
 for an example of how <code>_onBounds</code> can be used to associate source location
-information with ASTs for error logging purp
-source location with AST, which is later used to log errors with location
-information.</p>
+information with ASTs for error logging purposes.</p>
 
 <h2 id="generated-code">Generated Code</h2>
+
+<p>Lox-generated files follows the following pattern: <code>*.gen.go</code> (e.g.
+<code>parser.gen.go</code>). Generated code includes the parser, the lexer state machine
+and other supporting types and functions. This section documents the code that
+is available for you to reference/use.</p>
+
+<h3 id="lox">lox</h3>
+
+<p>Lox generates the <code>lox</code> type which includes the data-structures used to run the
+parser. You must define a <code>struct</code> in the same package which embeds this type.
+This tells Lox that this <code>struct</code> is the parser. Lox will add methods
+implementing the parser to this type.</p>
+
+<h3 id="lexer">_Lexer</h3>
+
+<p>Lox generates the interface <code>_Lexer</code> as follows:</p>
+
+<pre><code class="language-go">type _Lexer interface {
+	ReadToken() (Token, int)
+}
+</code></pre>
+
+<p><code>_Lexer</code> defines the interface required by the parser. Fun fact: Lox does not
+generate an actual lexer, it generates the state machine for a lexer. You are
+responsible for providing a <code>_Lexer</code> implementation.
+<a href="https://github.com/dcaiafa/loxlex/tree/main/simplelexer" target="_blank">simplelexer</a> is the
+Lexer implementation used by the examples included with Lox, and should be
+sufficient for most projects. It is small and simple enough that you could just
+copy to your project instead of using it as an external dependency.</p>
 
   </div>
 

@@ -65,9 +65,6 @@ correspond to an action parameter. The Go type of the rule or token referenced
 by the term must be [assignable](https://go.dev/ref/spec#Assignability) to its
 corresponding parameter type.
 
-An action method must match a single production. Lox will report an error if an
-action method can be matched to multiple productions.
-
 For example:
 
 ```lox
@@ -94,6 +91,25 @@ expr` because:
 * `e Expr` matches the term `expr` (assuming that there is a rule `expr` whose
   actions return `Expr`).
 
+A production must match a single action method. 
+
+For example:
+
+```lox
+statement = 'ID' = 'expr'
+```
+```go
+func (p *myParser) on_statement__1(id Token, _ Token, e Expr) Statement {
+    return &AssignStat{id, e}
+}
+func (p *myParser) on_statement__2(id, _, e any) Statement {
+    return &AssignStat{id.(Token), e.(Expr)}
+}
+```
+In this example, `lox` will produce an error because both `on_statement__1` and
+`on_statement__2` could be used as the action method for the one `statement`
+production.
+
 ### _onBounds
 
 If your [parser type](#parser-type) defines a method called `_onBounds`, the
@@ -117,8 +133,35 @@ will not be called.
 Check out
 [Bolox](https://github.com/dcaiafa/lox/blob/main/examples/bolox/parser.go)
 for an example of how `_onBounds` can be used to associate source location
-information with ASTs for error logging purp
-source location with AST, which is later used to log errors with location
-information.
+information with ASTs for error logging purposes.
 
 ## Generated Code
+
+Lox-generated files follows the following pattern: `*.gen.go` (e.g.
+`parser.gen.go`). Generated code includes the parser, the lexer state machine
+and other supporting types and functions. This section documents the code that
+is available for you to reference/use.
+
+### lox
+
+Lox generates the `lox` type which includes the data-structures used to run the
+parser. You must define a `struct` in the same package which embeds this type.
+This tells Lox that this `struct` is the parser. Lox will add methods
+implementing the parser to this type.
+
+### _Lexer
+
+Lox generates the interface `_Lexer` as follows:
+
+```go
+type _Lexer interface {
+	ReadToken() (Token, int)
+}
+```
+`_Lexer` defines the interface required by the parser. Fun fact: Lox does not
+generate an actual lexer, it generates the state machine for a lexer. You are
+responsible for providing a `_Lexer` implementation.
+[simplelexer](https://github.com/dcaiafa/loxlex/tree/main/simplelexer) is the
+Lexer implementation used by the examples included with Lox, and should be
+sufficient for most projects. It is small and simple enough that you could just
+copy to your project instead of using it as an external dependency.

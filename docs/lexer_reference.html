@@ -27,6 +27,9 @@
     <a href="#declarations">Declarations</a>
       <ul>
   <li>
+    <a href="#line-continuation">Line Continuation</a>
+  </li>
+  <li>
     <a href="#declaration-order">Declaration Order</a>
   </li>
   <li>
@@ -70,7 +73,7 @@
     <a href="#number-literals">Number Literals</a>
   </li>
   <li>
-    <a href="#line-continuation">Line Continuation</a>
+    <a href="#line-continuation-1">Line Continuation</a>
   </li>
   <li>
     <a href="#string-interpolation">String interpolation</a>
@@ -120,6 +123,28 @@ keyword.</p>
 
 // Lexer declarations
 </code></pre>
+
+<h3 id="line-continuation">Line Continuation</h3>
+
+<p>Declarations are terminated by an end-of-line. The line-continuation backslash
+<code>\</code> must be used to split a declaration into multiple lines. The exception is
+when the first token in the next line is the vertical bar <code>|</code>. In this case, the
+line-continuation is implicit.</p>
+
+<p>For example:</p>
+
+<pre><code class="language-lox">@macro INTEGER = DIGIT | \
+                 ONE_NINE DIGIT+
+</code></pre>
+
+<p>Is equivalent to:</p>
+
+<pre><code class="language-lox">@macro INTEGER = DIGIT
+               | ONE_NINE DIGIT+
+</code></pre>
+
+<p>It is idiomatic to use the latter form, and only use the <code>\</code> when a declaration
+cannot be split at a <code>|</code>.</p>
 
 <h3 id="declaration-order">Declaration Order</h3>
 
@@ -465,7 +490,7 @@ NUMBER = INTEGER FRACTION? EXPONENT?
 optional fraction and exponent parts. Macros are used to break the token
 declaration into smaller, more readable components.</p>
 
-<h3 id="line-continuation">Line Continuation</h3>
+<h3 id="line-continuation-1">Line Continuation</h3>
 
 <pre><code class="language-lox">NL = '\n'
 @frag '\\' [ \r\n\t]* '\n' @discard

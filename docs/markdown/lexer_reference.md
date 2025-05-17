@@ -18,6 +18,26 @@ keyword.
 
 // Lexer declarations
 ```
+### Line Continuation
+
+Declarations are terminated by an end-of-line. The line-continuation backslash
+`\` must be used to split a declaration into multiple lines. The exception is
+when the first token in the next line is the vertical bar `|`. In this case, the
+line-continuation is implicit. 
+
+For example:
+
+```lox
+@macro INTEGER = DIGIT | \
+                 ONE_NINE DIGIT+
+```
+Is equivalent to:
+```lox
+@macro INTEGER = DIGIT
+               | ONE_NINE DIGIT+
+```
+It is idiomatic to use the latter form, and only use the `\` when a declaration
+cannot be split at a `|`.
 
 ### Declaration Order
 

@@ -33,6 +33,9 @@
     <a href="#rules">Rules</a>
       <ul>
   <li>
+    <a href="#line-continuation">Line Continuation</a>
+  </li>
+  <li>
     <a href="#start-rule">Start Rule</a>
   </li>
   <li>
@@ -156,6 +159,32 @@ restrictions:
 <li><strong>Must not</strong> contain consecutive underscores.</li>
 </ul></li>
 </ul>
+
+<h3 id="line-continuation">Line Continuation</h3>
+
+<p>Rules are terminated by an end-of-line. The line-continuation backslash <code>\</code> can
+be used to split a rule into multiple lines. The backlash can be omitted when
+the vertical bar <code>|</code> is the next line&rsquo;s first token. In this case, the
+line-continuation is implicit.</p>
+
+<p>For example:</p>
+
+<pre><code class="language-lox">term = ID | \
+       LITERAL | \
+       '@error' | \ 
+       list
+</code></pre>
+
+<p>Is equivalent to:</p>
+
+<pre><code class="language-lox">term = ID
+     | LITERAL
+     | '@error'
+     | list
+</code></pre>
+
+<p>It is idiomatic to use the latter form, and to only use the <code>\</code> when a rule
+cannot be split at a <code>|</code>.</p>
 
 <h3 id="start-rule">Start Rule</h3>
 
