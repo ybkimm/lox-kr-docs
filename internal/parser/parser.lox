@@ -89,7 +89,7 @@ EXTEND = '\\'
 
 @parser
 
-@start spec = NL* section*
+@start spec = NL*! section*
             | @error
 
 section = parser_section
