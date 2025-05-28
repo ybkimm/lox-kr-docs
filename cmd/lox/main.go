@@ -12,6 +12,19 @@ import (
 	"github.com/dcaiafa/lox/internal/codegen"
 )
 
+func usage() {
+	out := flag.CommandLine.Output()
+	fmt.Fprintf(out, "Parser and lexer generator for Go.\n")
+	fmt.Fprintf(out, "https://dcaiafa.github.io/lox\n")
+	fmt.Fprintf(out, "\n")
+	fmt.Fprintf(out, "Usage:\n")
+	fmt.Fprintf(out, "  lox [flags] <package-path>\n")
+	fmt.Fprintf(out, "\n")
+	fmt.Fprintf(out, "Flags:\n")
+	fmt.Fprintf(out, "  --report  Show detailed analysis report\n")
+	fmt.Fprintf(out, "\n")
+}
+
 func main() {
 	err := realMain()
 	if err != nil {
@@ -26,6 +39,7 @@ func realMain() error {
 		flagProf   = flag.String("cpu-prof", "", "")
 	)
 
+	flag.Usage = usage
 	flag.Parse()
 	if flag.NArg() != 1 {
 		flag.Usage()
