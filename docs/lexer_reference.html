@@ -16,84 +16,84 @@
     <h1><a href="./index.html">Lox</a></h1>
     <ul>
   <li>
-    <a href="getting_started.html">Getting Started</a>
+    <a href="getting_started.html">시작하기</a>
   </li>
-      <li><a href="./reference.html">Reference</a>
+      <li><a href="./reference.html">레퍼런스</a>
         <ul>
   <li>
-    <a href="lexer_reference.html">Lexer Reference</a>
+    <a href="lexer_reference.html">렉서 레퍼런스</a>
       <ul>
   <li>
-    <a href="#declarations">Declarations</a>
+    <a href="#declarations">선언</a>
       <ul>
   <li>
-    <a href="#line-continuation">Line Continuation</a>
+    <a href="#line-continuation">줄 연속</a>
   </li>
   <li>
-    <a href="#declaration-order">Declaration Order</a>
+    <a href="#declaration-order">선언 순서</a>
   </li>
   <li>
-    <a href="#tokens">Tokens</a>
+    <a href="#tokens">토큰</a>
   </li>
   <li>
-    <a href="#fragments">Fragments</a>
+    <a href="#fragments">프래그먼트</a>
   </li>
   <li>
-    <a href="#macros">Macros</a>
+    <a href="#macros">매크로</a>
   </li>
   <li>
-    <a href="#modes">Modes</a>
+    <a href="#modes">모드</a>
   </li>
       </ul>
   </li>
   <li>
-    <a href="#common-elements">Common Elements</a>
+    <a href="#common-elements">공통 요소</a>
       <ul>
   <li>
-    <a href="#lexical-expressions">Lexical Expressions</a>
+    <a href="#lexical-expressions">어휘 표현식</a>
   </li>
   <li>
-    <a href="#lexical-names">Lexical Names</a>
+    <a href="#lexical-names">어휘 이름</a>
   </li>
   <li>
-    <a href="#lexical-actions">Lexical Actions</a>
+    <a href="#lexical-actions">어휘 액션</a>
   </li>
   <li>
-    <a href="#literal-escaping-rules">Literal Escaping Rules</a>
+    <a href="#literal-escaping-rules">리터럴 이스케이프 규칙</a>
   </li>
       </ul>
   </li>
   <li>
-    <a href="#examples">Examples</a>
+    <a href="#examples">예제</a>
       <ul>
   <li>
-    <a href="#keywords-and-identifiers">Keywords and Identifiers</a>
+    <a href="#keywords-and-identifiers">키워드와 식별자</a>
   </li>
   <li>
-    <a href="#number-literals">Number Literals</a>
+    <a href="#number-literals">숫자 리터럴</a>
   </li>
   <li>
-    <a href="#line-continuation-1">Line Continuation</a>
+    <a href="#line-continuation-1">줄 연속</a>
   </li>
   <li>
-    <a href="#string-interpolation">String interpolation</a>
+    <a href="#string-interpolation">문자열 보간</a>
   </li>
       </ul>
   </li>
       </ul>
   </li>
   <li>
-    <a href="parser_reference.html">Parser Reference</a>
+    <a href="parser_reference.html">파서 레퍼런스</a>
   </li>
   <li>
-    <a href="go_reference.html">Go Reference</a>
+    <a href="go_reference.html">Go 레퍼런스</a>
   </li>
         </ul>
       </li>
-      <li><a href="./advanced.html">Advanced</a>
+      <li><a href="./advanced.html">고급</a>
         <ul>
   <li>
-    <a href="parser_conflicts.html">Parser Conflicts</a>
+    <a href="parser_conflicts.html">파서 충돌</a>
   </li>
         </ul>
       </li>
@@ -104,57 +104,52 @@
     <div class="sidebar-button">
       <a  href="javascript:void(0)" onclick="toggleSidebar()"></a>
     </div>
-    <h1 id="lexer-reference">Lexer Reference</h1>
+    <h1 id="lexer-reference">렉서 레퍼런스</h1>
 
-<p>The purpose of a lexer is to break the input into tokens which can then be used
-by a parser to build complex syntatic structures.</p>
+<p>렉서의 목적은 입력을 토큰으로 분해하여 파서가 복잡한 구문 구조를 구축하는 데 
+사용할 수 있도록 하는 것입니다.</p>
 
-<p>In a lexer section, the most common declaration is the token rule. However, a
-lexer can also define other lexical elements, such as fragments, macros, and
-modes, which help model more complex grammars and facilitate more sophisticated
-tokenization strategies.</p>
+<p>렉서 섹션에서 가장 일반적인 선언은 토큰 규칙입니다. 그러나 렉서는 
+프래그먼트, 매크로, 모드와 같은 다른 어휘 요소도 정의할 수 있으며, 이들은 
+더 복잡한 문법을 모델링하고 더 정교한 토큰화 전략을 가능하게 합니다.</p>
 
-<h2 id="declarations">Declarations</h2>
+<h2 id="declarations">선언</h2>
 
-<p>Lexer declarations are contained in a lexer section signaled by the <code>@lexer</code>
-keyword.</p>
+<p>렉서 선언은 <code>@lexer</code> 키워드로 시작하는 렉서 섹션에 포함됩니다.</p>
 
 <pre><code class="language-lox">@lexer
 
-// Lexer declarations
+// 렉서 선언
 </code></pre>
 
-<h3 id="line-continuation">Line Continuation</h3>
+<h3 id="line-continuation">줄 연속</h3>
 
-<p>Declarations are terminated by an end-of-line. The line-continuation backslash
-<code>\</code> must be used to split a declaration into multiple lines. The exception is
-when the first token in the next line is the vertical bar <code>|</code>. In this case, the
-line-continuation is implicit.</p>
+<p>선언은 줄 끝으로 종료됩니다. 선언을 여러 줄로 나누려면 줄 연속 백슬래시
+<code>\</code>를 사용해야 합니다. 예외는 다음 줄의 첫 번째 토큰이 수직 막대 <code>|</code>인 경우입니다. 
+이 경우 줄 연속이 암시적으로 처리됩니다.</p>
 
-<p>For example:</p>
+<p>예를 들어:</p>
 
 <pre><code class="language-lox">@macro INTEGER = DIGIT | \
                  ONE_NINE DIGIT+
 </code></pre>
 
-<p>Is equivalent to:</p>
+<p>다음과 동일합니다:</p>
 
 <pre><code class="language-lox">@macro INTEGER = DIGIT
                | ONE_NINE DIGIT+
 </code></pre>
 
-<p>It is idiomatic to use the latter form, and only use the <code>\</code> when a declaration
-cannot be split at a <code>|</code>.</p>
+<p>후자의 형식을 사용하는 것이 관용적이며, <code>|</code>에서 선언을 나눌 수 없는 경우에만 
+<code>\</code>를 사용합니다.</p>
 
-<h3 id="declaration-order">Declaration Order</h3>
+<h3 id="declaration-order">선언 순서</h3>
 
-<p>The order of lexer declarations determines which token is emitted when a
-sequence of characters matches more than one lexical expression. In cases where
-multiple expressions could match the same input, the lexer will emit the token
-corresponding to the first matching expression encountered in the declaration
-order.</p>
+<p>렉서 선언의 순서는 문자 시퀀스가 둘 이상의 어휘 표현식과 일치할 때 어떤 토큰이 
+방출되는지를 결정합니다. 여러 표현식이 동일한 입력과 일치할 수 있는 경우, 렉서는 
+선언 순서에서 처음 만나는 일치하는 표현식에 해당하는 토큰을 방출합니다.</p>
 
-<p>For example, given the following grammar:</p>
+<p>예를 들어, 다음 문법이 주어졌을 때:</p>
 
 <pre><code class="language-lox">@lexer
 
@@ -164,94 +159,88 @@ ID       = [a-z0-9]+
 </code></pre>
 
 <ul>
-<li>The input <code>2</code> emits <code>NUMBER</code>.</li>
-<li>The input <code>2x</code> emits <code>ID</code>.</li>
-<li>The input <code>2good</code> emits <code>TOO_GOOD</code>.</li>
+<li>입력 <code>2</code>는 <code>NUMBER</code>를 방출합니다.</li>
+<li>입력 <code>2x</code>는 <code>ID</code>를 방출합니다.</li>
+<li>입력 <code>2good</code>는 <code>TOO_GOOD</code>를 방출합니다.</li>
 </ul>
 
-<p>However, if <code>TOO_GOOD</code> were defined after <code>ID</code>, then <code>TOO_GOOD</code> would never be emitted
-because <code>ID</code> would match <code>2good</code> first.</p>
+<p>그러나 <code>TOO_GOOD</code>가 <code>ID</code> 뒤에 정의되었다면, <code>ID</code>가 <code>2good</code>를 먼저 일치시키므로 
+<code>TOO_GOOD</code>는 절대 방출되지 않을 것입니다.</p>
 
-<h3 id="tokens">Tokens</h3>
+<h3 id="tokens">토큰</h3>
 
-<p>Token rules are the fundamental lexer building block. They define a lexical
-expression that once recognized by the lexer state machine causes that token to
-be emitted.</p>
+<p>토큰 규칙은 렉서의 기본 구성 요소입니다. 렉서 상태 머신이 인식하면 해당 토큰을 
+방출하게 하는 어휘 표현식을 정의합니다.</p>
 
-<p>A token rule follows this format:</p>
+<p>토큰 규칙은 다음 형식을 따릅니다:</p>
 
 <pre><code class="language-text">NAME = &lt;expression&gt; &lt;action&gt;*
 </code></pre>
 
-<p>Where:</p>
+<p>여기서:</p>
 
 <ul>
-<li><code>NAME</code> is a <a href="#lexical-names">lexical name</a>.</li>
-<li><code>&lt;expression&gt;</code> is a <a href="#lexical-expressions">lexical expression</a>.</li>
-<li><code>&lt;action&gt;</code> is a <a href="#lexical-actions">lexical-action</a>.</li>
+<li><code>NAME</code>은 <a href="#lexical-names">어휘 이름</a>입니다.</li>
+<li><code>&lt;expression&gt;</code>은 <a href="#lexical-expressions">어휘 표현식</a>입니다.</li>
+<li><code>&lt;action&gt;</code>은 <a href="#lexical-actions">어휘 액션</a>입니다.</li>
 </ul>
 
-<p>Tokens carry the <a href="#lexical-actions">action</a> <code>@emit(NAME)</code> implicitly.</p>
+<p>토큰은 암시적으로 <a href="#lexical-actions">액션</a> <code>@emit(NAME)</code>을 수행합니다.</p>
 
-<h3 id="fragments">Fragments</h3>
+<h3 id="fragments">프래그먼트</h3>
 
-<p>Fragments are similar to tokens in both syntax and semantics, but with some key
-differences. Unlike tokens, fragments are unnamed and do not have a default
-action. If a fragment does not specify an action, all characters recognized by
-the fragment remain in the lexer&rsquo;s accumulator. This behavior is generally
-useful within a mode, where fragments can be used to break down a single token
-into multiple expressions, allowing for more granular control over the
-tokenization process.</p>
+<p>프래그먼트는 구문과 의미 모두에서 토큰과 유사하지만 몇 가지 주요 차이점이 있습니다. 
+토큰과 달리 프래그먼트는 이름이 없고 기본 액션이 없습니다. 프래그먼트가 액션을 
+지정하지 않으면, 프래그먼트가 인식한 모든 문자는 렉서의 누적기에 남아 있습니다. 
+이 동작은 일반적으로 모드 내에서 유용하며, 프래그먼트를 사용하여 단일 토큰을 
+여러 표현식으로 분해하여 토큰화 프로세스를 더 세밀하게 제어할 수 있습니다.</p>
 
-<p>In the default mode, fragments typically specify the <code>@discard</code> action, such as
-when discarding whitespace or other insignificant characters that should not be
-part of the token stream.</p>
+<p>기본 모드에서 프래그먼트는 일반적으로 <code>@discard</code> 액션을 지정합니다. 예를 들어 
+토큰 스트림의 일부가 되어서는 안 되는 공백이나 기타 중요하지 않은 문자를 
+버릴 때 사용합니다.</p>
 
-<p>A fragment rule follows this format:</p>
+<p>프래그먼트 규칙은 다음 형식을 따릅니다:</p>
 
 <pre><code class="language-text">@frag &lt;expression&gt; &lt;action&gt;*
 </code></pre>
 
-<p>Where:</p>
+<p>여기서:</p>
 
 <ul>
-<li><code>&lt;expression&gt;</code> is a <a href="#lexical-expressions">lexical expression</a>.</li>
-<li><code>&lt;action&gt;</code> is a <a href="#lexical-actions">lexical-action</a>.</li>
+<li><code>&lt;expression&gt;</code>은 <a href="#lexical-expressions">어휘 표현식</a>입니다.</li>
+<li><code>&lt;action&gt;</code>은 <a href="#lexical-actions">어휘 액션</a>입니다.</li>
 </ul>
 
-<h3 id="macros">Macros</h3>
+<h3 id="macros">매크로</h3>
 
-<p>Macros, like tokens, define a lexical expression. However, unlike tokens, macros
-do not directly influence the state machine and cannot be referenced by the
-parser. Instead, macros serve as reusable components to simplify and streamline
-lexer definitions.</p>
+<p>매크로는 토큰처럼 어휘 표현식을 정의합니다. 그러나 토큰과 달리 매크로는 
+상태 머신에 직접 영향을 주지 않으며 파서에서 참조할 수 없습니다. 대신 매크로는 
+렉서 정의를 단순화하고 간소화하는 재사용 가능한 구성 요소로 사용됩니다.</p>
 
-<p>For example, it is common to define a macro such as <code>@macro DIGIT=[0-9]</code> to
-represent a digit. This macro can then be used within various token definitions,
-reducing the need to repeat the expression <code>[0-9]</code> multiple times throughout the
-lexer, thereby improving readability and maintainability.</p>
+<p>예를 들어, 숫자를 나타내기 위해 <code>@macro DIGIT=[0-9]</code>와 같은 매크로를 정의하는 것이 
+일반적입니다. 이 매크로는 다양한 토큰 정의 내에서 사용할 수 있어 렉서 전체에서 
+<code>[0-9]</code> 표현식을 여러 번 반복할 필요를 줄여 가독성과 유지 관리성을 향상시킵니다.</p>
 
-<p>A macro rule follows this format:</p>
+<p>매크로 규칙은 다음 형식을 따릅니다:</p>
 
 <pre><code class="language-text">@macro NAME = &lt;expression&gt;
 </code></pre>
 
-<p>Where:</p>
+<p>여기서:</p>
 
 <ul>
-<li><code>NAME</code> is a <a href="#lexical-names">lexical name</a>.</li>
-<li><code>&lt;expression&gt;</code> is a <a href="#lexical-expressions">lexical expression</a>.</li>
+<li><code>NAME</code>은 <a href="#lexical-names">어휘 이름</a>입니다.</li>
+<li><code>&lt;expression&gt;</code>은 <a href="#lexical-expressions">어휘 표현식</a>입니다.</li>
 </ul>
 
-<h3 id="modes">Modes</h3>
+<h3 id="modes">모드</h3>
 
-<p>A mode is a group of lexical expressions that allows you to switch between
-different sets of tokens or fragments depending on the context. Tokens or
-fragments declared outside of any specific mode belong to the default mode. The
-<code>@push_mode</code> and <code>@pop_mode</code> <a href="#lexical-actions">actions</a> are used to switch
-between modes during lexing.</p>
+<p>모드는 컨텍스트에 따라 다른 토큰 또는 프래그먼트 세트 간에 전환할 수 있게 하는 
+어휘 표현식 그룹입니다. 특정 모드 외부에서 선언된 토큰이나 프래그먼트는 기본 모드에 
+속합니다. <code>@push_mode</code>와 <code>@pop_mode</code> <a href="#lexical-actions">액션</a>은 렉싱 중에 
+모드를 전환하는 데 사용됩니다.</p>
 
-<p>Example:</p>
+<p>예제:</p>
 
 <pre><code class="language-lox">@lexer
 PLUS   = '+'
@@ -264,236 +253,230 @@ OPAREN = '(' @push_mode(Alt)
 }
 </code></pre>
 
-<p>Given the input sequence <code>+-(--)-+</code>, the lexer would emit the following tokens:
+<p>입력 시퀀스 <code>+-(--)-+</code>가 주어지면, 렉서는 다음 토큰을 방출합니다:
 <code>PLUS</code>, <code>MINUS</code>, <code>OPAREN</code>, <code>DASH</code>, <code>DASH</code>, <code>CPAREN</code>, <code>MINUS</code>, <code>PLUS</code>.</p>
 
-<p><strong>Explanation:</strong></p>
+<p><strong>설명:</strong></p>
 
 <ul>
-<li>After emitting <code>OPAREN</code>, the lexer switches to <code>Alt</code> mode, where <code>-</code> is now
-recognized as <code>DASH</code> instead of <code>MINUS</code>.</li>
-<li>In <code>Alt</code> mode, encountering a <code>+</code> would result in an error since <code>+</code> is not
-defined in Alt.</li>
-<li>When <code>CPAREN</code> is encountered, the lexer pops <code>Alt</code> mode, returning to the
-default mode, where <code>-</code> is once again recognized as <code>MINUS</code> and <code>+</code> as <code>PLUS</code>.</li>
+<li><code>OPAREN</code>을 방출한 후, 렉서는 <code>Alt</code> 모드로 전환되고, 여기서 <code>-</code>는 이제 
+<code>MINUS</code> 대신 <code>DASH</code>로 인식됩니다.</li>
+<li><code>Alt</code> 모드에서 <code>+</code>를 만나면 <code>+</code>가 Alt에 정의되지 않았으므로 오류가 발생합니다.</li>
+<li><code>CPAREN</code>을 만나면 렉서는 <code>Alt</code> 모드를 팝하여 기본 모드로 돌아가고, 여기서 
+<code>-</code>는 다시 <code>MINUS</code>로, <code>+</code>는 <code>PLUS</code>로 인식됩니다.</li>
 </ul>
 
-<p>The lexer maintains a stack of modes, starting in the default mode. It is
-possible to push the default mode onto the stack by using <code>@push_mode()</code> without
-specifying a mode name.</p>
+<p>렉서는 기본 모드에서 시작하여 모드 스택을 유지합니다. 모드 이름을 지정하지 않고 
+<code>@push_mode()</code>를 사용하여 기본 모드를 스택에 푸시할 수 있습니다.</p>
 
-<h2 id="common-elements">Common Elements</h2>
+<h2 id="common-elements">공통 요소</h2>
 
-<h3 id="lexical-expressions">Lexical Expressions</h3>
+<h3 id="lexical-expressions">어휘 표현식</h3>
 
-<p>Lexical expressions are used by tokens, fragments and macros to determine how
-the lexer will match sequences of characters.</p>
+<p>어휘 표현식은 토큰, 프래그먼트, 매크로에서 렉서가 문자 시퀀스를 일치시키는 방법을 
+결정하는 데 사용됩니다.</p>
 
 <table>
 <thead>
 <tr>
-<th>Expression</th>
-<th>Description</th>
+<th>표현식</th>
+<th>설명</th>
 </tr>
 </thead>
 
 <tbody>
 <tr>
 <td>&lsquo;literal&rsquo;</td>
-<td>Match a sequence of characters (e.g. &lsquo;func&rsquo;, &lsquo;!=&rsquo;, &lsquo;,&rsquo;). Special characters must be <a href="#literal-escaping-rules">escaped</a>.</td>
+<td>문자 시퀀스와 일치 (예: &lsquo;func&rsquo;, &lsquo;!=&rsquo;, &lsquo;,&rsquo;). 특수 문자는 <a href="#literal-escaping-rules">이스케이프</a>해야 합니다.</td>
 </tr>
 
 <tr>
 <td><code>.</code></td>
-<td>Match any character.</td>
+<td>모든 문자와 일치.</td>
 </tr>
 
 <tr>
 <td>[<em>char_class</em>]</td>
-<td>Match one of the characters in the set. x-y specifies a range of characters (e.g. [A-Ca-c] is equivalent to [ABCabc]). <a href="#literal-escaping-rules">Escaped</a> characters are also allowed (e.g. [a-z] will match a, <code>-</code> or z).</td>
+<td>집합의 문자 중 하나와 일치. x-y는 문자 범위를 지정합니다 (예: [A-Ca-c]는 [ABCabc]와 동일). <a href="#literal-escaping-rules">이스케이프</a>된 문자도 허용됩니다 (예: [a-z]는 a, <code>-</code> 또는 z와 일치).</td>
 </tr>
 
 <tr>
 <td>~[<em>char_class</em>]</td>
-<td>Like [<em>char_class</em>], but it matches characters <strong>not</strong> in the set.</td>
+<td>[<em>char_class</em>]와 유사하지만 집합에 <strong>없는</strong> 문자와 일치.</td>
 </tr>
 
 <tr>
 <td><em>cc</em> - <em>cc</em></td>
-<td>Matches the difference between two character classes (e.g. [A-Z] - [IJK] matches any character between A and Z that is not I, J or K).</td>
+<td>두 문자 클래스 간의 차이와 일치 (예: [A-Z] - [IJK]는 A와 Z 사이의 문자 중 I, J, K가 아닌 문자와 일치).</td>
 </tr>
 
 <tr>
 <td><em>expr</em> <em>expr</em></td>
-<td>Match one expression followed by another (e.g. &lsquo;//&rsquo; ~[\n]*).</td>
+<td>한 표현식 다음에 다른 표현식과 일치 (예: &lsquo;//&rsquo; ~[\n]*).</td>
 </tr>
 
 <tr>
 <td><em>expr</em> | <em>expr</em></td>
-<td>Match either expression (e.g. [1-9][0-9]* | &lsquo;pi&rsquo;).</td>
+<td>두 표현식 중 하나와 일치 (예: [1-9][0-9]* | &lsquo;pi&rsquo;).</td>
 </tr>
 
 <tr>
 <td>(<em>expr</em>)</td>
-<td>Group an expression (e.g. (&lsquo;foo&rsquo; | &lsquo;bar&rsquo;)*).</td>
+<td>표현식을 그룹화 (예: (&lsquo;foo&rsquo; | &lsquo;bar&rsquo;)*).</td>
 </tr>
 
 <tr>
 <td><em>expr</em> ?</td>
-<td>Optionally match expression (e.g. [1-9][0-9]*(&lsquo;.&rsquo;[0-9]+)? specifies a number with an optional fractional part).</td>
+<td>선택적으로 표현식과 일치 (예: [1-9][0-9]*(&lsquo;.&rsquo;[0-9]+)?는 선택적 소수 부분이 있는 숫자를 지정).</td>
 </tr>
 
 <tr>
 <td><em>expr</em> *</td>
-<td>Match the expression zero or more times (e.g. [1-9][0-9]* matches sequences like 1 and 123).</td>
+<td>표현식과 0회 이상 일치 (예: [1-9][0-9]*는 1이나 123과 같은 시퀀스와 일치).</td>
 </tr>
 
 <tr>
 <td><em>expr</em> +</td>
-<td>Match the expression one or more times (e.g. [1-9][0-9]+ matches 22, 109, but not 1).</td>
+<td>표현식과 1회 이상 일치 (예: [1-9][0-9]+는 22, 109와 일치하지만 1과는 일치하지 않음).</td>
 </tr>
 
 <tr>
 <td><em>expr</em> *?</td>
-<td>Like <code>*</code>, but non-greedy.</td>
+<td><code>*</code>와 유사하지만 비탐욕적.</td>
 </tr>
 
 <tr>
 <td><em>expr</em> +?</td>
-<td>Like <code>+</code>, but non-greedy.</td>
+<td><code>+</code>와 유사하지만 비탐욕적.</td>
 </tr>
 </tbody>
 </table>
-<p class="notice">The non-greedy cardinalities <code>*?</code> and <code>+?</code> will consume the least amount of
-input required. As such they make no sense in the end of term expressions. The
-expression <code>[0-9]+?</code> by itself will never match more than one digit. On the
-other hand, the C comment lexer expression <code>'/*' .*? '*/'</code> will not work
-correctly without the <code>?</code>. This is because <code>.*</code> will also match <code>*/</code>.</p>
+<p class="notice">비탐욕적 카디널리티 <code>*?</code>와 <code>+?</code>는 필요한 최소한의 입력만 소비합니다. 
+따라서 항 표현식의 끝에서는 의미가 없습니다. <code>[0-9]+?</code> 표현식 자체는 
+한 자리 이상을 일치시키지 않습니다. 반면에 C 주석 렉서 표현식 <code>'/*' .*? '*/'</code>는 
+<code>?</code> 없이는 올바르게 작동하지 않습니다. 왜냐하면 <code>.*</code>가 <code>*/</code>도 일치시키기 때문입니다.</p>
 
-<h3 id="lexical-names">Lexical Names</h3>
+<h3 id="lexical-names">어휘 이름</h3>
 
-<p>Names declared in a lexer section must conform to the following rules:</p>
+<p>렉서 섹션에서 선언된 이름은 다음 규칙을 준수해야 합니다:</p>
 
 <ul>
-<li><strong>Must</strong> be all uppercase.</li>
-<li><strong>Must</strong> start with a letter.</li>
-<li><strong>May</strong> contain letters, numbers, and underscores after the first character.</li>
-<li><strong>Must</strong> be unique.</li>
-<li><strong>Must not</strong> end with an underscore.</li>
-<li><strong>Must not</strong> contain consecutive underscores.</li>
-<li><strong>Must not</strong> be one of the reserved names: EOF, ERROR.</li>
+<li><strong>반드시</strong> 모두 대문자여야 합니다.</li>
+<li><strong>반드시</strong> 문자로 시작해야 합니다.</li>
+<li>첫 번째 문자 이후에는 문자, 숫자, 밑줄을 포함<strong>할 수 있습니다</strong>.</li>
+<li><strong>반드시</strong> 고유해야 합니다.</li>
+<li>밑줄로 끝나서는 <strong>안 됩니다</strong>.</li>
+<li>연속된 밑줄을 포함해서는 <strong>안 됩니다</strong>.</li>
+<li>예약된 이름 중 하나여서는 <strong>안 됩니다</strong>: EOF, ERROR.</li>
 </ul>
 
-<h3 id="lexical-actions">Lexical Actions</h3>
+<h3 id="lexical-actions">어휘 액션</h3>
 
-<p>A lexical action determines the action executed by the Lexer when it matches a
-token or a fragment.</p>
+<p>어휘 액션은 렉서가 토큰이나 프래그먼트와 일치할 때 실행되는 액션을 결정합니다.</p>
 
 <table>
 <thead>
 <tr>
-<th>Keyword</th>
-<th>Description</th>
+<th>키워드</th>
+<th>설명</th>
 </tr>
 </thead>
 
 <tbody>
 <tr>
 <td>@emit(TOKEN)</td>
-<td>Emit the token referenced by the given name. Only valid in fragments.</td>
+<td>주어진 이름으로 참조된 토큰을 방출. 프래그먼트에서만 유효.</td>
 </tr>
 
 <tr>
 <td>@discard</td>
-<td>Discard all accumulated characters (e.g. the rule @frag [ \n\r\t]+ @discard will discard whitespaces)</td>
+<td>누적된 모든 문자를 버림 (예: @frag [ \n\r\t]+ @discard 규칙은 공백을 버림)</td>
 </tr>
 
 <tr>
 <td>@push_mode(MODE?)</td>
-<td>Push the current mode onto the stack and enter the mode with name MODE. If MODE is not provided, it will enter the default mode.</td>
+<td>현재 모드를 스택에 푸시하고 MODE 이름의 모드로 진입. MODE가 제공되지 않으면 기본 모드로 진입.</td>
 </tr>
 
 <tr>
 <td>@pop_mode</td>
-<td>Pop the name on the top of the mode stack and make it the current mode.</td>
+<td>모드 스택의 맨 위에 있는 이름을 팝하고 현재 모드로 만듦.</td>
 </tr>
 </tbody>
 </table>
 
-<h3 id="literal-escaping-rules">Literal Escaping Rules</h3>
+<h3 id="literal-escaping-rules">리터럴 이스케이프 규칙</h3>
 
 <table>
 <thead>
 <tr>
-<th>Escaped Sequence</th>
-<th>Actual Character</th>
+<th>이스케이프 시퀀스</th>
+<th>실제 문자</th>
 </tr>
 </thead>
 
 <tbody>
 <tr>
 <td>\n</td>
-<td>New line (a.k.a. carriage return) UTF-8: 0x0D.</td>
+<td>개행 (캐리지 리턴) UTF-8: 0x0D.</td>
 </tr>
 
 <tr>
 <td>\r</td>
-<td>Line feed UTF-8: 0x0A.</td>
+<td>라인 피드 UTF-8: 0x0A.</td>
 </tr>
 
 <tr>
 <td>\t</td>
-<td>Horizontal tab UTF-8: 0x09.</td>
+<td>수평 탭 UTF-8: 0x09.</td>
 </tr>
 
 <tr>
 <td>\&lsquo;</td>
-<td>The single quote character &rsquo; (only valid in token literal).</td>
+<td>작은따옴표 문자 &rsquo; (토큰 리터럴에서만 유효).</td>
 </tr>
 
 <tr>
 <td>\-</td>
-<td>The short dash character - (only valid in character class).</td>
+<td>짧은 대시 문자 - (문자 클래스에서만 유효).</td>
 </tr>
 
 <tr>
 <td>\xXX</td>
-<td>Single byte unicode character in hexadecial (e.g. \x2A is *).</td>
+<td>16진수 단일 바이트 유니코드 문자 (예: \x2A는 *).</td>
 </tr>
 
 <tr>
 <td>\uXXXX</td>
-<td>Double byte unicode character in hexadecimal (e.g. \u4E16 is 世).</td>
+<td>16진수 이중 바이트 유니코드 문자 (예: \u4E16은 世).</td>
 </tr>
 
 <tr>
 <td>\UXXXXXXXX</td>
-<td>Four byte unicode character (e.g. \UF0938583 is 𓅃).</td>
+<td>4바이트 유니코드 문자 (예: \UF0938583은 𓅃).</td>
 </tr>
 </tbody>
 </table>
 
-<h2 id="examples">Examples</h2>
+<h2 id="examples">예제</h2>
 
-<h3 id="keywords-and-identifiers">Keywords and Identifiers</h3>
+<h3 id="keywords-and-identifiers">키워드와 식별자</h3>
 
-<pre><code class="language-lox">// Keywords
+<pre><code class="language-lox">// 키워드
 WHILE    = 'while'
 CONTINUE = 'continue'
 IF       = 'if'
 ELSE     = 'else'
 
-// Identifier
+// 식별자
 ID = [A-Za-z_] [A-Za-z0-9_]*
 </code></pre>
 
-<p>Keywords are often specific cases of the identifier lexical expression. If this
-is the case in your grammar, make sure that you declare the keywords before the
-identifier. Otherwise, the identifier will supersede all keywords, causing the
-lexer to recognize them as identifiers instead of their respective keyword
-tokens.</p>
+<p>키워드는 종종 식별자 어휘 표현식의 특수한 경우입니다. 문법에서 이런 경우라면, 
+식별자 앞에 키워드를 선언해야 합니다. 그렇지 않으면 식별자가 모든 키워드를 대체하여 
+렉서가 해당 키워드 토큰 대신 식별자로 인식하게 됩니다.</p>
 
-<h3 id="number-literals">Number Literals</h3>
+<h3 id="number-literals">숫자 리터럴</h3>
 
 <pre><code class="language-lox">@macro ONE_NINE = [1-9]
 @macro DIGIT    = '0' | ONE_NINE
@@ -506,35 +489,32 @@ tokens.</p>
 NUMBER = INTEGER FRACTION? EXPONENT?
 </code></pre>
 
-<p>This example defines a <code>NUMBER</code> literal that includes an integer part and
-optional fraction and exponent parts. Macros are used to break the token
-declaration into smaller, more readable components.</p>
+<p>이 예제는 정수 부분과 선택적 소수 및 지수 부분을 포함하는 <code>NUMBER</code> 리터럴을 
+정의합니다. 매크로는 토큰 선언을 더 작고 읽기 쉬운 구성 요소로 나누는 데 사용됩니다.</p>
 
-<h3 id="line-continuation-1">Line Continuation</h3>
+<h3 id="line-continuation-1">줄 연속</h3>
 
 <pre><code class="language-lox">NL = '\n'
 @frag '\\' [ \r\n\t]* '\n' @discard
 </code></pre>
 
-<p>In languages where newlines are used for statement termination, you might need a
-mechanism to allow statements to span multiple lines. The example above
-demonstrates how to handle this using a backslash (<code>\</code>) as a line continuation
-character.</p>
+<p>문장 종료에 개행을 사용하는 언어에서는 문장이 여러 줄에 걸쳐 있을 수 있도록 하는 
+메커니즘이 필요할 수 있습니다. 위의 예제는 백슬래시(<code>\</code>)를 줄 연속 문자로 
+사용하여 이를 처리하는 방법을 보여줍니다.</p>
 
-<p><strong>Explanation:</strong></p>
+<p><strong>설명:</strong></p>
 
 <ul>
-<li><strong>NL Token</strong>: The <code>NL</code> token represents a newline character (<code>\n</code>).</li>
-<li><strong>Line Continuation Fragment</strong>: The fragment <code>@frag '\\' [ \r\n\t]* '\n' @discard</code>
-handles the line continuation. When a backslash (<code>\</code>) appears at the end of a
-line, followed by optional whitespace, the newline character is discarded,
-preventing it from being emitted as an <code>NL</code> token.</li>
+<li><strong>NL 토큰</strong>: <code>NL</code> 토큰은 개행 문자(<code>\n</code>)를 나타냅니다.</li>
+<li><strong>줄 연속 프래그먼트</strong>: 프래그먼트 <code>@frag '\\' [ \r\n\t]* '\n' @discard</code>는 
+줄 연속을 처리합니다. 백슬래시(<code>\</code>)가 줄 끝에 나타나고 선택적 공백이 뒤따를 때, 
+개행 문자가 버려져 <code>NL</code> 토큰으로 방출되는 것을 방지합니다.</li>
 </ul>
 
-<p>This setup allows the lexer to treat a backslash followed by a newline as a
-continuation of the same statement, effectively ignoring the newline.</p>
+<p>이 설정을 통해 렉서는 백슬래시 다음에 오는 개행을 같은 문장의 연속으로 처리하여 
+개행을 효과적으로 무시합니다.</p>
 
-<h3 id="string-interpolation">String interpolation</h3>
+<h3 id="string-interpolation">문자열 보간</h3>
 
 <pre><code class="language-lox">NUM = [0-9]+
 PLUS = '+'
@@ -548,27 +528,25 @@ STR_BEGIN = '&quot;' @push_mode(String)
 CCURLY = '}' @pop_mode
 </code></pre>
 
-<p>This example demonstrates how to implement string interpolation using modes in a
-lexer. The grammar allows for embedded expressions within strings, as seen in
-the input  <code>&quot;1 + 2 = {1+2}&quot;</code>, which would be parsed as <code>STR_BEGIN</code>,
-<code>CHAR_SEQ(1 + 2 =)</code>, <code>OCURLY</code>, <code>NUM(1)</code>, <code>PLUS</code>, <code>NUM(2)</code>, <code>CCURLY</code>.</p>
+<p>이 예제는 렉서에서 모드를 사용하여 문자열 보간을 구현하는 방법을 보여줍니다. 
+문법은 문자열 내에 포함된 표현식을 허용합니다. 예를 들어 입력 <code>&quot;1 + 2 = {1+2}&quot;</code>는 
+<code>STR_BEGIN</code>, <code>CHAR_SEQ(1 + 2 =)</code>, <code>OCURLY</code>, <code>NUM(1)</code>, <code>PLUS</code>, <code>NUM(2)</code>, 
+<code>CCURLY</code>로 파싱됩니다.</p>
 
-<p><strong>Explanation:</strong></p>
+<p><strong>설명:</strong></p>
 
 <ul>
-<li><strong>NUM and PLUS</strong>: These tokens represent numbers and the plus sign within the
-interpolated expression.</li>
-<li><strong>STR_BEGIN and STR_END</strong>: These tokens mark the beginning and end of a
-string. <code>STR_BEGIN</code> pushes the lexer into <code>String</code> mode, while <code>STR_END</code> pops
-the mode, returning to the previous state.</li>
-<li><strong>CHAR_SEQ</strong>: This fragment matches sequences of characters within the string,
-while also handling escaped characters such as <code>\n</code>, <code>\t</code>, <code>{</code>, and <code>}</code>.</li>
-<li><strong>OCURLY</strong>: The opening curly brace (<code>{</code>) within the String mode triggers a
-mode push to the default mode (indicated by the lack of mode parameter),
-allowing the lexer to parse the embedded expression. It also emits the
-<code>OCURLY</code> token.</li>
-<li><strong>CCURLY</strong>: The closing curly brace (<code>}</code>) pops the current mode, signaling the
-end of the interpolated expression.</li>
+<li><strong>NUM과 PLUS</strong>: 이 토큰들은 보간된 표현식 내의 숫자와 더하기 기호를 나타냅니다.</li>
+<li><strong>STR_BEGIN과 STR_END</strong>: 이 토큰들은 문자열의 시작과 끝을 표시합니다. 
+<code>STR_BEGIN</code>은 렉서를 <code>String</code> 모드로 푸시하고, <code>STR_END</code>는 모드를 팝하여 
+이전 상태로 돌아갑니다.</li>
+<li><strong>CHAR_SEQ</strong>: 이 프래그먼트는 문자열 내의 문자 시퀀스와 일치하며, <code>\n</code>, <code>\t</code>, 
+<code>{</code>, <code>}</code>와 같은 이스케이프된 문자도 처리합니다.</li>
+<li><strong>OCURLY</strong>: String 모드 내의 여는 중괄호(<code>{</code>)는 기본 모드로의 모드 푸시를 
+트리거하여(모드 매개변수가 없음으로 표시) 렉서가 포함된 표현식을 파싱할 수 
+있게 합니다. 또한 <code>OCURLY</code> 토큰을 방출합니다.</li>
+<li><strong>CCURLY</strong>: 닫는 중괄호(<code>}</code>)는 현재 모드를 팝하여 보간된 표현식의 끝을 
+알립니다.</li>
 </ul>
 
   </div>

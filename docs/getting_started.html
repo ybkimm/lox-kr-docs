@@ -1,11 +1,11 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <title>Lox</title>
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-  <meta name="description" content="Lox is a lexer and parser generator for Go" />
+  <meta name="description" content="Lox는 Go를 위한 렉서 및 파서 생성기입니다" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0" />
   <link rel="stylesheet" href="./prism.css"/>
   <link rel="stylesheet" href="./css.css" />
@@ -16,36 +16,36 @@
     <h1><a href="./index.html">Lox</a></h1>
     <ul>
   <li>
-    <a href="getting_started.html">Getting Started</a>
+    <a href="getting_started.html">시작하기</a>
       <ul>
   <li>
-    <a href="#installing-lox">Installing Lox</a>
+    <a href="#installing-lox">Lox 설치하기</a>
   </li>
   <li>
-    <a href="#trying-an-example">Trying an Example</a>
+    <a href="#trying-an-example">예제 실행하기</a>
   </li>
   <li>
-    <a href="#next-steps">Next Steps</a>
+    <a href="#next-steps">다음 단계</a>
   </li>
       </ul>
   </li>
-      <li><a href="./reference.html">Reference</a>
+      <li><a href="./reference.html">레퍼런스</a>
         <ul>
   <li>
-    <a href="lexer_reference.html">Lexer Reference</a>
+    <a href="lexer_reference.html">렉서 레퍼런스</a>
   </li>
   <li>
-    <a href="parser_reference.html">Parser Reference</a>
+    <a href="parser_reference.html">파서 레퍼런스</a>
   </li>
   <li>
-    <a href="go_reference.html">Go Reference</a>
+    <a href="go_reference.html">Go 레퍼런스</a>
   </li>
         </ul>
       </li>
-      <li><a href="./advanced.html">Advanced</a>
+      <li><a href="./advanced.html">고급</a>
         <ul>
   <li>
-    <a href="parser_conflicts.html">Parser Conflicts</a>
+    <a href="parser_conflicts.html">파서 충돌</a>
   </li>
         </ul>
       </li>
@@ -56,58 +56,54 @@
     <div class="sidebar-button">
       <a  href="javascript:void(0)" onclick="toggleSidebar()"></a>
     </div>
-    <h1 id="getting-started">Getting started</h1>
+    <h1 id="getting-started">시작하기</h1>
 
-<p>Lox is a parser/lexer generator for the Go language. It consists of the <code>lox</code>
-tool which analyzes a project&rsquo;s grammar and Go sources, and generates a
-dependency-free parser in Go.</p>
+<p>Lox는 Go 언어를 위한 파서/렉서 생성기입니다. 프로젝트의 문법과 Go 소스를 분석하는 <code>lox</code>
+도구로 구성되어 있으며, Go로 의존성 없는 파서를 생성합니다.</p>
 
-<h2 id="installing-lox">Installing Lox</h2>
+<h2 id="installing-lox">Lox 설치하기</h2>
 
-<p>Download the <a href="https://github.com/dcaiafa/lox/releases/latest" target="_blank">latest</a> version of
-<code>lox</code> matching your platform. Unpack it and copy the <code>lox</code> binary to a directory
-in your <code>PATH</code>.</p>
+<p>플랫폼에 맞는 <a href="https://github.com/dcaiafa/lox/releases/latest" target="_blank">최신</a> 버전의
+<code>lox</code>를 다운로드하세요. 압축을 풀고 <code>lox</code> 바이너리를 <code>PATH</code>에 있는 디렉토리에
+복사하세요.</p>
 
-<p class="notice">Because <code>lox</code> analyzes Go sources, it is very important to update it often,
-especially when upgrading your Go tooling.</p>
+<p class="notice"><code>lox</code>가 Go 소스를 분석하기 때문에, 특히 Go 도구를 업그레이드할 때
+자주 업데이트하는 것이 매우 중요합니다.</p>
 
-<h2 id="trying-an-example">Trying an Example</h2>
+<h2 id="trying-an-example">예제 실행하기</h2>
 
-<p>The best way to start learning Lox is to play with an
-<a href="https://github.com/dcaiafa/lox/tree/main/examples" target="_blank">example</a>. In this section,
-we are going to use the
-<a href="https://github.com/dcaiafa/lox/tree/main/examples/calc" target="_blank">calculator</a>.</p>
+<p>Lox를 배우는 가장 좋은 방법은
+<a href="https://github.com/dcaiafa/lox/tree/main/examples" target="_blank">예제</a>를 실행해보는 것입니다. 이 섹션에서는
+<a href="https://github.com/dcaiafa/lox/tree/main/examples/calc" target="_blank">계산기</a>를
+사용합니다.</p>
 
-<p>First, try running the example by going to the <code>calc</code> directory in your terminal
-and running it using <code>go run .</code>. Enter an expression like <code>2 * (1+3)</code> and you
-should see the result.</p>
+<p>먼저 터미널에서 <code>calc</code> 디렉토리로 이동한 후 <code>go run .</code>을 사용하여 예제를 실행해보세요.
+<code>2 * (1+3)</code>과 같은 표현식을 입력하면 결과를 볼 수 있습니다.</p>
 
-<p>Next, let&rsquo;s extend the project to support built-in functions so you can evaluate
-something like <code>pow(2,8) - 1</code>. We need an identifier token that will match
-function names (<code>sqrt</code>, <code>pow</code>, etc.). We will also need a comma token to use as
-the parameter separator.</p>
+<p>다음으로, <code>pow(2,8) - 1</code>과 같은 것을 계산할 수 있도록 내장 함수를 지원하도록 프로젝트를
+확장해봅시다. 함수 이름(<code>sqrt</code>, <code>pow</code> 등)과 일치할 식별자 토큰이 필요합니다.
+또한 매개변수 구분자로 사용할 쉼표 토큰도 필요합니다.</p>
 
-<p>Open <code>calc.lox</code> in an editor, then add the following to the end of the <code>@lexer</code>
-section, right after the definition of <code>NUM</code>:</p>
+<p>편집기에서 <code>calc.lox</code>를 열고, <code>NUM</code> 정의 바로 다음인 <code>@lexer</code>
+섹션 끝에 다음을 추가하세요:</p>
 
 <pre><code class="language-lox">COMMA = ','
 ID = [A-Za-z][A-Za-z0-9]*
 </code></pre>
 
-<p>Now add a parser rule for a function call. Add the following to the end of the
-<code>@parser</code> section (at the end of the file):</p>
+<p>이제 함수 호출을 위한 파서 규칙을 추가합니다. <code>@parser</code> 섹션 끝(파일 끝부분)에
+다음을 추가하세요:</p>
 
 <pre><code class="language-lox">func_call = ID '(' @list(expr, ',')? ')'
 </code></pre>
 
-<p>The <code>ID</code> <code>'('</code> <code>')'</code> part should look pretty straightforward. The <code>@list(expr,
-',')</code> term will match one or more <code>expr</code> separated by <code>,</code>. The <code>?</code> qualifier
-makes it optional so you can have functions that take no parameters (e.g.
-<code>pi()</code>). Notice that you can reference tokens in your grammar using their name
-(e.g. <code>COMMA</code>) or their literal value (e.g. <code>','</code>). The latter is usually easier
-to read, but is only allowed when the token definition is a simple literal.</p>
+<p><code>ID</code> <code>'('</code> <code>')'</code> 부분은 간단해 보일 것입니다. <code>@list(expr,
+',')</code> 항은 <code>,</code>로 구분된 하나 이상의 <code>expr</code>과 일치합니다. <code>?</code> 한정자는
+이를 선택사항으로 만들어 매개변수를 받지 않는 함수(예: <code>pi()</code>)를 가질 수 있게 합니다.
+문법에서 토큰을 이름(예: <code>COMMA</code>) 또는 리터럴 값(예: <code>','</code>)으로 참조할 수 있음을
+주목하세요. 후자가 보통 읽기 쉽지만, 토큰 정의가 단순한 리터럴일 때만 허용됩니다.</p>
 
-<p>Now, change the definition of <code>expr</code> to include <code>func_call</code>:</p>
+<p>이제 <code>func_call</code>을 포함하도록 <code>expr</code>의 정의를 변경하세요:</p>
 
 <pre><code class="language-lox">expr = expr '+' expr  @left(1)
      | expr '-' expr  @left(1)
@@ -120,19 +116,19 @@ to read, but is only allowed when the token definition is a simple literal.</p>
      | func_call
 </code></pre>
 
-<p>We are done with the grammar changes. Before moving on to the Go changes, run
-<code>lox .</code> from the <code>calc</code> directory. You should see an error like the following:</p>
+<p>문법 변경이 완료되었습니다. Go 변경 사항으로 넘어가기 전에, <code>calc</code> 디렉토리에서
+<code>lox .</code>를 실행하세요. 다음과 같은 오류가 표시될 것입니다:</p>
 
 <pre><code> $ lox .
 calc.lox:35:1: rule missing action method: func_call
 Error: errors ocurred
 </code></pre>
 
-<p>You got this error because Lox expects every production from every rule to have
-a corresponding action.</p>
+<p>Lox는 모든 규칙의 모든 프로덕션이 해당하는 액션을 가지기를 기대하기 때문에 이 오류가
+발생했습니다.</p>
 
-<p>Let&rsquo;s add one for <code>func_call</code>. Open <code>parser.go</code> in your IDE, then add the
-following to the end of the file:</p>
+<p><code>func_call</code>을 위한 액션을 추가해봅시다. IDE에서 <code>parser.go</code>를 열고 파일 끝에
+다음을 추가하세요:</p>
 
 <pre><code class="language-go">func (p *calcParser) on_func_call(
 	id Token, _ Token, args []float64, _ Token,
@@ -153,22 +149,21 @@ following to the end of the file:</p>
 }
 </code></pre>
 
-<p>Try running <code>lox .</code> again. You should get no errors. And you should be able to
-run the project again and get a result for an expression like <code>pow(2, 8) - 1</code>.</p>
+<p>다시 <code>lox .</code>를 실행해보세요. 오류가 없어야 합니다. 그리고 프로젝트를 다시 실행하여
+<code>pow(2, 8) - 1</code>과 같은 표현식의 결과를 얻을 수 있을 것입니다.</p>
 
-<p>Hopefully the implementation of <code>on_func_call</code> looks pretty straightforward. But
-there is a lot of magic happening in the method signature. Lox uses both the
-method&rsquo;s name and the number and type of its parameters to match the action to a
-production. Check out the docs for <a href="./go_reference.html#action-methods">Action Methods</a>
-for more details.</p>
+<p><code>on_func_call</code>의 구현이 꽤 간단해 보이길 바랍니다. 하지만 메서드 시그니처에서
+많은 마법이 일어나고 있습니다. Lox는 액션을 프로덕션과 매칭하기 위해 메서드의 이름과
+매개변수의 개수 및 타입을 모두 사용합니다. 자세한 내용은 <a href="./go_reference.html#action-methods">액션 메서드</a>
+문서를 확인하세요.</p>
 
-<h2 id="next-steps">Next Steps</h2>
+<h2 id="next-steps">다음 단계</h2>
 
 <ul>
-<li>Check out the <a href="./reference.html">reference</a> docs.</li>
-<li>Explore other <a href="https://github.com/dcaiafa/lox/tree/main/examples" target="_blank">examples</a>.</li>
-<li>Lox is built on itself. Take a look at its
-<a href="https://github.com/dcaiafa/lox/blob/main/internal/parser/parser.lox" target="_blank">parser</a>.</li>
+<li><a href="./reference.html">레퍼런스</a> 문서를 확인하세요.</li>
+<li>다른 <a href="https://github.com/dcaiafa/lox/tree/main/examples" target="_blank">예제들</a>을 탐색해보세요.</li>
+<li>Lox는 자기 자신으로 구축되었습니다. Lox의
+<a href="https://github.com/dcaiafa/lox/blob/main/internal/parser/parser.lox" target="_blank">파서</a>를 살펴보세요.</li>
 </ul>
 
   </div>

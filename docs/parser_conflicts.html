@@ -47,17 +47,16 @@
     <div class="sidebar-button">
       <a  href="javascript:void(0)" onclick="toggleSidebar()"></a>
     </div>
-    <h1 id="conflicts">Conflicts</h1>
+    <h1 id="conflicts">충돌</h1>
 
-<p>If you process the following grammar snippet with <code>lox</code>, it will fail with the
-error: <code>grammar has conflicts</code>:</p>
+<p>다음 문법 조각을 <code>lox</code>로 처리하면 <code>grammar has conflicts</code> 오류와 함께 실패합니다:</p>
 
 <pre><code class="language-lox">expr = expr '+' expr
      | expr '*' expr
      | NUMBER
 </code></pre>
 
-<p>Running <code>lox</code> with the <code>-report</code> flag provides the missing details:</p>
+<p><code>-report</code> 플래그와 함께 <code>lox</code>를 실행하면 자세한 내용을 확인할 수 있습니다:</p>
 
 <pre><code>I5:
   expr = expr .PLUS expr, EOF
@@ -76,13 +75,13 @@ error: <code>grammar has conflicts</code>:</p>
     on PLUS reduce expr &lt;== CONFLICT
 </code></pre>
 
-<p>The excerpt above represents a single state in the parser state machine. In this
-state, the parser has just parsed a <code>expr PLUS expr</code> (e.g. <code>2 + 2</code>). Say the
-next token is a <code>MUL</code>, what should it do? It could reduce <code>expr PLUS expr</code> into
-<code>expr</code> or it could shift <code>MUL</code>. The grammar does not make it clear which
-action to take, so it is ambiguous.</p>
+<p>위 내용은 파서 상태 머신의 한 상태를 나타냅니다. 이 상태에서 파서는 
+방금 <code>expr PLUS expr</code>(예: <code>2 + 2</code>)을 파싱했습니다. 다음 토큰이 
+<code>MUL</code>이라고 가정하면, 무엇을 해야 할까요? <code>expr PLUS expr</code>을 
+<code>expr</code>로 축약(reduce)하거나 <code>MUL</code>을 이동(shift)할 수 있습니다. 
+문법이 어떤 동작을 수행해야 하는지 명확하지 않으므로 모호합니다.</p>
 
-<p>One way to resolve this is by refactoring the grammar:</p>
+<p>이를 해결하는 한 가지 방법은 문법을 리팩토링하는 것입니다:</p>
 
 <pre><code class="language-lox">expr = expr '+' term
      | term
@@ -96,18 +95,18 @@ number = NUMBER
        | '-' NUMBER
 </code></pre>
 
-<p>Some conflicts can only be resolved by refactoring but a large class of
-conflicts can be resolved using
-<a href="./parser_reference.html#precedence_qualifiers">precedence qualifiers</a>:</p>
+<p>일부 충돌은 리팩토링으로만 해결할 수 있지만, 많은 종류의 충돌은 
+<a href="./parser_reference.html#precedence_qualifiers">우선순위 수식어</a>를 
+사용하여 해결할 수 있습니다:</p>
 
 <pre><code class="language-lox">expr = expr '+' expr  @left(1)
      | expr '*' expr  @left(2)
      | NUMBER
 </code></pre>
 
-<p>The <code>@left</code> qualifiers in the grammar tells <code>lox</code> that if it encounters a
-conflict between <code>expr '+' expr</code> and <code>expr '*' expr</code>, then the latter should
-take precendence over the former.</p>
+<p>문법의 <code>@left</code> 수식어는 <code>lox</code>에게 <code>expr '+' expr</code>와 
+<code>expr '*' expr</code> 사이에 충돌이 발생하면 후자가 전자보다 우선순위를 
+가져야 한다고 알려줍니다.</p>
 
   </div>
 
